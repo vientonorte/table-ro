@@ -932,11 +932,24 @@ async function syncSource(srcId,btn){
   const src=SOURCES.find(s=>s.id===srcId); if(!src) return;
   if(btn){btn.textContent='⏳';btn.disabled=true;} updateSyncTopBtn('syncing'); setSourceStatus(srcId,'loading');
   try{
-    let newEvs;
+    let newEvs; let icsVia='ICS';
     if(gToken&&src.gcalId){ newEvs=await fetchGCalEvents(src.gcalId,src.cal,src.readonly); if(!newEvs) throw new Error('Token expirado — vuelve a conectar'); }
-    else { const customUrl=src.lsKey?localStorage.getItem(src.lsKey):null; const url=customUrl||src.icsUrl; if(!url) throw new Error('Sin URL configurada'); const resp=await fetch(url,{mode:'cors',cache:'no-cache'}); if(!resp.ok) throw new Error(`HTTP ${resp.status}`); const text=await resp.text(); if(!text.includes('BEGIN:VCALENDAR')) throw new Error('No es ICS válido'); newEvs=parseICS(text,src.cal); }
+    else {
+      const customUrl=src.lsKey?localStorage.getItem(src.lsKey):null; const url=customUrl||src.icsUrl; if(!url) throw new Error('Sin URL configurada');
+      let icsText=null;
+      try{
+        const r=await fetch(url,{mode:'cors',cache:'no-cache'}); if(!r.ok) throw new Error(`HTTP ${r.status}`); icsText=await r.text();
+      }catch(corsErr){
+        try{
+          const proxyUrl='https://corsproxy.io/?url='+encodeURIComponent(url);
+          const r2=await fetch(proxyUrl,{cache:'no-cache'}); if(!r2.ok) throw new Error(`Proxy ${r2.status}`); icsText=await r2.text(); icsVia='ICS·proxy';
+        }catch(proxyErr){ throw new Error('CORS bloqueado y proxy falló. Conecta OAuth o revisa la URL.'); }
+      }
+      if(!icsText||!icsText.includes('BEGIN:VCALENDAR')) throw new Error('No es ICS válido');
+      newEvs=parseICS(icsText,src.cal);
+    }
     for(let i=EVENTS.length-1;i>=0;i--){ if(EVENTS[i].cal===src.cal&&EVENTS[i].uid) EVENTS.splice(i,1); } EVENTS.push(...newEvs);
-    SYNC_STATUS[srcId]={ok:true,count:newEvs.length,time:new Date(),via:gToken&&src.gcalId?'API':'ICS'};
+    SYNC_STATUS[srcId]={ok:true,count:newEvs.length,time:new Date(),via:gToken&&src.gcalId?'API':icsVia};
     setSourceStatus(srcId,'ok',newEvs.length); if(btn){btn.textContent='✓ OK';setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},1800);} renderWeek(); updateSyncTopBtn('synced');
   } catch(err){ SYNC_STATUS[srcId]={ok:false,error:err.message,time:new Date()}; setSourceStatus(srcId,'error',0,err.message); if(btn){btn.textContent='⚠️';setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},2500);} updateSyncTopBtn('error'); }
 }
