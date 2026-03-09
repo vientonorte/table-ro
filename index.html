@@ -1,9 +1,11 @@
-<html lang="es"><head>
+<!DOCTYPE html>
+<html lang="es">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>TABLERO — Rö · 2026</title>
-<link href="https://fonts.googleapis.com/css2?family=Pacifico&amp;family=Nunito:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet">
-<script src="https://accounts.google.com/gsi/client" async="" defer=""></script>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 @font-face { font-family:'CHILLAZ'; src:local('CHILLAZ'),local('Chillaz'); }
 /* ─── TOKENS ─── */
@@ -221,28 +223,6 @@ h1{
 .thumb{ position:relative; border-radius:6px; overflow:hidden; aspect-ratio:4/3; background:var(--s2); }
 .thumb img{ width:100%; height:100%; object-fit:cover; }
 .thumb-del{ position:absolute; top:3px; right:3px; background:rgba(0,0,0,.7); border:none; color:#fff; border-radius:50%; width:18px; height:18px; font-size:9px; cursor:pointer; display:flex; align-items:center; justify-content:center; }
-/* ── AI ANALYZE ── */
-.ai-analyze-btn{
-  width:100%;padding:10px;border-radius:9px;border:none;
-  background:linear-gradient(135deg,rgba(168,85,247,.3),rgba(236,72,153,.2));
-  border:1px solid rgba(168,85,247,.5);
-  color:#d8b4fe;font-family:'Nunito',sans-serif;
-  font-weight:800;font-size:.78rem;cursor:pointer;
-  text-transform:uppercase;letter-spacing:.7px;
-  transition:all .2s;display:flex;align-items:center;
-  justify-content:center;gap:7px;margin-top:8px;
-}
-.ai-analyze-btn:hover{background:linear-gradient(135deg,rgba(168,85,247,.45),rgba(236,72,153,.3));transform:translateY(-1px);box-shadow:0 4px 18px rgba(168,85,247,.3);}
-.ai-analyze-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
-.ai-status{
-  padding:9px 12px;border-radius:8px;font-size:.72rem;
-  font-weight:700;line-height:1.5;display:none;margin-top:6px;
-}
-.ai-status.loading{display:flex;align-items:center;gap:8px;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.25);color:#c4b5fd;}
-.ai-status.ok{display:block;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.25);color:#6ee7b7;}
-.ai-status.error{display:block;background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);color:#fca5a5;}
-.spin{display:inline-block;animation:spin .7s linear infinite;font-style:normal;}
-@keyframes spin{to{transform:rotate(360deg);}}
 /* how-to */
 .how-box{
   background:rgba(124,58,237,.1); border:1px solid rgba(124,58,237,.22);
@@ -431,7 +411,7 @@ h1{
 .src-status{ font-size:.62rem; margin-top:2px; }
 .src-actions{ display:flex; gap:5px; flex-shrink:0; }
 </style>
-<style id="googleidentityservice_button_styles">.qJTHM{-moz-user-select:none;-webkit-user-select:none;-ms-user-select:none;color:#202124;direction:ltr;-webkit-touch-callout:none;font-family:"Roboto-Regular",arial,sans-serif;-webkit-font-smoothing:antialiased;font-weight:400;margin:0;overflow:hidden;-webkit-text-size-adjust:100%}.ynRLnc{left:-9999px;position:absolute;top:-9999px}.L6cTce{display:none}.bltWBb{overflow-wrap:break-word;word-break:break-word}.hSRGPd{color:#1a73e8;cursor:pointer;font-weight:500;text-decoration:none}.Bz112c-W3lGp{height:16px;width:16px}.Bz112c-E3DyYd{height:20px;width:20px}.Bz112c-r9oPif{height:24px;width:24px}.Bz112c-u2z5K{height:36px;width:36px}.Bz112c-uaxL4e{border-radius:10px}.LgbsSe-Bz112c{display:block}.S9gUrf-YoZ4jf{border:none;margin:0;padding:0}.S9gUrf-YoZ4jf *{border:none;margin:0;padding:0}.fFW7wc-ibnC6b>.aZ2wEe>div{border-color:#4285f4}.P1ekSe-ZMv3u{-webkit-transition:height linear .2s;transition:height linear .2s}.P1ekSe-ZMv3u>div:nth-child(1){background-color:#1a73e8!important;-webkit-transition:width linear .3s;transition:width linear .3s}.P1ekSe-ZMv3u>div:nth-child(2){background-image:-webkit-gradient(linear,left top,right top,from(rgba(255,255,255,.7)),to(rgba(255,255,255,.7))),-webkit-gradient(linear,left top,right top,from(#1a73e8),to(#1a73e8))!important;background-image:-webkit-linear-gradient(left,rgba(255,255,255,.7),rgba(255,255,255,.7)),-webkit-linear-gradient(left,#1a73e8,#1a73e8)!important;background-image:linear-gradient(to right,rgba(255,255,255,.7),rgba(255,255,255,.7)),linear-gradient(to right,#1a73e8,#1a73e8)!important}.P1ekSe-ZMv3u>div:nth-child(3){background-image:-webkit-gradient(linear,left top,right top,from(rgba(255,255,255,.7)),to(rgba(255,255,255,.7))),-webkit-gradient(linear,left top,right top,from(#1a73e8),to(#1a73e8))!important;background-image:-webkit-linear-gradient(left,rgba(255,255,255,.7),rgba(255,255,255,.7)),-webkit-linear-gradient(left,#1a73e8,#1a73e8)!important;background-image:linear-gradient(to right,rgba(255,255,255,.7),rgba(255,255,255,.7)),linear-gradient(to right,#1a73e8,#1a73e8)!important}.haAclf{display:inline-block}.nsm7Bb-HzV7m-LgbsSe{border-radius:4px;box-sizing:border-box;-webkit-transition:background-color .218s,border-color .218s;transition:background-color .218s,border-color .218s;-moz-user-select:none;-webkit-user-select:none;-ms-user-select:none;-webkit-appearance:none;background-color:#fff;background-image:none;border:1px solid #dadce0;color:#3c4043;cursor:pointer;font-family:"Google Sans",arial,sans-serif;font-size:14px;height:40px;letter-spacing:.25px;outline:none;overflow:hidden;padding:0 12px;position:relative;text-align:center;vertical-align:middle;white-space:nowrap;width:auto}@media screen and (-ms-high-contrast:active){.nsm7Bb-HzV7m-LgbsSe{border:2px solid windowText;color:windowText}}@media screen and (preferes-contrast:more){.nsm7Bb-HzV7m-LgbsSe{color:#000}}.nsm7Bb-HzV7m-LgbsSe.pSzOP-SxQuSe{font-size:14px;height:32px;letter-spacing:.25px;padding:0 10px}.nsm7Bb-HzV7m-LgbsSe.purZT-SxQuSe{font-size:11px;height:20px;letter-spacing:.3px;padding:0 8px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe{padding:0;width:40px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe.pSzOP-SxQuSe{width:32px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe.purZT-SxQuSe{width:20px}.nsm7Bb-HzV7m-LgbsSe.JGcpL-RbRzK{border-radius:20px}.nsm7Bb-HzV7m-LgbsSe.JGcpL-RbRzK.pSzOP-SxQuSe{border-radius:16px}.nsm7Bb-HzV7m-LgbsSe.JGcpL-RbRzK.purZT-SxQuSe{border-radius:10px}.nsm7Bb-HzV7m-LgbsSe.MFS4be-Ia7Qfc{border:none;color:#fff}.nsm7Bb-HzV7m-LgbsSe.MFS4be-v3pZbf-Ia7Qfc{background-color:#1a73e8}.nsm7Bb-HzV7m-LgbsSe.MFS4be-JaPV2b-Ia7Qfc{background-color:#202124;color:#e8eaed}@media screen and (prefers-contrast:more){.nsm7Bb-HzV7m-LgbsSe.MFS4be-JaPV2b-Ia7Qfc{color:#fff}}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{height:18px;margin-right:8px;min-width:18px;width:18px}.nsm7Bb-HzV7m-LgbsSe.pSzOP-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{height:14px;min-width:14px;width:14px}.nsm7Bb-HzV7m-LgbsSe.purZT-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{height:10px;min-width:10px;width:10px}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-Bz112c{margin-left:8px;margin-right:-4px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{margin:0;padding:10px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe.pSzOP-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{padding:8px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe.purZT-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c{padding:4px}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-top-left-radius:3px;border-bottom-left-radius:3px;display:-webkit-box;display:-webkit-flex;display:flex;-webkit-box-pack:center;-webkit-justify-content:center;justify-content:center;-webkit-box-align:center;-webkit-align-items:center;align-items:center;background-color:#fff;height:36px;margin-left:-10px;margin-right:12px;min-width:36px;width:36px}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf .nsm7Bb-HzV7m-LgbsSe-Bz112c,.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf .nsm7Bb-HzV7m-LgbsSe-Bz112c{margin:0;padding:0}.nsm7Bb-HzV7m-LgbsSe.pSzOP-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{height:28px;margin-left:-8px;margin-right:10px;min-width:28px;width:28px}.nsm7Bb-HzV7m-LgbsSe.purZT-SxQuSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{height:16px;margin-left:-6px;margin-right:8px;min-width:16px;width:16px}.nsm7Bb-HzV7m-LgbsSe.Bz112c-LgbsSe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-radius:3px;margin-left:2px;margin-right:0;padding:0}.nsm7Bb-HzV7m-LgbsSe.JGcpL-RbRzK .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-radius:18px}.nsm7Bb-HzV7m-LgbsSe.pSzOP-SxQuSe.JGcpL-RbRzK .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-radius:14px}.nsm7Bb-HzV7m-LgbsSe.purZT-SxQuSe.JGcpL-RbRzK .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-radius:8px}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-bN97Pc-sM5MNb{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-align-items:center;-webkit-box-align:center;align-items:center;-webkit-flex-direction:row;-webkit-box-orient:horizontal;-webkit-box-direction:normal;flex-direction:row;-webkit-box-pack:justify;-webkit-justify-content:space-between;justify-content:space-between;-webkit-flex-wrap:nowrap;flex-wrap:nowrap;height:100%;position:relative;width:100%}.nsm7Bb-HzV7m-LgbsSe .oXtfBe-l4eHX{-webkit-box-pack:center;-webkit-justify-content:center;justify-content:center}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-BPrWId{-webkit-flex-grow:1;-webkit-box-flex:1;flex-grow:1;font-family:"Google Sans",arial,sans-serif;font-weight:500;overflow:hidden;text-overflow:ellipsis;vertical-align:top}.nsm7Bb-HzV7m-LgbsSe.purZT-SxQuSe .nsm7Bb-HzV7m-LgbsSe-BPrWId{font-weight:300}.nsm7Bb-HzV7m-LgbsSe .oXtfBe-l4eHX .nsm7Bb-HzV7m-LgbsSe-BPrWId{-webkit-flex-grow:0;-webkit-box-flex:0;flex-grow:0}.nsm7Bb-HzV7m-LgbsSe .nsm7Bb-HzV7m-LgbsSe-MJoBVe{-webkit-transition:background-color .218s;transition:background-color .218s;bottom:0;left:0;position:absolute;right:0;top:0}.nsm7Bb-HzV7m-LgbsSe:hover,.nsm7Bb-HzV7m-LgbsSe:focus{box-shadow:none;border-color:rgb(210,227,252);outline:none}.nsm7Bb-HzV7m-LgbsSe:focus-within{outline:2px solid #00639b;border-color:transparent}.nsm7Bb-HzV7m-LgbsSe:hover .nsm7Bb-HzV7m-LgbsSe-MJoBVe{background:rgba(66,133,244,.08)}.nsm7Bb-HzV7m-LgbsSe:active .nsm7Bb-HzV7m-LgbsSe-MJoBVe,.nsm7Bb-HzV7m-LgbsSe:focus .nsm7Bb-HzV7m-LgbsSe-MJoBVe{background:rgba(66,133,244,.1)}.nsm7Bb-HzV7m-LgbsSe.MFS4be-Ia7Qfc:hover .nsm7Bb-HzV7m-LgbsSe-MJoBVe{background:rgba(255,255,255,.24)}.nsm7Bb-HzV7m-LgbsSe.MFS4be-Ia7Qfc:active .nsm7Bb-HzV7m-LgbsSe-MJoBVe,.nsm7Bb-HzV7m-LgbsSe.MFS4be-Ia7Qfc:focus .nsm7Bb-HzV7m-LgbsSe-MJoBVe{background:rgba(255,255,255,.32)}.nsm7Bb-HzV7m-LgbsSe .n1UuX-DkfjY{border-radius:50%;display:-webkit-box;display:-webkit-flex;display:flex;height:20px;margin-left:-4px;margin-right:8px;min-width:20px;width:20px}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId{font-family:"Roboto";font-size:12px;text-align:left}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId .ssJRIf,.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff .fmcmS{overflow:hidden;text-overflow:ellipsis}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff{display:-webkit-box;display:-webkit-flex;display:flex;-webkit-align-items:center;-webkit-box-align:center;align-items:center;color:#5f6368;fill:#5f6368;font-size:11px;font-weight:400}.nsm7Bb-HzV7m-LgbsSe.jVeSEe.MFS4be-Ia7Qfc .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff{color:#e8eaed;fill:#e8eaed}@media screen and (prefers-contrast:more){.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff,.nsm7Bb-HzV7m-LgbsSe.jVeSEe.MFS4be-Ia7Qfc .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff{color:#000;fill:#000}}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-BPrWId .K4efff .Bz112c{height:18px;margin:-3px -3px -3px 2px;min-width:18px;width:18px}.nsm7Bb-HzV7m-LgbsSe.jVeSEe .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-top-left-radius:0;border-bottom-left-radius:0;border-top-right-radius:3px;border-bottom-right-radius:3px;margin-left:12px;margin-right:-10px}.nsm7Bb-HzV7m-LgbsSe.jVeSEe.JGcpL-RbRzK .nsm7Bb-HzV7m-LgbsSe-Bz112c-haAclf{border-radius:18px}.L5Fo6c-sM5MNb{border:0;display:block;left:0;position:relative;top:0}.L5Fo6c-bF1uUb{border-radius:4px;bottom:0;cursor:pointer;left:0;position:absolute;right:0;top:0}.L5Fo6c-bF1uUb:focus{border:none;outline:none}sentinel{}</style></head>
+</head>
 <body>
 <!-- ══ TOPBAR ══════════════════════════════════════════ -->
 <div class="topbar">
@@ -552,22 +532,6 @@ h1{
     </div>
     <div class="tab-pane active" id="tab-admin">
       <div>
-        <div class="sec-title" style="font-size:.75rem;margin-bottom:8px">🤖 BuJo IA · Anthropic</div>
-        <div style="background:rgba(168,85,247,.07);border:1px solid rgba(168,85,247,.22);border-radius:10px;padding:12px 14px;margin-bottom:4px;">
-          <div class="mfield">
-            <label>Anthropic API Key</label>
-            <div style="display:flex;gap:6px;align-items:center;">
-              <input type="password" id="adm-anthropic-key" placeholder="sk-ant-api03-…" style="font-size:.63rem;flex:1">
-              <button class="res-copy" onclick="saveAnthropicKey()">💾 Guardar</button>
-            </div>
-          </div>
-          <div id="anthropic-key-status" style="font-size:.62rem;margin-top:5px;display:none;color:#6ee7b7;"></div>
-        </div>
-        <div class="hint" style="margin-bottom:8px">
-          <span>💡</span> Consigue tu key en <a href="https://console.anthropic.com/account/keys" target="_blank" style="color:#a78bfa">console.anthropic.com ↗</a>. Se guarda solo en tu navegador.
-        </div>
-      </div>
-      <div>
         <div class="sec-title" style="font-size:.75rem;margin-bottom:8px">🔑 Google OAuth</div>
         <div class="mfield">
           <label>Client ID</label>
@@ -636,14 +600,13 @@ h1{
         </div>
       </div>
       <div class="faq-item">
-        <div class="faq-q" onclick="toggleFaq(this)">¿Cómo analizo mi BuJo automáticamente? <span class="faq-chevron">▼</span></div>
+        <div class="faq-q" onclick="toggleFaq(this)">¿Cómo analizo mi BuJo y agrego eventos al tablero? <span class="faq-chevron">▼</span></div>
         <div class="faq-a">
           1. Clic en <strong>📓 Bullet Journal</strong><br>
-          2. Sube la foto de tu BuJo al área de carga<br>
-          3. Clic en <strong>✨ Analizar con IA</strong> — se procesa automáticamente<br>
-          4. Los ítems aparecen listos en el panel inferior<br>
-          5. Marca los que quieras → <strong>＋ Agregar al tablero</strong><br><br>
-          También puedes pegar texto manualmente en el área de texto si prefieres.
+          2. Sube la foto de tu BuJo (o compártela en el chat con Claude)<br>
+          3. Pide: <em>"Analiza mi BuJo y extrae tareas, eventos y notas"</em><br>
+          4. Pega el resultado en el área de texto → clic <strong>✨ Procesar</strong><br>
+          5. Marca las tareas que quieres → <strong>＋ Agregar al tablero</strong>
         </div>
       </div>
       <div class="faq-item">
@@ -682,12 +645,12 @@ h1{
       </div>
       <div class="res-card" style="cursor:default">
         <span class="res-icon">📧</span>
-        <div class="res-info"><div class="res-name">Cuenta Personal</div><div class="res-url"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="690e080c1d0c470e08060708290e04080005470a0604">[email&nbsp;protected]</a></div></div>
+        <div class="res-info"><div class="res-name">Cuenta Personal</div><div class="res-url">gaete.gaona@gmail.com</div></div>
         <button class="res-copy" onclick="copyText('gaete.gaona@gmail.com',this)">Copiar</button>
       </div>
       <div class="res-card" style="cursor:default">
         <span class="res-icon">💚</span>
-        <div class="res-info"><div class="res-name">Calendario Camila</div><div class="res-url"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d8bbf6bbb9b5b1b4b9a8b9b4b5b998bfb5b9b1b4f6bbb7b5">[email&nbsp;protected]</a></div></div>
+        <div class="res-info"><div class="res-name">Calendario Camila</div><div class="res-url">c.camilapalma@gmail.com</div></div>
         <button class="res-copy" onclick="copyText('c.camilapalma@gmail.com',this)">Copiar</button>
       </div>
       <div class="res-section-title" style="margin-top:6px">URLs iCal</div>
@@ -707,36 +670,33 @@ h1{
     <button class="drawer-close" onclick="closeDrawer()">✕</button>
   </div>
   <div class="drawer-body">
-
-    <!-- FOTO + IA AUTO-ANÁLISIS -->
     <div>
       <div class="sec-title">Fotos de tu BuJo</div>
       <div class="upload-zone" id="upzone">
-        <input type="file" id="bj-input" accept="image/*" multiple="">
+        <input type="file" id="bj-input" accept="image/*" multiple>
         <span class="upload-icon">📷</span>
         <div class="upload-big">Arrastra o sube fotos</div>
         <div class="upload-sub">JPG · PNG · HEIC · varias páginas OK</div>
       </div>
       <div class="thumb-grid" id="thumbs" style="margin-top:8px;"></div>
-      <div class="ai-status" id="ai-status"></div>
-      <button class="ai-analyze-btn" id="ai-analyze-btn" onclick="analyzeBujoImage()" style="display:none">
-        ✨ Analizar con IA
-      </button>
     </div>
-
-    <!-- FALLBACK MANUAL -->
+    <div class="how-box">
+      <strong>Flujo de análisis IA:</strong>
+      <ol>
+        <li>Sube tu foto aquí para verla</li>
+        <li>Comparte la <strong>misma foto en el chat</strong> con Claude</li>
+        <li>Pide: <em>"Analiza mi BuJo y extrae tareas, eventos y notas"</em></li>
+        <li>Pega el resultado en el área de abajo → se parsea automáticamente</li>
+        <li>Marca las tarjetas y agrégalas al tablero ✨</li>
+      </ol>
+    </div>
     <div>
-      <div class="sec-title" style="font-size:.72rem;color:var(--mut)">O pega el texto manualmente</div>
-      <textarea class="paste-area" id="paste-area" placeholder="● Tarea pendiente
-◆ Evento / cita
-— Nota / reflexión
-○ Hábito a trackear"></textarea>
+      <div class="sec-title">Pega el análisis de Claude</div>
+      <textarea class="paste-area" id="paste-area" placeholder="● Tarea pendiente&#10;◆ Evento / cita&#10;— Nota / reflexión&#10;○ Hábito a trackear"></textarea>
       <div class="btn-row" style="margin-top:8px;">
-        <button class="btn btn-p" onclick="parsePaste()">✨ Procesar texto</button>
+        <button class="btn btn-p" onclick="parsePaste()">✨ Procesar</button>
       </div>
     </div>
-
-    <!-- ITEMS EXTRAÍDOS -->
     <div id="bj-section" style="display:none;">
       <div class="sec-title">Tareas extraídas</div>
       <div class="ftag-row" id="ftags">
@@ -753,11 +713,10 @@ h1{
         <button class="btn btn-g" onclick="clearBJ()">🗑 Limpiar</button>
       </div>
     </div>
-
-    <div class="hint"><span>💡</span> Simbología BuJo: <strong style="color:#EC4899">●</strong> Personal &nbsp;<strong style="color:#7C3AED">◆</strong> Vínculos &nbsp;<strong style="color:#EC4899">○</strong> Bienestar &nbsp;<strong style="color:#F97316">*</strong> Trabajo &nbsp;<strong style="color:#10B981">&gt;</strong> Camila</div>
+    <div class="hint"><span>💡</span> Simbología BuJo: <strong style="color:#EC4899">●</strong> Personal &nbsp;<strong style="color:#7C3AED">◆</strong> Vínculos &nbsp;<strong style="color:#EC4899">○</strong> Bienestar &nbsp;<strong style="color:#F97316">*</strong> Trabajo &nbsp;<strong style="color:#10B981">></strong> Camila</div>
   </div>
 </div>
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 const CAL = {
   personal:  { c:'#EC4899', bg:'rgba(236,72,153,.16)',  l:'Personal' },
   vinculos:  { c:'#7C3AED', bg:'rgba(124,58,237,.16)', l:'Vínculos' },
@@ -938,158 +897,23 @@ const BJ_CAL={
   camila:{c:'#10B981',l:'Camila'}, trabajo:{c:'#F97316',l:'Trabajo'},
   fin:{c:'#FB923C',l:'Finanzas'}, bienestar:{c:'#EC4899',l:'Bienestar'}, bujo:{c:'#C084FC',l:'📓 BuJo'},
 };
-const SYM_MAP={'●':'personal','○':'bienestar','◆':'vinculos','—':'personal','-':'personal','*':'trabajo','>':'camila','•':'personal'};
+const SYM_MAP={'●':'personal','○':'bienestar','◆':'vinculos','—':'personal','-':'personal','*':'trabajo','>':'trabajo','•':'personal'};
 function updateBadge(){ const n=document.querySelectorAll('#bj-list .bj-item').length; const b=document.getElementById('bj-badge'); const btn=document.getElementById('bujo-btn'); b.textContent=n; b.style.display=n>0?'flex':'none'; btn.classList.toggle('has-items',n>0); }
 function makeBJItem(obj){ const ci=BJ_CAL[obj.type]||BJ_CAL.bujo; const el=document.createElement('div'); el.className='bj-item'; el.dataset.type=obj.type; el.style.setProperty('--cc',ci.c); el.innerHTML=`<input type="checkbox"><span class="bj-item-text">${obj.text}</span><span class="bj-item-cat" style="color:${ci.c}">${ci.l}</span>`; return el; }
 const bjList=document.getElementById('bj-list');
 const bjSec=document.getElementById('bj-section');
 function showBJItems(){ bjSec.style.display=bjList.children.length?'block':'none'; updateBadge(); }
 BUJO_INIT.forEach(o=>bjList.appendChild(makeBJItem(o))); showBJItems();
-function parsePaste(){ const txt=document.getElementById('paste-area').value.trim(); if(!txt) return; let added=0; txt.split('\n').forEach(ln=>{ const m=ln.trim().match(/^([●◆—○\-\*>•])\s+(.+)$/); if(!m) return; bjList.appendChild(makeBJItem({text:m[2].trim(),type:SYM_MAP[m[1]]||'personal'})); added++; }); document.getElementById('paste-area').value=''; if(added) showBJItems(); }
+function parsePaste(){ const txt=document.getElementById('paste-area').value.trim(); if(!txt) return; let added=0; txt.split('\n').forEach(ln=>{ const m=ln.trim().match(/^([●◆—○\-\*])\s+(.+)$/); if(!m) return; bjList.appendChild(makeBJItem({text:m[2].trim(),type:SYM_MAP[m[1]]||'personal'})); added++; }); document.getElementById('paste-area').value=''; if(added) showBJItems(); }
 function filterBJ(type,btn){ document.querySelectorAll('#ftags .ftag').forEach(t=>t.classList.remove('on')); btn.classList.add('on'); document.querySelectorAll('#bj-list .bj-item').forEach(el=>{ el.style.display=(type==='all'||el.dataset.type===type)?'flex':'none'; }); }
 function addToBoard(){ const checked=[...document.querySelectorAll('#bj-list .bj-item')].filter(el=>el.querySelector('input').checked); if(!checked.length){ alert('Marca las tareas que quieres agregar ☝️'); return; } const firstBody=document.querySelector('.wday-body'); checked.forEach(el=>{ const txt=el.querySelector('.bj-item-text').textContent; const calKey=el.dataset.type||'bujo'; const card=makeCard({title:'📓 '+txt,cal:calKey}); firstBody?.appendChild(card); firstBody?.querySelector('.day-empty')?.remove(); el.remove(); }); showBJItems(); closeDrawer(); }
-function clearBJ(){ bjList.innerHTML=''; document.getElementById('paste-area').value=''; document.getElementById('thumbs').innerHTML=''; _bjImages=[]; showAIBtn(); showBJItems(); setAIStatus('',''); }
-
-/* ══════════════════════════════════════════════
-   BuJo IA AUTO-ANÁLISIS
-══════════════════════════════════════════════ */
-let _bjImages = []; // { base64, mediaType }
-
-function showAIBtn(){
-  const btn = document.getElementById('ai-analyze-btn');
-  if(btn) btn.style.display = _bjImages.length ? 'flex' : 'none';
-}
-
-function setAIStatus(type, msg){
-  const el = document.getElementById('ai-status');
-  if(!el) return;
-  el.className = 'ai-status' + (type ? ' ' + type : '');
-  if(type === 'loading') el.innerHTML = '<span class="spin">⏳</span> ' + msg;
-  else el.textContent = msg;
-}
-
-async function analyzeBujoImage(){
-  if(!_bjImages.length){ setAIStatus('error','Sube al menos una foto primero.'); return; }
-  const btn = document.getElementById('ai-analyze-btn');
-  btn.disabled = true;
-  setAIStatus('loading', 'Analizando tu BuJo con IA…');
-
-  const SYSTEM_PROMPT = `Eres un asistente de análisis de Bullet Journal para Rö.
-
-Protocolo: Analiza la imagen y extrae todos los ítems usando EXACTAMENTE esta simbología:
-● = Personal / tarea personal / reflexión
-○ = Bienestar / hábito / salud
-◆ = Vínculos / social / relaciones
-> = Camila (cualquier ítem relacionado con Camila)
-* = Trabajo / laboral / proyecto
-— = Nota / observación
-
-Formato de salida: una línea por ítem con SÍMBOLO espacio TEXTO.
-Ejemplo:
-● Llamar al médico esta semana
-◆ Reunión con Zuleima — Coliseum
-* Terminar propuesta FAN
-
-Reglas:
-- Solo la lista, sin encabezados ni explicaciones.
-- Texto ilegible → [ilegible]
-- Corrección ortográfica mínima, respeta el tono original.
-- Si hay fechas u horas en el ítem, inclúyelas en el texto.`;
-
-  try {
-    const content = [];
-    for(const img of _bjImages){
-      content.push({ type:'image', source:{ type:'base64', media_type: img.mediaType, data: img.base64 } });
-    }
-    content.push({ type:'text', text:'Analiza esta página de mi Bullet Journal y extrae todos los ítems.' });
-
-    const apiKey = localStorage.getItem('tablero_anthropic_key') || '';
-    if(!apiKey){ setAIStatus('error','🔑 API key no configurada. Ve a ⚙️ Admin → 🤖 BuJo IA'); btn.disabled=false; return; }
-
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-opus-4-6',
-        max_tokens: 1000,
-        system: SYSTEM_PROMPT,
-        messages: [{ role:'user', content }]
-      })
-    });
-
-    if(!resp.ok){
-      const errData = await resp.json().catch(()=>({}));
-      throw new Error(errData?.error?.message || 'Error API ' + resp.status);
-    }
-
-    const data = await resp.json();
-    const text = (data.content||[]).map(b=>b.text||'').join('\n').trim();
-    if(!text) throw new Error('La IA no devolvió resultado.');
-
-    let added = 0;
-    text.split('\n').forEach(ln => {
-      const trimmed = ln.trim();
-      // Match ● ○ ◆ — * > and variants
-      const m = trimmed.match(/^([●○◆—\-\*>•])\s+(.+)$/u);
-      if(!m) return;
-      bjList.appendChild(makeBJItem({ text: m[2].trim(), type: SYM_MAP[m[1]] || 'personal' }));
-      added++;
-    });
-
-    if(added){
-      showBJItems();
-      setAIStatus('ok', `✓ ${added} ítem${added!==1?'s':''} extraído${added!==1?'s':''} — revisa y marca los que quieres agregar`);
-    } else {
-      setAIStatus('error', 'No se detectaron ítems. Prueba con el área de texto manual.');
-    }
-  } catch(err){
-    setAIStatus('error', '⚠️ ' + err.message);
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-/* ══════════════════════════════════════════════
-   FILE UPLOAD (enhanced: stores base64 for AI)
-══════════════════════════════════════════════ */
+function clearBJ(){ bjList.innerHTML=''; document.getElementById('paste-area').value=''; document.getElementById('thumbs').innerHTML=''; showBJItems(); }
 const inp=document.getElementById('bj-input'); const upz=document.getElementById('upzone'); const ths=document.getElementById('thumbs');
 inp.addEventListener('change',e=>handleFiles(e.target.files));
 upz.addEventListener('dragover',e=>{e.preventDefault();upz.classList.add('drag');});
 upz.addEventListener('dragleave',()=>upz.classList.remove('drag'));
 upz.addEventListener('drop',e=>{e.preventDefault();upz.classList.remove('drag');handleFiles(e.dataTransfer.files);});
-function handleFiles(files){
-  [...files].forEach(f=>{
-    if(!f.type.startsWith('image/')) return;
-    const r=new FileReader();
-    r.onload=ev=>{
-      // Store for AI
-      const b64 = ev.target.result.split(',')[1];
-      const mt = f.type || 'image/jpeg';
-      _bjImages.push({ base64: b64, mediaType: mt });
-      showAIBtn();
-      // Thumbnail
-      const w=document.createElement('div'); w.className='thumb';
-      const idx = _bjImages.length - 1;
-      w.innerHTML=`<img src="${ev.target.result}"><button class="thumb-del" onclick="removeImage(${idx},this.parentNode)">✕</button>`;
-      ths.appendChild(w);
-    };
-    r.readAsDataURL(f);
-  });
-}
-function removeImage(idx, thumbEl){
-  _bjImages.splice(idx,1); thumbEl.remove(); showAIBtn();
-  // Re-index remaining buttons
-  ths.querySelectorAll('.thumb-del').forEach((btn,i)=>{ btn.setAttribute('onclick',`removeImage(${i},this.parentNode)`); });
-}
-
-/* ══════════════════════════════════════════════
-   CALENDAR SOURCES + SYNC
-══════════════════════════════════════════════ */
+function handleFiles(files){ [...files].forEach(f=>{ if(!f.type.startsWith('image/')) return; const r=new FileReader(); r.onload=ev=>{ const w=document.createElement('div'); w.className='thumb'; w.innerHTML=`<img src="${ev.target.result}"><button class="thumb-del" onclick="this.parentNode.remove()">✕</button>`; ths.appendChild(w); }; r.readAsDataURL(f); }); }
 const SOURCES=[
   {id:'personal',name:'Personal · Vínculos · Laboral',desc:'gaete.gaona@gmail.com',cal:'personal',color:'#EC4899',icon:'👤',gcalId:'gaete.gaona@gmail.com',readonly:false,icsUrl:'https://calendar.google.com/calendar/ical/gaete.gaona%40gmail.com/public/basic.ics',embedUrl:'https://calendar.google.com/calendar/embed?src=gaete.gaona%40gmail.com&ctz=America%2FSantiago',lsKey:'ics_personal'},
   {id:'finanzas',name:'Finanzas Personales',desc:'grupo finanzas',cal:'fin',color:'#FB923C',icon:'💰',gcalId:'9616f51a807e24559b4df624c70d7fe1d81de62f9aa8baf44c1190db5887b12f@group.calendar.google.com',readonly:true,icsUrl:'https://calendar.google.com/calendar/ical/9616f51a807e24559b4df624c70d7fe1d81de62f9aa8baf44c1190db5887b12f%40group.calendar.google.com/public/basic.ics',embedUrl:'https://calendar.google.com/calendar/embed?src=9616f51a807e24559b4df624c70d7fe1d81de62f9aa8baf44c1190db5887b12f%40group.calendar.google.com&ctz=America%2FSantiago',lsKey:'ics_finanzas'},
@@ -1146,23 +970,10 @@ function toggleDetail(e,btn){ e.stopPropagation(); const card=btn.closest('.card
 function openAddModal(){ const sel=document.getElementById('add-day'); sel.innerHTML=''; Array.from({length:7},(_,i)=>addDays(weekStart,i)).forEach(d=>{const iso=isoOf(d);const opt=document.createElement('option');opt.value=iso;opt.textContent=FDAYS[d.getDay()]+' '+d.getDate();sel.appendChild(opt);}); document.getElementById('add-title').value=''; document.getElementById('add-time').value=''; document.getElementById('add-detail').value=''; document.getElementById('add-modal').classList.add('open'); setTimeout(()=>document.getElementById('add-title').focus(),120); }
 function closeAddModal(){ document.getElementById('add-modal').classList.remove('open'); }
 function submitAdd(){ const title=document.getElementById('add-title').value.trim(); if(!title){document.getElementById('add-title').focus();return;} const iso=document.getElementById('add-day').value; const time=document.getElementById('add-time').value; const cat=document.getElementById('add-cat').value; const detail=document.getElementById('add-detail').value.trim(); const body=document.getElementById('wb-'+iso); if(body){const card=makeCard({title,cal:cat,time,detail,fromCal:false});body.appendChild(card);body.querySelector('.day-empty')?.remove();updateDayCount(body.closest('.wday'));applyFilter();} closeAddModal(); }
-function openAdminModal(){
-  renderAdmCalUrls(); renderResIcal();
-  const ki=document.getElementById('adm-anthropic-key');
-  if(ki){ ki.value=localStorage.getItem('tablero_anthropic_key')||''; } document.getElementById('admin-modal').classList.add('open'); }
+function openAdminModal(){ renderAdmCalUrls(); renderResIcal(); document.getElementById('admin-modal').classList.add('open'); }
 function closeAdminModal(){ document.getElementById('admin-modal').classList.remove('open'); }
 function switchTab(id,btn){ document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active')); btn.classList.add('active'); document.getElementById('tab-'+id).classList.add('active'); }
 function toggleFaq(q){ const a=q.nextElementSibling; const isOpen=q.classList.contains('open'); document.querySelectorAll('.faq-q.open').forEach(x=>{x.classList.remove('open');x.nextElementSibling.classList.remove('open');}); if(!isOpen){q.classList.add('open');a.classList.add('open');} }
-function saveAnthropicKey(){
-  const val=document.getElementById('adm-anthropic-key')?.value?.trim();
-  if(!val) return;
-  localStorage.setItem('tablero_anthropic_key',val);
-  const btn=event.target;
-  btn.textContent='✓';btn.style.color='#10B981';
-  const st=document.getElementById('anthropic-key-status');
-  if(st){st.textContent='✓ API key guardada';st.style.display='block';setTimeout(()=>st.style.display='none',2500);}
-  setTimeout(()=>{btn.textContent='💾 Guardar';btn.style.color='';},1800);
-}
 function saveClientId(){ const val=document.getElementById('adm-client-id')?.value?.trim(); if(!val) return; localStorage.setItem('gcal_client_id',val); const btn=event.target; btn.textContent='✓';btn.style.color='#10B981';setTimeout(()=>{btn.textContent='💾 Guardar';btn.style.color='';},1800); }
 function renderAdmCalUrls(){ const cont=document.getElementById('adm-cal-urls'); if(!cont) return; cont.innerHTML=''; SOURCES.forEach(src=>{const custom=src.lsKey?localStorage.getItem(src.lsKey)||'':'';const url=custom||src.icsUrl||'';const div=document.createElement('div');div.className='mfield';div.style='margin-bottom:6px';div.innerHTML=`<label style="display:flex;gap:5px;align-items:center"><span style="background:${src.color};width:7px;height:7px;border-radius:50%;display:inline-block"></span>${src.name}${src.gcalId?' <span style="font-size:.5rem;background:rgba(16,185,129,.18);color:#10B981;padding:1px 4px;border-radius:3px">API ✓</span>':''}</label><div style="display:flex;gap:6px;align-items:center"><input type="text" value="${url}" placeholder="URL iCal..." style="font-size:.6rem;flex:1" data-src="${src.id}">${src.lsKey?`<button class="res-copy" onclick="saveCalUrl('${src.id}',this)">Guardar</button>`:'<span style="font-size:.6rem;color:var(--mut)">no config</span>'}</div>`;cont.appendChild(div);}); }
 function saveCalUrl(srcId,btn){ const src=SOURCES.find(s=>s.id===srcId); if(!src||!src.lsKey) return; const input=btn.previousElementSibling; const url=input?.value?.trim(); if(!url) return; localStorage.setItem(src.lsKey,url); btn.textContent='✓';btn.style.color='#10B981';setTimeout(()=>{btn.textContent='Guardar';btn.style.color='';},1800); }
@@ -1188,4 +999,9 @@ function gSignOut(){ if(gToken&&window.google?.accounts?.oauth2) google.accounts
 function updateAuthConnected(){ const zone=document.getElementById('gcal-auth-zone'); if(!zone) return; zone.className='oauth-box'; zone.innerHTML=`<div class="oauth-connected"><div class="oauth-dot"></div><span style="font-size:.73rem;color:#10B981;font-weight:700;flex:1">Google Calendar conectado ✓</span><button class="btn btn-g" style="padding:4px 10px;font-size:.6rem" onclick="listCals()">🔍 Detectar cals</button><button class="btn btn-g" style="padding:4px 10px;font-size:.6rem;margin-left:4px" onclick="gSignOut()">Salir</button></div><div style="font-size:.6rem;color:var(--mut);margin-top:5px">Sync bidireccional activo · Personal lectura+escritura · Finanzas/Camila/Sura solo lectura</div>`; renderCalSources(); }
 async function listCals(){ if(!gToken){alert('Conecta primero Google Calendar');return;} try{const resp=await fetch(`${GCAL_API}/users/me/calendarList?maxResults=50`,{headers:{'Authorization':`Bearer ${gToken}`}}); if(!resp.ok) throw new Error(`Error ${resp.status}`); const data=await resp.json(); const items=(data.items||[]); const sura=items.find(c=>/(sura|investments)/i.test(c.summary)||/(sura|investments)/i.test(c.id)); if(sura){const src=SOURCES.find(s=>s.id==='trabajo');if(src&&!src.gcalId){src.gcalId=sura.id;src.desc=sura.summary;alert(`🏢 Sura detectado: "${sura.summary}"\nID: ${sura.id}\nEl próximo sync lo incluirá automáticamente.`);localStorage.setItem('gcal_sura_id',sura.id);renderCalSources();}} const zone=document.getElementById('gcal-auth-zone'); const extra=document.getElementById('gcal-cal-list'); if(!extra&&zone){const div=document.createElement('div');div.id='gcal-cal-list';div.style='margin-top:8px;font-size:.62rem;color:var(--mut)';const names=items.map(c=>`· ${c.summary}`).join('<br>');div.innerHTML=`<strong style="color:#a78bfa">${items.length} calendarios detectados:</strong><br>${names}${sura?'<br><span style="color:#F97316">🏢 Sura encontrado ✓</span>':'<br><span style="color:var(--mut)">⚠️ Sura no detectado</span>'}`;zone.appendChild(div);}}catch(err){alert('Error al listar calendarios: '+err.message);} }
 async function fetchGCalEvents(calId,calKey,readonly=true){ if(!gToken) return null; const now=new Date(); const from=new Date(now); from.setMonth(from.getMonth()-1); const to=new Date(now); to.setMonth(to.getMonth()+4); const p=new URLSearchParams({timeMin:from.toISOString(),timeMax:to.toISOString(),singleEvents:'true',orderBy:'startTime',maxResults:'500'}); const resp=await fetch(`${GCAL_API}/calendars/${encodeURIComponent(calId)}/events?${p}`,{headers:{'Authorization':`Bearer ${gToken}`}}); if(resp.status===401){gToken=null;gSignOut();return null;} if(!resp.ok) throw new Error(`GCal API ${resp.status}`); const data=await resp.json(); return (data.items||[]).map(item=>{const start=item.start;let iso,time,allDay=false;if(start.date){iso=start.date;allDay=true;}else if(start.dateTime){const d=new Date(start.dateTime);const fmt=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(d);const[dp,tp]=(fmt+', 00:00').split(', ');iso=dp;time=tp.replace(/^24:/,'00:').slice(0,5);}if(!iso) return null;return {iso,title:(item.summary||'(sin título)').slice(0,80),cal:calKey,time,allDay,uid:item.id,fromCal:true,readonly};}).filter(Boolean); }
-async function pushEventToGCalAPI(ev,calId='gaete.gaona@gmail.com'){ if(!gToken) return false; let start,end; if(ev.allDay||!ev.time){const nd=new Date(ev.iso);nd.setDate(nd.getDate()+1);start={date:ev.iso};end={date:isoOf(nd)};}else{const[h,mi]=ev.time.split(':');const endH=String(parseInt(h)+1).padStart(2,'0');start={dateTime:`${ev.iso}T${h.padStart(2,'0')}:${mi||'00'}:00`,timeZone:'America/Santiago'};end={dateTime:`${ev.iso}T${endH}:${mi||'00'}:00`,timeZone:'America/Santiago'};} const body={summary:ev.title,start,end,description:ev.detail||''}; const resp=await fetch(`${GCAL_API}/calendars/${encodeURIComponent(calId)}/events`,{method:'POST',headers:{'Authorization':`Bearer ${gToken}`,'Content-Type':'</script></body></html>
+async function pushEventToGCalAPI(ev,calId='gaete.gaona@gmail.com'){ if(!gToken) return false; let start,end; if(ev.allDay||!ev.time){const nd=new Date(ev.iso);nd.setDate(nd.getDate()+1);start={date:ev.iso};end={date:isoOf(nd)};}else{const[h,mi]=ev.time.split(':');const endH=String(parseInt(h)+1).padStart(2,'0');start={dateTime:`${ev.iso}T${h.padStart(2,'0')}:${mi||'00'}:00`,timeZone:'America/Santiago'};end={dateTime:`${ev.iso}T${endH}:${mi||'00'}:00`,timeZone:'America/Santiago'};} const body={summary:ev.title,start,end,description:ev.detail||''}; const resp=await fetch(`${GCAL_API}/calendars/${encodeURIComponent(calId)}/events`,{method:'POST',headers:{'Authorization':`Bearer ${gToken}`,'Content-Type':'application/json'},body:JSON.stringify(body)}); if(!resp.ok) throw new Error(`Push ${resp.status}`); return await resp.json(); }
+(function restoreSura(){ const sid=localStorage.getItem('gcal_sura_id'); if(sid){const s=SOURCES.find(x=>x.id==='trabajo');if(s&&!s.gcalId) s.gcalId=sid;} })();
+loadBoard(); renderWeek(); initGAuthUI();
+</script>
+</body>
+</html>
