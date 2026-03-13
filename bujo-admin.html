@@ -202,6 +202,37 @@ body{background:var(--bg);color:var(--txt);font-family:'Nunito',sans-serif;min-h
   .thumb-grid{grid-template-columns:repeat(3,1fr);}
   .app-body{padding:16px 12px;}
 }
+
+/* ── AI PROVIDER ──────────────────────────────── */
+.prov-tabs{display:flex;gap:5px;flex-wrap:wrap;}
+.prov-btn{
+  flex:1;padding:7px 10px;border-radius:8px;border:1px solid var(--bd);
+  background:rgba(255,255,255,.04);color:var(--mut);
+  font-family:'Nunito',sans-serif;font-weight:800;font-size:.68rem;
+  cursor:pointer;text-align:center;transition:all .15s;
+}
+.prov-btn.active{background:rgba(124,58,237,.2);border-color:rgba(168,85,247,.5);color:#c084fc;}
+.prov-btn:hover:not(.active){background:rgba(255,255,255,.07);color:var(--txt);}
+.prov-config{display:flex;flex-direction:column;gap:8px;}
+.ai-row{display:flex;flex-direction:column;gap:3px;}
+.ai-lbl{font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--mut);}
+.ai-inp{
+  width:100%;padding:8px 10px;border-radius:7px;
+  background:rgba(255,255,255,.04);border:1px solid var(--bd);
+  color:var(--txt);font-family:'Nunito',sans-serif;font-size:.74rem;
+}
+.ai-inp:focus{outline:1px solid rgba(168,85,247,.5);border-color:transparent;}
+.ai-status{
+  font-size:.72rem;padding:9px 12px;border-radius:7px;
+  background:rgba(255,255,255,.04);border:1px solid var(--bd);
+  color:var(--mut);display:none;line-height:1.55;
+}
+.ai-status.loading{color:#a78bfa;border-color:rgba(168,85,247,.3);display:block;}
+.ai-status.ok{color:#10B981;border-color:rgba(16,185,129,.3);display:block;}
+.ai-status.err{color:#F87171;border-color:rgba(248,113,113,.3);display:block;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.spin{display:inline-block;animation:spin .8s linear infinite;}
+.thumb.selected{outline:2px solid rgba(168,85,247,.8);outline-offset:1px;}
 </style>
 </head>
 <body>
@@ -272,15 +303,81 @@ body{background:var(--bg);color:var(--txt);font-family:'Nunito',sans-serif;min-h
           <div class="upload-sub">PNG · JPG · HEIC · múltiples archivos</div>
         </div>
         <div class="thumb-grid" id="thumbs"></div>
-        <div class="how-box">
-          <strong>Flujo de análisis con Claude:</strong>
-          <ol>
-            <li>Sube tu foto aquí para previsualizar</li>
-            <li>Comparte la <strong>misma foto en el chat</strong> con Claude</li>
-            <li>Pide: <em>"Analiza mi BuJo y extrae tareas, eventos y notas"</em></li>
-            <li>Pega el resultado en el área de abajo → se parsea automáticamente</li>
-            <li>Marca las tarjetas → <strong>Enviar al Tablero</strong> ✨</li>
-          </ol>
+        <!-- ── Selector de proveedor IA ── -->
+        <div class="prov-tabs">
+          <button class="prov-btn active" data-p="ollama" onclick="setProv(this)">🦙 Ollama</button>
+          <button class="prov-btn" data-p="claude" onclick="setProv(this)">🐾 OpenClaw</button>
+          <button class="prov-btn" data-p="deepseek" onclick="setProv(this)">🔷 DeepSeek</button>
+        </div>
+
+        <!-- Config Ollama -->
+        <div id="cfg-ollama" class="prov-config">
+          <div class="ai-row">
+            <span class="ai-lbl">Ollama URL</span>
+            <input class="ai-inp" id="ollama-url" value="http://localhost:11434" placeholder="http://localhost:11434">
+          </div>
+          <div class="ai-row">
+            <span class="ai-lbl">Modelo visión</span>
+            <input class="ai-inp" id="ollama-model" value="qwen2.5-vl:7b" placeholder="qwen2.5-vl:7b">
+          </div>
+          <div class="how-box">
+            🦙 <strong>Ollama local</strong> — Ejecuta <code style="background:rgba(255,255,255,.08);padding:1px 5px;border-radius:4px;">./start-ollama.sh</code> antes de analizar.<br>
+            Modelo visión recomendado: <strong style="color:#c084fc">qwen2.5-vl:7b</strong>
+          </div>
+        </div>
+
+        <!-- Config Claude -->
+        <div id="cfg-claude" class="prov-config" style="display:none">
+          <div class="ai-row">
+            <span class="ai-lbl">Anthropic API Key</span>
+            <div style="display:flex;gap:6px;">
+              <input class="ai-inp" type="password" id="claude-key" placeholder="sk-ant-api03-...">
+              <button class="btn btn-g" style="flex-shrink:0;font-size:.62rem;padding:6px 10px;" onclick="saveKey('claude')">💾</button>
+            </div>
+          </div>
+          <div class="ai-row">
+            <span class="ai-lbl">Modelo</span>
+            <input class="ai-inp" id="claude-model" value="claude-haiku-4-5-20251001" placeholder="claude-haiku-4-5-20251001">
+          </div>
+          <div class="how-box" style="border-color:rgba(249,115,22,.25);color:#fdba74;">
+            🐾 <strong>OpenClaw · API Anthropic</strong> — Vision nativa.<br>
+            La key se guarda en localStorage, nunca sale del browser.
+          </div>
+        </div>
+
+        <!-- Config DeepSeek -->
+        <div id="cfg-deepseek" class="prov-config" style="display:none">
+          <div class="prov-tabs" style="margin-bottom:2px;">
+            <button class="prov-btn active" data-ds="ollama" onclick="setDSMode(this)">🦙 Via Ollama</button>
+            <button class="prov-btn" data-ds="api" onclick="setDSMode(this)">☁️ API Cloud</button>
+          </div>
+          <div id="cfg-ds-ollama" class="prov-config">
+            <div class="ai-row">
+              <span class="ai-lbl">Modelo DeepSeek en Ollama</span>
+              <input class="ai-inp" id="ds-model" value="deepseek-r1:7b" placeholder="deepseek-r1:7b">
+            </div>
+            <div class="how-box">
+              🔷 <strong>DeepSeek via Ollama</strong> — deepseek-r1 es texto.<br>
+              Flujo: qwen2.5-vl transcribe la imagen → deepseek-r1 extrae y clasifica tareas.
+            </div>
+          </div>
+          <div id="cfg-ds-api" class="prov-config" style="display:none">
+            <div class="ai-row">
+              <span class="ai-lbl">DeepSeek API Key</span>
+              <div style="display:flex;gap:6px;">
+                <input class="ai-inp" type="password" id="deepseek-key" placeholder="sk-...">
+                <button class="btn btn-g" style="flex-shrink:0;font-size:.62rem;padding:6px 10px;" onclick="saveKey('deepseek')">💾</button>
+              </div>
+            </div>
+            <div class="how-box">
+              ☁️ <strong>DeepSeek Cloud API</strong> — Modelo <strong style="color:#c084fc">deepseek-vl2</strong> (visión).
+            </div>
+          </div>
+        </div>
+
+        <div id="ai-status" class="ai-status"></div>
+        <div class="btn-row">
+          <button class="btn btn-acc" id="btn-analyze" onclick="analyzeWithAI()">🤖 Analizar BuJo con IA</button>
         </div>
       </div>
     </div>
@@ -288,11 +385,11 @@ body{background:var(--bg);color:var(--txt);font-family:'Nunito',sans-serif;min-h
     <!-- Pegar resultado Claude -->
     <div class="card-panel">
       <div class="card-head">
-        <div class="card-title">✨ Pegar resultado de Claude</div>
+        <div class="card-title">✨ Resultado del análisis IA</div>
       </div>
       <div class="card-body">
         <textarea class="paste-area" id="paste-area"
-          placeholder="Pega aquí el análisis de Claude...&#10;&#10;Ejemplo:&#10;● Enviar cotización cliente&#10;◆ Reunión Zuleima viernes&#10;○ Meditación mañana 7am&#10;* Revisar pull request UX01"></textarea>
+          placeholder="El análisis aparece aquí automáticamente, o pega texto manual...&#10;&#10;Ejemplo:&#10;● Enviar cotización cliente&#10;◆ Reunión Zuleima viernes&#10;○ Meditación mañana 7am&#10;* Revisar pull request UX01"></textarea>
         <div class="btn-row">
           <button class="btn btn-p" onclick="parsePaste()">✨ Procesar</button>
           <button class="btn btn-g" onclick="document.getElementById('paste-area').value=''">Limpiar</button>
@@ -589,6 +686,270 @@ function showToast(msg, bg = '#10B981') {
 
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && gToken) signOut();
+});
+
+/* ══════════════════════════════════════════════
+   AI ANALYSIS ENGINE
+══════════════════════════════════════════════ */
+
+const BUJO_PROMPT = `Eres un asistente experto en Bullet Journal (BuJo).
+Analiza esta imagen de BuJo y extrae TODAS las tareas, eventos y notas visibles.
+Clasifica cada ítem con este símbolo según su contenido:
+  ●  Personal (actividades personales, pendientes propios, trámites)
+  ○  Bienestar (salud, deporte, meditación, psicología, descanso)
+  ◆  Vínculos (familia, amigos, relaciones sociales)
+  >  Camila (todo lo relacionado con Camila)
+  *  Trabajo (laboral, profesional, proyectos, clientes)
+
+REGLAS ESTRICTAS:
+- Responde SOLO con líneas en el formato: SÍMBOLO texto
+- Un ítem por línea
+- Si hay fecha u hora, inclúyela al final: "Reunión Juan · vie 15/3 18:00"
+- NO agregues explicaciones, títulos ni comentarios
+- NO omitas ningún ítem visible en la imagen`;
+
+let activeProv = 'ollama';
+let activeDSMode = 'ollama';
+
+function setProv(btn) {
+  document.querySelectorAll('.prov-tabs > .prov-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeProv = btn.dataset.p;
+  ['ollama','claude','deepseek'].forEach(p => {
+    document.getElementById('cfg-' + p).style.display = (p === activeProv) ? 'flex' : 'none';
+  });
+  // Load saved key
+  if (activeProv === 'claude') {
+    const k = localStorage.getItem('ai_key_claude');
+    if (k) document.getElementById('claude-key').value = k;
+  } else if (activeProv === 'deepseek') {
+    const k = localStorage.getItem('ai_key_deepseek');
+    if (k) document.getElementById('deepseek-key').value = k;
+  }
+}
+
+function setDSMode(btn) {
+  btn.closest('.prov-config').querySelectorAll('.prov-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeDSMode = btn.dataset.ds;
+  document.getElementById('cfg-ds-ollama').style.display = activeDSMode === 'ollama' ? 'flex' : 'none';
+  document.getElementById('cfg-ds-api').style.display   = activeDSMode === 'api'    ? 'flex' : 'none';
+}
+
+function saveKey(prov) {
+  const el = document.getElementById(prov === 'claude' ? 'claude-key' : 'deepseek-key');
+  if (!el.value.trim()) { showToast('⚠️ Key vacía', '#F97316'); return; }
+  localStorage.setItem('ai_key_' + prov, el.value.trim());
+  showToast('✓ API Key guardada');
+}
+
+function getSelectedThumb() {
+  // Prioridad: thumb seleccionado → último thumb
+  const sel = document.querySelector('#thumbs .thumb.selected img');
+  if (sel) return sel.src;
+  const all = document.querySelectorAll('#thumbs .thumb img');
+  if (!all.length) return null;
+  return all[all.length - 1].src;
+}
+
+function dataUriParts(dataUri) {
+  const [header, b64] = dataUri.split(',');
+  const mime = header.match(/data:([^;]+)/)?.[1] || 'image/jpeg';
+  return { b64, mime };
+}
+
+function setAIStatus(cls, msg) {
+  const el = document.getElementById('ai-status');
+  el.className = 'ai-status ' + cls;
+  el.innerHTML = msg;
+}
+
+async function analyzeWithAI() {
+  const src = getSelectedThumb();
+  if (!src) { showToast('☝️ Sube una foto primero', '#F97316'); return; }
+
+  const btn = document.getElementById('btn-analyze');
+  btn.disabled = true;
+  btn.textContent = '⏳ Analizando…';
+  setAIStatus('loading', '<span class="spin">⚙️</span>  Enviando imagen al modelo…');
+
+  try {
+    let result = '';
+    if (activeProv === 'ollama') result = await callOllama(src);
+    else if (activeProv === 'claude') result = await callClaude(src);
+    else if (activeProv === 'deepseek') {
+      if (activeDSMode === 'api') result = await callDeepSeekAPI(src);
+      else result = await callDeepSeekOllama(src);
+    }
+
+    if (!result.trim()) throw new Error('La respuesta del modelo está vacía.');
+
+    // Pegar en el área de texto y parsear automáticamente
+    document.getElementById('paste-area').value = result.trim();
+    setAIStatus('ok', '✓ Análisis completado — revisalo y presiona ✨ Procesar');
+    parsePaste();
+  } catch(e) {
+    setAIStatus('err', '✗ Error: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🤖 Analizar BuJo con IA';
+  }
+}
+
+/* ── OLLAMA ──────────────────────────────────── */
+async function callOllama(dataUri) {
+  const baseUrl = document.getElementById('ollama-url').value.trim().replace(/\/$/, '');
+  const model   = document.getElementById('ollama-model').value.trim();
+  const { b64, mime } = dataUriParts(dataUri);
+
+  setAIStatus('loading', `<span class="spin">⚙️</span>  Ollama · <strong>${model}</strong> procesando imagen…`);
+
+  const resp = await fetch(baseUrl + '/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model,
+      messages: [{ role: 'user', content: BUJO_PROMPT, images: [b64] }],
+      stream: false
+    })
+  });
+  if (!resp.ok) {
+    const err = await resp.text();
+    throw new Error(`Ollama ${resp.status}: ${err.slice(0,120)}`);
+  }
+  const data = await resp.json();
+  return data.message?.content || '';
+}
+
+/* ── CLAUDE (OpenClaw) ───────────────────────── */
+async function callClaude(dataUri) {
+  const apiKey = (document.getElementById('claude-key').value.trim()
+    || localStorage.getItem('ai_key_claude') || '');
+  if (!apiKey) throw new Error('Falta la API Key de Claude. Ingrésala en la configuración.');
+
+  const model = document.getElementById('claude-model').value.trim() || 'claude-haiku-4-5-20251001';
+  const { b64, mime } = dataUriParts(dataUri);
+  const safeMime = ['image/jpeg','image/png','image/gif','image/webp'].includes(mime) ? mime : 'image/jpeg';
+
+  setAIStatus('loading', `<span class="spin">🐾</span>  OpenClaw · <strong>${model}</strong> procesando…`);
+
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 1024,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: safeMime, data: b64 } },
+          { type: 'text',  text: BUJO_PROMPT }
+        ]
+      }]
+    })
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.error?.message || `Anthropic ${resp.status}`);
+  }
+  const data = await resp.json();
+  return data.content?.[0]?.text || '';
+}
+
+/* ── DEEPSEEK API (Cloud) ────────────────────── */
+async function callDeepSeekAPI(dataUri) {
+  const apiKey = (document.getElementById('deepseek-key').value.trim()
+    || localStorage.getItem('ai_key_deepseek') || '');
+  if (!apiKey) throw new Error('Falta la API Key de DeepSeek. Ingrésala en la configuración.');
+
+  const { b64, mime } = dataUriParts(dataUri);
+  setAIStatus('loading', `<span class="spin">🔷</span>  DeepSeek Cloud · <strong>deepseek-vl2</strong> procesando…`);
+
+  const resp = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + apiKey
+    },
+    body: JSON.stringify({
+      model: 'deepseek-vl2',
+      max_tokens: 1024,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image_url', image_url: { url: `data:${mime};base64,${b64}` } },
+          { type: 'text', text: BUJO_PROMPT }
+        ]
+      }]
+    })
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.error?.message || `DeepSeek ${resp.status}`);
+  }
+  const data = await resp.json();
+  return data.choices?.[0]?.message?.content || '';
+}
+
+/* ── DEEPSEEK VIA OLLAMA (2 pasos) ──────────── */
+async function callDeepSeekOllama(dataUri) {
+  const baseUrl    = document.getElementById('ollama-url').value.trim().replace(/\/$/, '');
+  const dsModel    = document.getElementById('ds-model').value.trim() || 'deepseek-r1:7b';
+  const visionMdl  = 'qwen2.5-vl:7b';   // transcripción de imagen
+  const { b64, mime } = dataUriParts(dataUri);
+
+  // Paso 1 — transcripción con qwen2.5-vl
+  setAIStatus('loading', `<span class="spin">⚙️</span>  Paso 1/2 · <strong>${visionMdl}</strong> transcribiendo imagen…`);
+  const r1 = await fetch(baseUrl + '/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: visionMdl,
+      messages: [{
+        role: 'user',
+        content: 'Transcribe exactamente todo el texto visible en esta página de Bullet Journal, conservando símbolos y estructura.',
+        images: [b64]
+      }],
+      stream: false
+    })
+  });
+  if (!r1.ok) throw new Error(`Ollama vision ${r1.status}: ${(await r1.text()).slice(0,120)}`);
+  const transcription = (await r1.json()).message?.content || '';
+
+  // Paso 2 — análisis con deepseek-r1
+  setAIStatus('loading', `<span class="spin">🔷</span>  Paso 2/2 · <strong>${dsModel}</strong> clasificando tareas…`);
+  const analysisPrompt = BUJO_PROMPT.replace(
+    'Analiza esta imagen de BuJo',
+    'Analiza este texto transcrito de un BuJo'
+  ) + `\n\nTexto transcrito:\n${transcription}`;
+
+  const r2 = await fetch(baseUrl + '/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: dsModel,
+      messages: [{ role: 'user', content: analysisPrompt }],
+      stream: false
+    })
+  });
+  if (!r2.ok) throw new Error(`Ollama deepseek ${r2.status}: ${(await r2.text()).slice(0,120)}`);
+  const raw = (await r2.json()).message?.content || '';
+
+  // Limpiar <think>...</think> que genera deepseek-r1
+  return raw.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+}
+
+/* ── Selección de thumb por click ─────────────── */
+ths.addEventListener('click', e => {
+  const thumb = e.target.closest('.thumb');
+  if (!thumb || e.target.classList.contains('thumb-del')) return;
+  document.querySelectorAll('#thumbs .thumb').forEach(t => t.classList.remove('selected'));
+  thumb.classList.add('selected');
 });
 </script>
 </body>
