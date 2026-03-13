@@ -217,13 +217,20 @@ h1{
   -webkit-overflow-scrolling:touch;
 }
 /* upload */
+/* BuJo branded surface */
+:root{
+  --bujo-brand-primary:#7C3AED;
+  --bujo-brand-secondary:#14B8A6;
+  --bujo-brand-accent:#EC4899;
+  --bujo-brand-soft:rgba(124,58,237,.10);
+}
 .upload-zone{
-  border:2px dashed rgba(124,58,237,.35); border-radius:var(--r);
-  background:rgba(124,58,237,.04); padding:24px 16px; text-align:center;
+  border:2px dashed color-mix(in srgb, var(--bujo-brand-primary) 42%, transparent); border-radius:var(--r);
+  background:linear-gradient(135deg,var(--bujo-brand-soft),rgba(20,184,166,.06)); padding:24px 16px; text-align:center;
   cursor:pointer; transition:all .18s; position:relative; overflow:hidden;
   min-height:80px;
 }
-.upload-zone:hover,.upload-zone.drag{ border-color:rgba(168,85,247,.75); background:rgba(124,58,237,.1); }
+.upload-zone:hover,.upload-zone.drag{ border-color:color-mix(in srgb, var(--bujo-brand-primary) 68%, white 10%); background:linear-gradient(135deg,rgba(124,58,237,.2),rgba(20,184,166,.12)); }
 .upload-zone input{ position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
 .upload-icon{ font-size:2rem; display:block; margin-bottom:6px; }
 .upload-big{ font-family:'CHILLAZ','Pacifico',cursive; font-size:.9rem; color:#c084fc; letter-spacing:1px; }
@@ -240,6 +247,20 @@ h1{
   transition:background .15s;
 }
 .thumb-del:hover{ background:rgba(220,38,38,.85); }
+.bujo-steps{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:10px 0 8px;}
+.bujo-steps .step{font-size:.58rem;padding:5px 6px;border:1px solid var(--bd);border-radius:999px;color:var(--mut);text-align:center;background:rgba(255,255,255,.03)}
+.bujo-steps .step.on{color:#f5f3ff;border-color:rgba(20,184,166,.6);background:linear-gradient(135deg,rgba(124,58,237,.45),rgba(20,184,166,.34))}
+.review-toolbar{display:flex;gap:8px;margin-bottom:8px;}
+.review-list{display:flex;flex-direction:column;gap:8px;max-height:250px;overflow:auto;}
+.review-item{border:1px solid var(--bd);border-radius:10px;background:rgba(255,255,255,.03);padding:8px;display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:start;}
+.review-item.low-confidence{border-color:#f59e0b;box-shadow:0 0 0 1px rgba(245,158,11,.25) inset;}
+.review-item.uncertain{border-color:#f87171;}
+.review-fields{display:grid;grid-template-columns:1fr 105px 76px;gap:6px;}
+.review-fields input,.review-fields select{font-size:.68rem;background:rgba(255,255,255,.06);border:1px solid var(--bd);color:var(--txt);border-radius:6px;padding:7px;min-height:34px;}
+.review-meta{font-size:.58rem;color:var(--mut);margin-top:4px;display:flex;gap:8px;flex-wrap:wrap;}
+@media(max-width:560px){.review-fields{grid-template-columns:1fr;}}
+.review-empty{font-size:.67rem;color:var(--mut);padding:10px;border:1px dashed var(--bd);border-radius:8px;text-align:center;}
+
 /* ── Ollama panel ── */
 .ollama-panel{
   background:rgba(99,102,241,.07);
@@ -917,7 +938,7 @@ h1{
     <div>
       <div class="sec-title">Fotos de tu BuJo</div>
       <div class="upload-zone" id="upzone">
-        <input type="file" id="bj-input" accept="image/*" multiple>
+        <input type="file" id="bj-input" accept="image/*" multiple aria-label="Subir una o más imágenes de Bullet Journal">
         <span class="upload-icon">📷</span>
         <div class="upload-big">Arrastra o sube fotos</div>
         <div class="upload-sub">JPG · PNG · HEIC · varias páginas OK</div>
@@ -928,17 +949,16 @@ h1{
     <div class="ollama-panel" id="ollama-panel">
 
       <!-- ── Selector de proveedor ── -->
-      <div class="ai-prov-tabs">
-        <button class="ai-prov-btn active" data-p="ollama" onclick="setAIProv(this)">🦙 Ollama</button>
-        <button class="ai-prov-btn" data-p="claude" onclick="setAIProv(this)">🐾 OpenClaw</button>
-        <button class="ai-prov-btn" data-p="deepseek" onclick="setAIProv(this)">🔷 DeepSeek</button>
+      <div class="ai-prov-tabs" role="tablist" aria-label="Proveedor de análisis">
+        <button class="ai-prov-btn active" data-p="proxy" role="tab" aria-selected="true" onclick="setAIProv(this)">🛡️ Proxy seguro</button>
+        <button class="ai-prov-btn" data-p="ollama" role="tab" aria-selected="false" onclick="setAIProv(this)">🦙 Ollama local</button>
       </div>
 
       <!-- Cabecera con dot de estado -->
       <div class="ollama-panel-head">
         <div class="ollama-panel-title">
           <span class="ollama-dot" id="ollama-dot"></span>
-          <span id="ai-prov-label">🦙 Ollama · Análisis local</span>
+          <span id="ai-prov-label">🛡️ Proxy seguro · Recomendado</span>
         </div>
         <button class="ollama-cfg-btn" onclick="toggleOllamaConfig()" id="ollama-cfg-toggle"
           aria-expanded="false" aria-controls="ollama-config">
@@ -950,7 +970,7 @@ h1{
       <div class="ollama-config" id="ollama-config" role="region" aria-label="Configuración IA">
 
         <!-- Config Ollama -->
-        <div class="ai-prov-cfg active" id="aicfg-ollama">
+        <div class="ai-prov-cfg" id="aicfg-ollama">
           <div class="ollama-config-inner">
             <div class="ollama-field">
               <label class="ollama-label" for="ollama-url">URL del servidor</label>
@@ -984,44 +1004,23 @@ h1{
           </div>
         </div>
 
-        <!-- Config OpenClaw (Claude) -->
-        <div class="ai-prov-cfg" id="aicfg-claude">
+        <!-- Config Proxy Seguro -->
+        <div class="ai-prov-cfg active" id="aicfg-proxy">
           <div class="ollama-config-inner">
             <div class="ollama-field">
-              <label class="ollama-label" for="bj-claude-key">Anthropic API Key</label>
-              <div class="ai-key-row">
-                <input class="ollama-input" type="password" id="bj-claude-key"
-                  placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false">
-                <button class="ai-key-save" onclick="saveBJKey('claude')">💾</button>
-              </div>
+              <label class="ollama-label" for="bj-proxy-endpoint">Endpoint análisis BuJo</label>
+              <input class="ollama-input" type="url" id="bj-proxy-endpoint"
+                placeholder="/api/bujo/analyze" autocomplete="off" autocorrect="off" spellcheck="false">
             </div>
             <div class="ollama-field">
-              <label class="ollama-label" for="bj-claude-model">Modelo</label>
-              <input class="ollama-input" type="text" id="bj-claude-model"
-                value="claude-haiku-4-5-20251001" autocomplete="off" spellcheck="false">
-            </div>
-            <div class="ai-prov-note">
-              🐾 <strong>OpenClaw</strong> — Vision nativa, no requiere Ollama.<br>
-              La key se guarda en localStorage, nunca sale del browser.
-            </div>
-          </div>
-        </div>
-
-        <!-- Config DeepSeek Cloud -->
-        <div class="ai-prov-cfg" id="aicfg-deepseek">
-          <div class="ollama-config-inner">
-            <div class="ollama-field">
-              <label class="ollama-label" for="bj-deepseek-key">DeepSeek API Key</label>
-              <div class="ai-key-row">
-                <input class="ollama-input" type="password" id="bj-deepseek-key"
-                  placeholder="sk-..." autocomplete="off" spellcheck="false">
-                <button class="ai-key-save" onclick="saveBJKey('deepseek')">💾</button>
-              </div>
+              <label class="ollama-label" for="bj-calendar-endpoint">Endpoint calendario</label>
+              <input class="ollama-input" type="url" id="bj-calendar-endpoint"
+                placeholder="/api/calendar/create" autocomplete="off" autocorrect="off" spellcheck="false">
             </div>
             <div class="ai-prov-note purple">
-              🔷 <strong>DeepSeek Cloud</strong> — API oficial, modelo <strong>deepseek-vl2</strong> (visión).<br>
-              No requiere Ollama local.
+              Nunca ingreses API keys en frontend. Este flujo solo envía imágenes a un backend/proxy seguro.
             </div>
+            <button class="ollama-save-btn" onclick="saveBujoEndpoints()">💾 Guardar endpoints</button>
           </div>
         </div>
 
@@ -1095,23 +1094,24 @@ h1{
         </div>
       </div>
     </div>
-    <div id="bj-section" style="display:none;">
-      <div class="sec-title">Tareas extraídas</div>
-      <div class="ftag-row" id="ftags">
-        <div class="ftag on" style="background:rgba(168,85,247,.15);border-color:#A855F7;color:#d8b4fe" onclick="filterBJ('all',this)">Todos</div>
-        <div class="ftag" style="background:rgba(236,72,153,.12);border-color:#EC4899;color:#EC4899" onclick="filterBJ('personal',this)">Personal</div>
-        <div class="ftag" style="background:rgba(124,58,237,.12);border-color:#7C3AED;color:#a78bfa" onclick="filterBJ('vinculos',this)">Vínculos</div>
-        <div class="ftag" style="background:rgba(16,185,129,.12);border-color:#10B981;color:#10B981" onclick="filterBJ('camila',this)">Camila</div>
-        <div class="ftag" style="background:rgba(249,115,22,.12);border-color:#F97316;color:#F97316" onclick="filterBJ('trabajo',this)">Trabajo</div>
-        <div class="ftag" style="background:rgba(236,72,153,.12);border-color:#EC4899;color:#EC4899" onclick="filterBJ('bienestar',this)">Bienestar</div>
-      </div>
-      <div class="bj-list" id="bj-list"></div>
-      <div class="btn-row" style="margin-top:10px;">
-        <button class="btn btn-p" onclick="addToBoard()">＋ Agregar al tablero</button>
-        <button class="btn btn-g" onclick="clearBJ()">🗑 Limpiar</button>
-      </div>
+    <div class="bujo-steps" id="bujo-steps" aria-label="Flujo de Bullet Journal">
+      <span class="step on">1. Subir fotos</span><span class="step">2. Analizar</span><span class="step">3. Revisar</span><span class="step">4. Destino</span><span class="step">5. Confirmar</span>
     </div>
-    <div class="hint"><span>💡</span> Simbología BuJo: <strong style="color:#EC4899">●</strong> Personal &nbsp;<strong style="color:#7C3AED">◆</strong> Vínculos &nbsp;<strong style="color:#EC4899">○</strong> Bienestar &nbsp;<strong style="color:#F97316">*</strong> Trabajo &nbsp;<strong style="color:#10B981">></strong> Camila</div>
+    <div id="bj-section" style="display:none;">
+      <div class="sec-title">Hallazgos estructurados</div>
+      <div class="review-toolbar">
+        <button class="btn btn-g" onclick="reviewState.selectAll(true)">Seleccionar todo</button>
+        <button class="btn btn-g" onclick="reviewState.selectAll(false)">Limpiar selección</button>
+      </div>
+      <div class="review-list" id="review-list" role="list" aria-label="Ítems detectados para revisión"></div>
+      <div class="btn-row" style="margin-top:10px;">
+        <button class="btn btn-p" onclick="applyBujoBatch()">✅ Confirmar y mover</button>
+        <button class="btn btn-g" onclick="undoLastBujoBatch()">↩️ Deshacer lote</button>
+        <button class="btn btn-g" onclick="clearBJ()">🗑 Limpiar lote</button>
+      </div>
+      <div class="ollama-status info" id="batch-summary" style="display:none"></div>
+    </div>
+    <div class="hint"><span>💡</span> Tipos: <strong style="color:#7C3AED">event</strong> · <strong style="color:#10B981">task</strong> · <strong style="color:#C084FC">note</strong> · <strong style="color:#94A3B8">reference</strong> · <strong style="color:#EC4899">habit</strong> · <strong style="color:#F87171">uncertain</strong></div>
   </div>
 </div>
 <script>
@@ -1288,30 +1288,187 @@ function renderWeek(){
   });
   applyCardStates();
 }
-function openDrawer(){ document.getElementById('drawer').classList.add('open'); document.getElementById('overlay').classList.add('open'); }
-function closeDrawer(){ document.getElementById('drawer').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); }
+function openDrawer(){ bujoState.lastModalFocus=document.activeElement; document.getElementById('drawer').classList.add('open'); document.getElementById('overlay').classList.add('open'); accessibilityHelpers?.focusDrawer?.(); }
+function closeDrawer(){ document.getElementById('drawer').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); if(bujoState.lastModalFocus&&bujoState.lastModalFocus.focus) bujoState.lastModalFocus.focus(); }
 const BJ_CAL={
   personal:{c:'#EC4899',l:'Personal'}, vinculos:{c:'#7C3AED',l:'Vínculos'},
-  camila:{c:'#10B981',l:'Camila'}, trabajo:{c:'#F97316',l:'Trabajo'},
-  fin:{c:'#FB923C',l:'Finanzas'}, bienestar:{c:'#EC4899',l:'Bienestar'}, bujo:{c:'#C084FC',l:'📓 BuJo'},
+  camila:{c:'#10B981',l:'Camila'}, trabajo:{c:'#F97316',l:'Trabajo'}, fin:{c:'#FB923C',l:'Finanzas'},
+  bienestar:{c:'#EC4899',l:'Bienestar'}, event:{c:'#7C3AED',l:'Evento'}, task:{c:'#10B981',l:'Tarea'},
+  note:{c:'#C084FC',l:'Nota'}, reference:{c:'#94A3B8',l:'Referencia'}, habit:{c:'#EC4899',l:'Hábito'}, uncertain:{c:'#F87171',l:'Incierto'}, bujo:{c:'#C084FC',l:'📓 BuJo'},
 };
-const SYM_MAP={'●':'personal','○':'bienestar','◆':'vinculos','—':'personal','-':'personal','*':'trabajo','>':'trabajo','•':'personal'};
-function updateBadge(){ const n=document.querySelectorAll('#bj-list .bj-item').length; const b=document.getElementById('bj-badge'); const btn=document.getElementById('bujo-btn'); b.textContent=n; b.style.display=n>0?'flex':'none'; btn.classList.toggle('has-items',n>0); }
-function makeBJItem(obj){ const ci=BJ_CAL[obj.type]||BJ_CAL.bujo; const el=document.createElement('div'); el.className='bj-item'; el.dataset.type=obj.type; el.style.setProperty('--cc',ci.c); el.innerHTML=`<input type="checkbox"><span class="bj-item-text">${obj.text}</span><span class="bj-item-cat" style="color:${ci.c}">${ci.l}</span>`; return el; }
-const bjList=document.getElementById('bj-list');
-const bjSec=document.getElementById('bj-section');
-function showBJItems(){ bjSec.style.display=bjList.children.length?'block':'none'; updateBadge(); }
-BUJO_INIT.forEach(o=>bjList.appendChild(makeBJItem(o))); showBJItems();
-function parsePaste(){ const txt=document.getElementById('paste-area').value.trim(); if(!txt) return; let added=0; txt.split('\n').forEach(ln=>{ const m=ln.trim().match(/^([●◆—○\-\*])\s+(.+)$/); if(!m) return; bjList.appendChild(makeBJItem({text:m[2].trim(),type:SYM_MAP[m[1]]||'personal'})); added++; }); document.getElementById('paste-area').value=''; if(added) showBJItems(); }
-function filterBJ(type,btn){ document.querySelectorAll('#ftags .ftag').forEach(t=>t.classList.remove('on')); btn.classList.add('on'); document.querySelectorAll('#bj-list .bj-item').forEach(el=>{ el.style.display=(type==='all'||el.dataset.type===type)?'flex':'none'; }); }
-function addToBoard(){ const checked=[...document.querySelectorAll('#bj-list .bj-item')].filter(el=>el.querySelector('input').checked); if(!checked.length){ alert('Marca las tareas que quieres agregar ☝️'); return; } const firstBody=document.querySelector('.wday-body'); checked.forEach(el=>{ const txt=el.querySelector('.bj-item-text').textContent; const calKey=el.dataset.type||'bujo'; const card=makeCard({title:'📓 '+txt,cal:calKey}); firstBody?.appendChild(card); firstBody?.querySelector('.day-empty')?.remove(); el.remove(); }); showBJItems(); closeDrawer(); }
-function clearBJ(){ bjList.innerHTML=''; document.getElementById('paste-area').value=''; document.getElementById('thumbs').innerHTML=''; showBJItems(); }
-const inp=document.getElementById('bj-input'); const upz=document.getElementById('upzone'); const ths=document.getElementById('thumbs');
-inp.addEventListener('change',e=>handleFiles(e.target.files));
+const SYM_MAP={'●':'task','○':'habit','◆':'event','—':'note','-':'note','*':'task','>':'task','•':'task'};
+const BUJO_STORAGE_KEY='bujo_review_draft_v2';
+const BUJO_ENDPOINTS_KEY='bujo_proxy_endpoints_v1';
+const BUJO_ALLOWED_TYPES=new Set(['event','task','note','reference','habit','uncertain']);
+const bujoState={batchId:null,images:[],items:[],summary:null,lastModalFocus:null,lastApplied:null};
+const uploadManager={
+  allowedTypes:['image/jpeg','image/png','image/heic','image/heif','image/jpg','image/webp'],
+  errors:[],
+  onFiles(files){
+    this.errors=[];
+    [...files].forEach(file=>{
+      const type=(file.type||'').toLowerCase();
+      const isHeicName=/\.(heic|heif)$/i.test(file.name||'');
+      if (!(type.startsWith('image/') && (this.allowedTypes.includes(type)||isHeicName))) {
+        this.errors.push(`Archivo no soportado: ${file.name||'sin nombre'}`);
+        return;
+      }
+      const fr=new FileReader();
+      fr.onload=ev=>{ bujoState.images.push({id:uid('img'),name:file.name||'imagen',mime:type||'image/jpeg',dataUrl:ev.target.result}); imagePreviewRenderer.render(); persistBujoDraft(); };
+      fr.readAsDataURL(file);
+    });
+    if(this.errors.length) setOllamaStatus(this.errors.join(' · '),'warn');
+    setBujoStep(bujoState.images.length ? 2 : 1);
+  },
+  remove(id){ bujoState.images=bujoState.images.filter(i=>i.id!==id); imagePreviewRenderer.render(); setBujoStep(bujoState.images.length ? 2 : 1); persistBujoDraft(); }
+};
+const imagePreviewRenderer={
+  render(){
+    const ths=document.getElementById('thumbs'); if(!ths) return; ths.innerHTML='';
+    bujoState.images.forEach(img=>{ const w=document.createElement('div'); w.className='thumb'; w.innerHTML=`<img src="${img.dataUrl}" alt="Vista previa ${img.name}"><button class="thumb-del" aria-label="Eliminar ${img.name}">✕</button>`; w.querySelector('button').addEventListener('click',()=>uploadManager.remove(img.id)); ths.appendChild(w); });
+  }
+};
+const aiAnalysisService={
+  analyzeEndpoint:'/api/bujo/analyze',
+  calendarEndpoint:'/api/calendar/create',
+  loadEndpoints(){ try{ const cfg=JSON.parse(localStorage.getItem(BUJO_ENDPOINTS_KEY)||'{}'); this.analyzeEndpoint=cfg.analyzeEndpoint||this.analyzeEndpoint; this.calendarEndpoint=cfg.calendarEndpoint||this.calendarEndpoint; }catch{} },
+  saveEndpoints(){ const a=document.getElementById('bj-proxy-endpoint')?.value?.trim()||this.analyzeEndpoint; const c=document.getElementById('bj-calendar-endpoint')?.value?.trim()||this.calendarEndpoint; this.analyzeEndpoint=a; this.calendarEndpoint=c; localStorage.setItem(BUJO_ENDPOINTS_KEY,JSON.stringify({analyzeEndpoint:a,calendarEndpoint:c})); },
+  async analyzeViaProxy(images){
+    const payload={provider:'proxy',batch_context:{timezone:'America/Santiago'},images:images.map(i=>({filename:i.name,mime:i.mime,data_url:i.dataUrl}))};
+    const base=(this.analyzeEndpoint||'/api/bujo/analyze').trim();
+    const candidates=[base, base.endsWith('/')?base.slice(0,-1):base+'/', ...(base.startsWith('/')?[`http://localhost:8787${base}`,`http://localhost:3000${base}`]:[])];
+    const dedup=[...new Set(candidates.filter(Boolean))];
+    let lastErr='';
+    for (const endpoint of dedup){
+      for (const method of ['POST','PUT']){
+        try{
+          const resp=await fetch(endpoint,{method,headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(payload)});
+          if(resp.ok){
+            const ct=resp.headers.get('content-type')||'';
+            if(!ct.includes('application/json')){
+              const txt=(await resp.text()).slice(0,200);
+              throw new Error(`Proxy respondió no-JSON en ${endpoint}: ${txt||'sin body'}`);
+            }
+            return await resp.json();
+          }
+          const body=await resp.text().catch(()=> '');
+          lastErr=`${resp.status} ${resp.statusText} (${method} ${endpoint}) ${body.slice(0,120)}`.trim();
+          if(resp.status===405 || resp.status===404) continue;
+        }catch(err){
+          lastErr=`${method} ${endpoint}: ${err.message||err}`;
+        }
+      }
+    }
+    throw new Error(`Proxy análisis falló. Verifica endpoint/método. Último intento: ${lastErr||'sin detalle'}`);
+  }
+};
+const dedupeService={
+  keyFor(item){ return `${(item.type||'').toLowerCase()}|${(item.title||'').trim().toLowerCase()}|${item.date||''}|${item.start_time||''}`; },
+  seen:new Set(),
+  reset(){
+    this.seen.clear();
+    EVENTS.forEach(ev=>{ this.seen.add(`${ev.allDay?'event':'task'}|${(ev.title||'').replace(/^📓\s*/,'').trim().toLowerCase()}|${ev.iso||''}|${ev.time||''}`); });
+  },
+  has(item){const k=this.keyFor(item); if(this.seen.has(k)) return true; this.seen.add(k); return false;}
+};
+const reviewState={
+  setBatch(batch){ bujoState.batchId=batch.batch_id||uid('batch'); dedupeService.reset(); bujoState.items=(batch.items||[]).map(normalizeItem).filter(Boolean).map(it=>({...it,duplicate:dedupeService.has(it)})); persistBujoDraft(); reviewRenderer.render(); },
+  update(id,key,value){ const it=bujoState.items.find(i=>i.id===id); if(!it) return; it[key]=value; if(['date','start_time','title','type'].includes(key)) it.needs_review=!isItemReady(it); persistBujoDraft(); },
+  selectAll(on){ bujoState.items.forEach(i=>i.selected=!!on); reviewRenderer.render(); persistBujoDraft(); }
+};
+const reviewRenderer={
+  render(){
+    const sec=document.getElementById('bj-section'); const list=document.getElementById('review-list'); if(!sec||!list) return;
+    sec.style.display=bujoState.items.length?'block':'none'; list.innerHTML='';
+    if(!bujoState.items.length){
+      list.innerHTML='<div class="review-empty">No hay hallazgos todavía. Sube fotos o usa análisis manual.</div>';
+      updateBadge();
+      return;
+    }
+    setBujoStep(3);
+    bujoState.items.forEach(item=>{ const row=document.createElement('div'); row.className=`review-item ${item.confidence<0.65?'low-confidence':''} ${item.type==='uncertain'?'uncertain':''}`; row.setAttribute('role','listitem');
+      row.innerHTML=`<input type="checkbox" ${item.selected?'checked':''} aria-label="Seleccionar ${item.title}"><div><div class="review-fields"><input value="${escapeHtml(item.title)}" aria-label="Título"><select aria-label="Tipo">${['event','task','note','reference','habit','uncertain'].map(t=>`<option value="${t}" ${item.type===t?'selected':''}>${t}</option>`).join('')}</select><input type="date" value="${item.date||''}" aria-label="Fecha"></div><div class="review-meta"><span>Confianza: ${Math.round((item.confidence||0)*100)}%</span><span>${item.needs_review?'Requiere revisión':'Listo'}</span><span>${item.duplicate?'Duplicado potencial':'Sin duplicado'}</span></div></div>`;
+      const [chk,title,type,date]=row.querySelectorAll('input,select');
+      chk.addEventListener('change',e=>{reviewState.update(item.id,'selected',e.target.checked);});
+      title.addEventListener('input',e=>reviewState.update(item.id,'title',e.target.value));
+      type.addEventListener('change',e=>{reviewState.update(item.id,'type',e.target.value); row.classList.toggle('uncertain',e.target.value==='uncertain');});
+      date.addEventListener('change',e=>reviewState.update(item.id,'date',e.target.value));
+      list.appendChild(row);
+    });
+    updateBadge();
+  }
+};
+const boardMapper={
+  toCard(item){ const calMap={event:'vinculos',task:'personal',habit:'bienestar',note:'bujo',reference:'bujo',uncertain:'bujo'}; return {title:`📓 ${item.title}`,cal:calMap[item.type]||'bujo',detail:`Origen BuJo: ${bujoState.batchId}`}; },
+  canCreate(item){ return ['event','task','habit'].includes(item.type); }
+};
+const calendarSyncService={
+  async sync(items){
+    const endpoint=aiAnalysisService.calendarEndpoint; if(!endpoint) return [];
+    const out=[];
+    for (const item of items){
+      if(item.type!=='event' || !item.date){ out.push({id:item.id,status:'skipped'}); continue; }
+      try{ const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({item,batch_id:bujoState.batchId})}); out.push({id:item.id,status:r.ok?'ok':'error'});}catch{ out.push({id:item.id,status:'error'}); }
+    }
+    return out;
+  }
+};
+const batchHistoryService={history:[], push(summary){ this.history.unshift({...summary,at:new Date().toISOString()}); this.history=this.history.slice(0,10); }};
+const accessibilityHelpers={ announce(msg){ const el=document.getElementById('ollama-status'); if(el){el.textContent=msg;el.style.display='block';} }, focusDrawer(){document.getElementById('bj-input')?.focus();} };
+const errorReporter={ report(err,context){ console.error('BuJo error',context,err); setOllamaStatus(`✗ ${context}: ${err.message||err}`,'err'); } };
+function updateBadge(){ const n=bujoState.items.length; const b=document.getElementById('bj-badge'); const btn=document.getElementById('bujo-btn'); if(b){b.textContent=n;b.style.display=n>0?'flex':'none';} if(btn) btn.classList.toggle('has-items',n>0); }
+function parsePaste(){ const txt=document.getElementById('paste-area').value.trim(); if(!txt) return; const parsed=[]; txt.split('\n').forEach(ln=>{ const m=ln.trim().match(/^([●◆—○\-\*>•])\s+(.+)$/); if(!m) return; parsed.push(normalizeItem({raw_text:m[2],title:m[2],type:SYM_MAP[m[1]]||'uncertain'})); }); bujoState.items.push(...parsed); reviewRenderer.render(); document.getElementById('paste-area').value=''; setBujoStep(parsed.length?3:2); persistBujoDraft(); }
+function renderBJ(items){ bujoState.items=(items||[]).map(i=>normalizeItem(i)); reviewRenderer.render(); }
+function addToBoard(){ return applyBujoBatch(); }
+function clearBJ(){ bujoState.images=[]; bujoState.items=[]; bujoState.batchId=null; imagePreviewRenderer.render(); reviewRenderer.render(); document.getElementById('paste-area').value=''; localStorage.removeItem(BUJO_STORAGE_KEY); setSummary(''); setBujoStep(1); }
+const inp=document.getElementById('bj-input'); const upz=document.getElementById('upzone');
+inp.addEventListener('change',e=>uploadManager.onFiles(e.target.files));
 upz.addEventListener('dragover',e=>{e.preventDefault();upz.classList.add('drag');});
 upz.addEventListener('dragleave',()=>upz.classList.remove('drag'));
-upz.addEventListener('drop',e=>{e.preventDefault();upz.classList.remove('drag');handleFiles(e.dataTransfer.files);});
-function handleFiles(files){ [...files].forEach(f=>{ if(!f.type.startsWith('image/')) return; const r=new FileReader(); r.onload=ev=>{ const w=document.createElement('div'); w.className='thumb'; w.innerHTML=`<img src="${ev.target.result}"><button class="thumb-del" onclick="this.parentNode.remove()">✕</button>`; ths.appendChild(w); }; r.readAsDataURL(f); }); }
+upz.addEventListener('drop',e=>{e.preventDefault();upz.classList.remove('drag');uploadManager.onFiles(e.dataTransfer.files);});
+function getBJImagesBase64(){ return bujoState.images.map(i=>i.dataUrl.split(',')[1]).filter(Boolean); }
+function normalizeItem(raw){
+  if(!raw) return null;
+  const t=String(raw.type||'uncertain').toLowerCase();
+  const type=BUJO_ALLOWED_TYPES.has(t)?t:'uncertain';
+  const title=String(raw.title||raw.text||raw.raw_text||'').trim();
+  if(!title) return null;
+  const date=validDate(raw.date)?raw.date:null;
+  const confidence=Number(raw.confidence); const conf=Number.isFinite(confidence)?Math.max(0,Math.min(1,confidence)):0.5;
+  const needsReview=raw.needs_review===true || type==='uncertain' || (type==='event'&&!date);
+  return {id:String(raw.id||uid('itm')),raw_text:String(raw.raw_text||title),type,title,date,start_time:normTime(raw.start_time),end_time:normTime(raw.end_time),timezone:raw.timezone||'America/Santiago',calendar_target:raw.calendar_target||'',board_column:raw.board_column||'',confidence:conf,needs_review:needsReview,notes:raw.notes||'Detectado desde imagen BuJo',tags:Array.isArray(raw.tags)?raw.tags:[],selected:raw.selected!==false,sync_status:raw.sync_status||'pending'};
+}
+function validDate(v){ return /^\d{4}-\d{2}-\d{2}$/.test(String(v||'')); }
+function normTime(v){ if(!v) return null; const m=String(v).match(/^(\d{2}):(\d{2})$/); return m?`${m[1]}:${m[2]}`:null; }
+function uid(prefix){ return `${prefix}_${Math.random().toString(36).slice(2,9)}`; }
+function escapeHtml(s){ return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function isItemReady(item){ if(['task','note','reference','habit'].includes(item.type)) return true; return item.type!=='event' || !!item.date; }
+function persistBujoDraft(){ localStorage.setItem(BUJO_STORAGE_KEY,JSON.stringify({batchId:bujoState.batchId,images:bujoState.images,items:bujoState.items})); }
+function restoreBujoDraft(){ try{ const d=JSON.parse(localStorage.getItem(BUJO_STORAGE_KEY)||'{}'); if(d&&Array.isArray(d.items)){ bujoState.batchId=d.batchId||null; bujoState.images=Array.isArray(d.images)?d.images:[]; bujoState.items=d.items.map(normalizeItem).filter(Boolean); imagePreviewRenderer.render(); reviewRenderer.render(); setBujoStep(bujoState.items.length?3:(bujoState.images.length?2:1)); } }catch{} }
+function saveBujoEndpoints(){ aiAnalysisService.saveEndpoints(); setOllamaStatus('✓ Endpoints guardados','ok'); }
+function setSummary(msg,type='info'){ const el=document.getElementById('batch-summary'); if(!el) return; el.className='ollama-status '+type; el.style.display=msg?'block':'none'; el.textContent=msg; }
+function setBujoStep(step){ const nodes=[...document.querySelectorAll('#bujo-steps .step')]; nodes.forEach((n,i)=>n.classList.toggle('on', i+1<=step)); }
+function validateProxyResponse(payload){ if(Array.isArray(payload)) return {batch_id:uid('batch'),items:payload}; if(!payload||typeof payload!=='object') throw new Error('Respuesta inválida del proxy'); const items=Array.isArray(payload.items)?payload.items:[]; return {batch_id:String(payload.batch_id||uid('batch')),items}; }
+async function applyBujoBatch(){
+  const selected=bujoState.items.filter(i=>i.selected); if(!selected.length){ setSummary('Selecciona al menos un ítem para continuar.','warn'); return; }
+  const firstBody=document.querySelector('.wday-body'); let cards=0;
+  const createdCards=[];
+  selected.filter(boardMapper.canCreate).forEach(item=>{ const card=makeCard(boardMapper.toCard(item)); card.dataset.batchId=bujoState.batchId||'batch_manual'; firstBody?.appendChild(card); firstBody?.querySelector('.day-empty')?.remove(); cards++; createdCards.push(card); });
+  const syncRes=await calendarSyncService.sync(selected);
+  const synced=syncRes.filter(r=>r.status==='ok').length;
+  const manual=selected.filter(i=>i.needs_review||i.type==='uncertain').length;
+  const summary=`${cards} cards creadas · ${synced} eventos sincronizados · ${manual} requieren revisión manual`;
+  bujoState.lastApplied={batchId:bujoState.batchId,createdCards};
+  batchHistoryService.push({batchId:bujoState.batchId,cards,synced,manual}); setSummary(summary,'ok'); setBujoStep(5); closeDrawer();
+}
+function undoLastBujoBatch(){
+  const last=bujoState.lastApplied;
+  if(!last||!Array.isArray(last.createdCards)||!last.createdCards.length){ setSummary('No hay lote reciente para deshacer.','warn'); return; }
+  last.createdCards.forEach(card=>card?.remove());
+  bujoState.lastApplied=null;
+  document.querySelectorAll('.wday').forEach(updateDayCount);
+  setSummary('Último lote deshecho en tablero.','ok');
+}
 const SOURCES=[
   {id:'personal',name:'Personal · Vínculos · Laboral',desc:'gaete.gaona@gmail.com',cal:'personal',color:'#EC4899',icon:'👤',gcalId:'gaete.gaona@gmail.com',readonly:false,icsUrl:'https://calendar.google.com/calendar/ical/gaete.gaona%40gmail.com/public/basic.ics',embedUrl:'https://calendar.google.com/calendar/embed?src=gaete.gaona%40gmail.com&ctz=America%2FSantiago',lsKey:'ics_personal'},
   {id:'finanzas',name:'Finanzas Personales',desc:'grupo finanzas',cal:'fin',color:'#FB923C',icon:'💰',gcalId:'9616f51a807e24559b4df624c70d7fe1d81de62f9aa8baf44c1190db5887b12f@group.calendar.google.com',readonly:true,icsUrl:'https://calendar.google.com/calendar/ical/9616f51a807e24559b4df624c70d7fe1d81de62f9aa8baf44c1190db5887b12f%40group.calendar.google.com/public/basic.ics',embedUrl:'https://calendar.google.com/calendar/embed?src=9616f51a807e24559b4df624c70d7fe1d81de62f9aa8baf44c1190db5887b12f%40group.calendar.google.com&ctz=America%2FSantiago',lsKey:'ics_finanzas'},
@@ -1495,6 +1652,7 @@ function toggleFallback(trigger) {
   if (arrow) arrow.style.transform = isOpen ? '' : 'rotate(180deg)';
   trigger.setAttribute('aria-expanded', String(!isOpen));
 }
+document.querySelector('.fallback-toggle')?.addEventListener('keydown',e=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); toggleFallback(e.currentTarget); } });
 
 function getBJImagesBase64() {
   const imgs = document.querySelectorAll('#thumbs .thumb img');
@@ -1607,9 +1765,9 @@ function parseOllamaItems(raw) {
     if (Array.isArray(parsed)) {
       parsed.forEach(item => {
         if (item && item.text && String(item.text).trim()) {
-          const validTypes = new Set(['personal','vinculos','camila','trabajo','fin','bienestar','bujo']);
-          const type = validTypes.has(item.type) ? item.type : 'personal';
-          items.push({ text: String(item.text).trim(), type });
+          const validTypes = new Set(['event','task','note','reference','habit','uncertain']);
+          const type = validTypes.has(item.type) ? item.type : 'uncertain';
+          items.push({ title: String(item.text || item.title).trim(), raw_text: String(item.text || item.title).trim(), type, confidence:Number(item.confidence)||0.7, needs_review:type==='uncertain', selected:true });
         }
       });
     }
@@ -1617,7 +1775,7 @@ function parseOllamaItems(raw) {
     // Fallback: parsear línea por línea con SYM_MAP
     cleaned.split('\n').forEach(ln => {
       const m = ln.trim().match(/^([●◆—○\-\*>•])\s+(.+)$/);
-      if (m) items.push({ text: m[2].trim(), type: SYM_MAP[m[1]] || 'personal' });
+      if (m) items.push({ title: m[2].trim(), raw_text:m[2].trim(), type: SYM_MAP[m[1]] || 'uncertain', confidence:.55, needs_review:true, selected:true });
     });
   }
   return items;
@@ -1684,19 +1842,19 @@ async function analyzeBujoWithOllama() {
       }
       return;
     }
-    items.forEach(item => bjList.appendChild(makeBJItem(item)));
-    showBJItems();
+    reviewState.setBatch({batch_id:uid('batch'),items});
     setOllamaDot('ok');
-    setOllamaStatus(`✓ ${items.length} ítem${items.length > 1 ? 's' : ''} extraído${items.length > 1 ? 's' : ''} · Marca y agrega al tablero`, 'ok');
+    const reviewPending = bujoState.items.filter(i=>i.needs_review).length;
+    setOllamaStatus(`✓ ${items.length} ítem${items.length > 1 ? 's' : ''} extraído${items.length > 1 ? 's' : ''} · ${reviewPending} con revisión`, reviewPending ? 'warn' : 'ok');
 
     // Auto-push a Supabase si está configurado
     const cmsCfg = getCMSConfig();
     if (cmsCfg.url && cmsCfg.key) {
       const supaItems = items.map(i => ({
-        titulo: i.text || i.titulo || '',
-        tipo: i.type || i.tipo || 'personal',
+        titulo: i.title || i.text || i.titulo || '',
+        tipo: i.type || i.tipo || 'uncertain',
         fecha: i.date || i.fecha || null,
-        hora: i.time || i.hora || null,
+        hora: i.start_time || i.time || i.hora || null,
         notas: i.notes || i.notas || null,
         fuente: 'table-ro·deepseek'
       })).filter(i => i.titulo);
@@ -1721,237 +1879,61 @@ async function analyzeBujoWithOllama() {
    AI MULTI-PROVIDER (OpenClaw · Ollama · DeepSeek)
 ══════════════════════════════════════════════ */
 
-let activeAIProv = 'ollama';
+let activeAIProv = 'proxy';
 
 const AI_PROV_LABELS = {
-  ollama:   '🦙 Ollama · Análisis local',
-  claude:   '🐾 OpenClaw · Anthropic API',
-  deepseek: '🔷 DeepSeek · Cloud API'
+  proxy:'🛡️ Proxy seguro · Recomendado',
+  ollama:'🦙 Ollama · Análisis local'
 };
 
 function setAIProv(btn) {
-  // acepta tanto el elemento DOM como un string con el provider
   if (typeof btn === 'string') btn = document.querySelector(`.ai-prov-btn[data-p="${btn}"]`);
   if (!btn) return;
-  document.querySelectorAll('.ai-prov-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  document.querySelectorAll('.ai-prov-btn').forEach(b => {
+    b.classList.toggle('active', b===btn);
+    b.setAttribute('aria-selected', b===btn ? 'true' : 'false');
+  });
   activeAIProv = btn.dataset.p;
-
-  // Actualizar label del panel
   const lbl = document.getElementById('ai-prov-label');
   if (lbl) lbl.textContent = AI_PROV_LABELS[activeAIProv] || '';
-
-  // Mostrar sección de config correspondiente
   document.querySelectorAll('.ai-prov-cfg').forEach(el => el.classList.remove('active'));
-  const cfg = document.getElementById('aicfg-' + activeAIProv);
-  if (cfg) cfg.classList.add('active');
-
-  // Dot: ocultar para cloud providers (no tienen ping de Ollama)
+  document.getElementById('aicfg-' + activeAIProv)?.classList.add('active');
   const pingBtn = document.getElementById('ollama-ping-btn');
   if (pingBtn) pingBtn.style.display = activeAIProv === 'ollama' ? '' : 'none';
-  setOllamaDot('');
-
-  // En HTTPS: Ollama bloqueado, cloud providers sí funcionan
-  const analyzeBtn = document.getElementById('ollama-analyze-btn');
-  const httpsWarn = document.getElementById('ollama-https-warn');
-  if (analyzeBtn && isHttpsContext()) {
-    const isOllama = activeAIProv === 'ollama';
-    analyzeBtn.disabled = isOllama;
-    analyzeBtn.title = isOllama ? 'Abre el tablero desde localhost para usar Ollama' : '';
-    if (httpsWarn) httpsWarn.style.display = isOllama ? '' : 'none';
-  }
-
-  // Cargar keys guardadas
-  if (activeAIProv === 'claude') {
-    const k = localStorage.getItem('ai_key_claude');
-    const el = document.getElementById('bj-claude-key');
-    if (k && el) el.value = k;
-  } else if (activeAIProv === 'deepseek') {
-    const k = localStorage.getItem('ai_key_deepseek');
-    const el = document.getElementById('bj-deepseek-key');
-    if (k && el) el.value = k;
-  }
+  const label = document.getElementById('ollama-btn-label');
+  if (label) label.textContent = activeAIProv === 'ollama' ? 'Analizar con Ollama' : 'Analizar con proxy';
 }
 
-function saveBJKey(prov) {
-  const el = document.getElementById(prov === 'claude' ? 'bj-claude-key' : 'bj-deepseek-key');
-  if (!el || !el.value.trim()) return;
-  localStorage.setItem('ai_key_' + prov, el.value.trim());
-  setOllamaStatus('✓ API Key guardada', 'ok');
-}
-
-function dataUriPartsIdx(dataUri) {
-  const [header, b64] = dataUri.split(',');
-  const mime = header.match(/data:([^;]+)/)?.[1] || 'image/jpeg';
-  return { b64, mime };
-}
-
-/* ── Prompt compartido (responde JSON) ── */
-function buildMultiProviderPrompt() {
-  return `Eres un asistente de Bullet Journal. Analiza la imagen y extrae TODOS los ítems visibles.
-Devuelve ÚNICAMENTE un array JSON válido, sin texto adicional:
-[{"text":"texto literal del ítem","type":"personal|vinculos|camila|trabajo|fin|bienestar"}]
-
-Clasificación:
-- personal: trámites, pendientes propios, salud personal
-- vinculos: relaciones, amigos, familia, social
-- camila: todo relacionado con Camila
-- trabajo: proyectos, clientes, reuniones laborales
-- fin: finanzas, pagos, presupuesto
-- bienestar: terapia, meditación, deporte, escritura reflexiva`;
-}
-
-/* ── Claude API ── */
-async function callClaudeAPIBujo(images) {
-  const apiKey = document.getElementById('bj-claude-key')?.value.trim()
-    || localStorage.getItem('ai_key_claude') || '';
-  if (!apiKey) throw new Error('Falta API Key de Claude. Ábrela en ⚙️ Config.');
-
-  const model = document.getElementById('bj-claude-model')?.value.trim() || 'claude-haiku-4-5-20251001';
-  const prompt = buildMultiProviderPrompt();
-
-  // Tomar la primera imagen para análisis
-  const { b64, mime } = dataUriPartsIdx('data:image/jpeg;base64,' + images[0]);
-  const safeMime = ['image/jpeg','image/png','image/gif','image/webp'].includes(mime) ? mime : 'image/jpeg';
-
-  setOllamaStatus(`🐾 ${model} procesando imagen…`, 'info');
-
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'anthropic-dangerous-direct-browser-access': 'true'
-    },
-    body: JSON.stringify({
-      model,
-      max_tokens: 1500,
-      messages: [{
-        role: 'user',
-        content: [
-          { type: 'image', source: { type: 'base64', media_type: safeMime, data: images[0] } },
-          { type: 'text', text: prompt }
-        ]
-      }]
-    })
-  });
-  if (!resp.ok) {
-    const err = await resp.json().catch(() => ({}));
-    throw new Error(err.error?.message || `Anthropic ${resp.status}`);
-  }
-  const data = await resp.json();
-  return data.content?.[0]?.text || '';
-}
-
-/* ── DeepSeek Cloud API ── */
-async function callDeepSeekAPIBujo(images) {
-  const apiKey = document.getElementById('bj-deepseek-key')?.value.trim()
-    || localStorage.getItem('ai_key_deepseek') || '';
-  if (!apiKey) throw new Error('Falta API Key de DeepSeek. Ábrela en ⚙️ Config.');
-
-  const prompt = buildMultiProviderPrompt();
-  setOllamaStatus('🔷 DeepSeek Cloud procesando imagen…', 'info');
-
-  const resp = await fetch('https://api.deepseek.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + apiKey
-    },
-    body: JSON.stringify({
-      model: 'deepseek-vl2',
-      max_tokens: 1500,
-      messages: [{
-        role: 'user',
-        content: [
-          { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + images[0] } },
-          { type: 'text', text: prompt }
-        ]
-      }]
-    })
-  });
-  if (!resp.ok) {
-    const err = await resp.json().catch(() => ({}));
-    throw new Error(err.error?.message || `DeepSeek ${resp.status}`);
-  }
-  const data = await resp.json();
-  return data.choices?.[0]?.message?.content || '';
-}
-
-/* ── Router principal ── */
 async function analyzeBujoWithAI() {
-  if (activeAIProv === 'ollama') {
-    // Usa el flujo Ollama existente
-    return analyzeBujoWithOllama();
-  }
-
-  const images = getBJImagesBase64();
-  if (!images.length) {
+  if (activeAIProv === 'ollama') return analyzeBujoWithOllama();
+  if (!bujoState.images.length) {
     setOllamaStatus('📷 Sube al menos una foto del BuJo primero', 'warn');
-    document.getElementById('ollama-status').style.display = 'block';
     return;
   }
-
   setOllamaBtn(true);
   setOllamaDot('checking');
-
   try {
-    let rawResult = '';
-    if (activeAIProv === 'claude')   rawResult = await callClaudeAPIBujo(images);
-    if (activeAIProv === 'deepseek') rawResult = await callDeepSeekAPIBujo(images);
-
-    const items = parseOllamaItems(rawResult);
-    if (!items.length) {
-      setOllamaDot('err');
-      setOllamaStatus('⚠ No se encontraron ítems. Respuesta pegada abajo para revisión.', 'warn');
-      const pa = document.getElementById('paste-area');
-      if (pa) pa.value = rawResult;
-      return;
-    }
-    items.forEach(item => bjList.appendChild(makeBJItem(item)));
-    showBJItems();
+    setBujoStep(2);
+    const payloadRaw = await aiAnalysisService.analyzeViaProxy(bujoState.images);
+    const payload = validateProxyResponse(payloadRaw);
+    reviewState.setBatch(payload);
+    const issues = bujoState.items.filter(i => i.needs_review).length;
     setOllamaDot('ok');
-    setOllamaStatus(`✓ ${items.length} ítem${items.length > 1 ? 's' : ''} extraído${items.length > 1 ? 's' : ''} · Marca y agrega al tablero`, 'ok');
-
-    // Auto-push Supabase si está configurado
-    const cmsCfg = getCMSConfig();
-    if (cmsCfg.url && cmsCfg.key) {
-      const supaItems = items.map(i => ({
-        titulo: i.text, tipo: i.type, fecha: null, hora: null,
-        notas: null, fuente: 'table-ro·' + activeAIProv
-      })).filter(i => i.titulo);
-      pushToSupabase(supaItems);
-    }
+    setOllamaStatus(`✓ ${bujoState.items.length} ítems detectados · ${issues} requieren revisión`, issues ? 'warn' : 'ok');
   } catch (err) {
+    const msg=String(err?.message||err||'Error desconocido');
+    if(/405|method|endpoint|proxy análisis falló/i.test(msg)){
+      console.error('BuJo proxy config error', err);
+      setOllamaStatus('✗ Proxy rechazó la solicitud (405). Revisa endpoint / método esperado por tu backend en ⚙️ Config.', 'err');
+    } else {
+      errorReporter.report(err, 'Análisis BuJo');
+    }
     setOllamaDot('err');
-    setOllamaStatus(`✗ ${err.message}`, 'err');
   } finally {
     setOllamaBtn(false);
   }
 }
 
-/* ── Actualizar label del botón según proveedor ── */
-const _origSetOllamaBtn = setOllamaBtn;
-// Sobreescribimos para actualizar el label dinámicamente
-setOllamaBtn = function(loading) {
-  const btn = document.getElementById('ollama-analyze-btn');
-  const icon = document.getElementById('ollama-btn-icon');
-  const label = document.getElementById('ollama-btn-label');
-  if (!btn) return;
-  btn.disabled = loading;
-  if (loading) {
-    if (icon) icon.outerHTML = '<span class="ollama-spinner" id="ollama-btn-icon"></span>';
-    if (label) label.textContent = 'Analizando…';
-  } else {
-    const spinEl = document.getElementById('ollama-btn-icon');
-    if (spinEl) spinEl.outerHTML = '<span id="ollama-btn-icon">🤖</span>';
-    const labels = { ollama:'Analizar con Ollama', claude:'Analizar con OpenClaw', deepseek:'Analizar con DeepSeek' };
-    if (label) label.textContent = labels[activeAIProv] || 'Analizar con IA';
-  }
-};
-
-// Restaurar config guardada y estado inicial del dot
 function isHttpsContext() {
   return location.protocol === 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1';
 }
@@ -1966,7 +1948,12 @@ function initOllamaUI() {
   if (vm) vm.value = cfg.visionModel;
   if (am) am.value = cfg.analysisModel;
   if (mo) mo.value = cfg.mode;
+  aiAnalysisService.loadEndpoints();
+  const ep=document.getElementById('bj-proxy-endpoint'); if(ep) ep.value=aiAnalysisService.analyzeEndpoint;
+  const ce=document.getElementById('bj-calendar-endpoint'); if(ce) ce.value=aiAnalysisService.calendarEndpoint;
   setOllamaDot('');
+  restoreBujoDraft();
+  setAIProv('proxy');
 
   // Detectar Mixed Content: HTTPS → HTTP localhost = bloqueado por el browser
   if (isHttpsContext()) {
@@ -1996,16 +1983,8 @@ function initOllamaUI() {
           Esta página corre en <strong>HTTPS</strong> y Ollama en <strong>HTTP</strong>.
           El browser bloquea esa mezcla por seguridad (Mixed Content).
         </div>
-        <div style="font-weight:700;margin-bottom:4px;color:#fcd34d;">Para usar DeepSeek:</div>
-        <div style="font-family:'Courier New',monospace;font-size:.62rem;background:rgba(0,0,0,.35);padding:8px 10px;border-radius:7px;line-height:1.8;color:#fde68a;word-break:break-all;">
-          cd ~/Documents/table-ro<br>
-          ./start-ollama.sh<br>
-          <span style="color:rgba(253,230,138,.55)"># Luego abre:</span><br>
-          open http://localhost:8080
-        </div>
-        <div style="margin-top:8px;font-size:.63rem;color:rgba(252,211,77,.7);">
-          Las demás funciones del tablero siguen disponibles aquí en GitHub Pages.
-        </div>`;
+        <div style="font-weight:700;margin-bottom:4px;color:#fcd34d;">Sugerencia:</div>
+        <div style="font-size:.63rem;color:rgba(252,211,77,.75);">Usa <strong>Proxy seguro</strong> para producción (GitHub Pages) y Ollama solo en localhost.</div>`;
 
       const actions = panel.querySelector('.ollama-actions');
       if (actions) panel.insertBefore(warn, actions);
@@ -2013,15 +1992,12 @@ function initOllamaUI() {
       // Deshabilitar el botón de análisis cuando está en HTTPS
       const analyzeBtn = document.getElementById('ollama-analyze-btn');
       const pingBtn = panel.querySelector('.ollama-ping-btn');
-      if (analyzeBtn) {
-        analyzeBtn.disabled = true;
-        analyzeBtn.title = 'Abre el tablero desde localhost para usar Ollama';
-      }
       if (pingBtn) {
         pingBtn.disabled = true;
         pingBtn.title = 'No disponible en HTTPS';
       }
       setOllamaDot('err');
+      setAIProv('proxy');
     }
   }
 }
@@ -2119,14 +2095,13 @@ async function pushToSupabase(itemsOverride) {
   // Usa ítems pasados directamente (post-análisis) o los del DOM
   let items = itemsOverride;
   if (!items) {
-    const rows = document.querySelectorAll('#bj-list .bj-item');
-    items = Array.from(rows).map(r => ({
-      titulo: r.querySelector('.bj-title')?.textContent?.trim() || '',
-      tipo: r.dataset.type || 'personal',
-      fecha: r.dataset.date || null,
-      hora: r.dataset.time || null,
-      notas: r.dataset.notes || null,
-      fuente: 'table-ro'
+    items = (bujoState.items || []).map(r => ({
+      titulo: r.title || '',
+      tipo: r.type || 'uncertain',
+      fecha: r.date || null,
+      hora: r.start_time || null,
+      notas: r.notes || null,
+      fuente: `table-ro·${bujoState.batchId || 'sin-batch'}`
     })).filter(i => i.titulo);
   }
 
