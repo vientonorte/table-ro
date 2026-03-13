@@ -353,6 +353,33 @@ h1{
   font-size:.9rem; transition:background .15s, color .15s;
 }
 .ollama-ping-btn:hover{ background:rgba(255,255,255,.12); color:var(--txt); }
+/* ── AI Provider selector (multi-proveedor) ── */
+.ai-prov-tabs{display:flex;gap:5px;margin-bottom:12px;}
+.ai-prov-btn{
+  flex:1;padding:7px 6px;border-radius:8px;border:1px solid var(--bd);
+  background:rgba(255,255,255,.04);color:var(--mut);
+  font-family:'Nunito',sans-serif;font-weight:800;font-size:.63rem;
+  cursor:pointer;text-align:center;transition:all .15s;
+}
+.ai-prov-btn.active{background:rgba(124,58,237,.2);border-color:rgba(168,85,247,.5);color:#c084fc;}
+.ai-prov-btn:hover:not(.active){background:rgba(255,255,255,.07);color:var(--txt);}
+.ai-prov-cfg{display:none;}
+.ai-prov-cfg.active{display:block;}
+.ai-key-row{display:flex;gap:6px;align-items:stretch;}
+.ai-key-save{
+  flex-shrink:0;padding:0 12px;border-radius:7px;
+  background:rgba(255,255,255,.07);border:1px solid var(--bd);
+  color:var(--mut);font-family:'Nunito',sans-serif;font-weight:800;
+  font-size:.65rem;cursor:pointer;transition:all .15s;
+}
+.ai-key-save:hover{background:rgba(255,255,255,.14);color:var(--txt);}
+.ai-prov-note{
+  margin-top:6px;font-size:.61rem;color:rgba(253,186,116,.85);
+  line-height:1.5;padding:7px 9px;
+  background:rgba(249,115,22,.07);border:1px solid rgba(249,115,22,.2);
+  border-radius:7px;
+}
+.ai-prov-note.purple{color:#c4b5fd;background:rgba(124,58,237,.09);border-color:rgba(168,85,247,.22);}
 /* fallback colapsable */
 .fallback-toggle{
   display:flex; align-items:center; justify-content:space-between;
@@ -365,6 +392,68 @@ h1{
   margin-top:0;
 }
 .fallback-body.open{ max-height:300px; opacity:1; margin-top:10px; }
+/* ── CMS Sync panel (Supabase) ── */
+.cms-panel{
+  background:var(--s2); border:1px solid var(--bd);
+  border-radius:var(--r); padding:13px 14px; margin-bottom:10px;
+}
+.cms-panel-head{
+  display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;
+}
+.cms-panel-title{
+  font-size:.72rem; font-weight:800; letter-spacing:.03em;
+  text-transform:uppercase; color:var(--txt);
+  display:flex; align-items:center; gap:7px;
+}
+.cms-dot{
+  width:8px; height:8px; border-radius:50%;
+  background:var(--mut); flex-shrink:0; transition:background .3s;
+}
+.cms-dot.ok{ background:#10B981; box-shadow:0 0 6px rgba(16,185,129,.5); }
+.cms-dot.err{ background:#F87171; }
+.cms-dot.syncing{ background:#FBBF24; animation:pulse-dot .9s ease-in-out infinite; }
+.cms-cfg-btn{
+  font-size:.62rem; font-weight:700; padding:5px 10px;
+  background:rgba(255,255,255,.06); border:1px solid var(--bd);
+  border-radius:7px; color:var(--mut); cursor:pointer;
+  transition:background .15s,color .15s; min-height:30px;
+}
+.cms-cfg-btn:hover{ background:rgba(255,255,255,.12); color:var(--txt); }
+.cms-config{
+  overflow:hidden; max-height:0; opacity:0;
+  transition:max-height .35s ease,opacity .25s ease,margin .2s ease;
+  margin-bottom:0;
+}
+.cms-config.open{ max-height:300px; opacity:1; margin-bottom:10px; }
+.cms-status{
+  font-size:.68rem; padding:7px 10px; border-radius:8px;
+  border:1px solid transparent; margin-bottom:8px; display:none;
+}
+.cms-status.show{ display:block; }
+.cms-status.info{ color:#a5b4fc; background:rgba(99,102,241,.1); border-color:rgba(99,102,241,.2); }
+.cms-status.ok{ color:#6ee7b7; background:rgba(16,185,129,.08); border-color:rgba(16,185,129,.2); }
+.cms-status.err{ color:#fca5a5; background:rgba(248,113,113,.08); border-color:rgba(248,113,113,.2); }
+.cms-status.warn{ color:#fcd34d; background:rgba(251,191,36,.08); border-color:rgba(251,191,36,.2); }
+.cms-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+.cms-push-btn{
+  flex:1; display:flex; align-items:center; justify-content:center; gap:7px;
+  padding:10px 14px; border-radius:10px; border:none; cursor:pointer;
+  font-size:.72rem; font-weight:800; min-height:44px;
+  background:linear-gradient(135deg,rgba(16,185,129,.25),rgba(16,185,129,.12));
+  color:#6ee7b7; border:1px solid rgba(16,185,129,.3);
+  transition:background .2s,transform .15s;
+}
+.cms-push-btn:hover:not(:disabled){ background:linear-gradient(135deg,rgba(16,185,129,.38),rgba(16,185,129,.2)); transform:translateY(-1px); }
+.cms-push-btn:disabled{ opacity:.45; cursor:not-allowed; transform:none; }
+.cms-pull-btn{
+  padding:10px 14px; border-radius:10px; border:1px solid var(--bd);
+  background:rgba(255,255,255,.05); color:var(--mut); cursor:pointer;
+  font-size:.72rem; font-weight:700; min-height:44px;
+  transition:background .15s,color .15s;
+}
+.cms-pull-btn:hover:not(:disabled){ background:rgba(255,255,255,.1); color:var(--txt); }
+.cms-pull-btn:disabled{ opacity:.45; cursor:not-allowed; }
+.cms-last-sync{ font-size:.6rem; color:var(--mut); margin-top:5px; text-align:center; }
 /* how-to */
 .how-box{
   background:rgba(124,58,237,.1); border:1px solid rgba(124,58,237,.22);
@@ -835,66 +924,158 @@ h1{
       </div>
       <div class="thumb-grid" id="thumbs" style="margin-top:8px;"></div>
     </div>
-    <!-- ═══ OLLAMA / DEEPSEEK PANEL ═══ -->
+    <!-- ═══ AI ANALYSIS PANEL ═══ -->
     <div class="ollama-panel" id="ollama-panel">
+
+      <!-- ── Selector de proveedor ── -->
+      <div class="ai-prov-tabs">
+        <button class="ai-prov-btn active" data-p="ollama" onclick="setAIProv(this)">🦙 Ollama</button>
+        <button class="ai-prov-btn" data-p="claude" onclick="setAIProv(this)">🐾 OpenClaw</button>
+        <button class="ai-prov-btn" data-p="deepseek" onclick="setAIProv(this)">🔷 DeepSeek</button>
+      </div>
+
       <!-- Cabecera con dot de estado -->
       <div class="ollama-panel-head">
         <div class="ollama-panel-title">
           <span class="ollama-dot" id="ollama-dot"></span>
-          🤖 DeepSeek · Análisis local
+          <span id="ai-prov-label">🦙 Ollama · Análisis local</span>
         </div>
         <button class="ollama-cfg-btn" onclick="toggleOllamaConfig()" id="ollama-cfg-toggle"
           aria-expanded="false" aria-controls="ollama-config">
           ⚙️ Config
         </button>
       </div>
-      <!-- Config expandible (animada con CSS) -->
-      <div class="ollama-config" id="ollama-config" role="region" aria-label="Configuración Ollama">
-        <div class="ollama-config-inner">
-          <div class="ollama-field">
-            <label class="ollama-label" for="ollama-url">URL del servidor</label>
-            <input class="ollama-input" type="url" id="ollama-url"
-              placeholder="http://localhost:11434" autocomplete="off" autocorrect="off" spellcheck="false">
-          </div>
-          <div class="ollama-models-row">
+
+      <!-- Config expandible -->
+      <div class="ollama-config" id="ollama-config" role="region" aria-label="Configuración IA">
+
+        <!-- Config Ollama -->
+        <div class="ai-prov-cfg active" id="aicfg-ollama">
+          <div class="ollama-config-inner">
             <div class="ollama-field">
-              <label class="ollama-label" for="ollama-vision-model">Modelo visión</label>
-              <input class="ollama-input" type="text" id="ollama-vision-model"
-                placeholder="qwen2.5-vl:7b" autocomplete="off" autocorrect="off" spellcheck="false">
+              <label class="ollama-label" for="ollama-url">URL del servidor</label>
+              <input class="ollama-input" type="url" id="ollama-url"
+                placeholder="http://localhost:11434" autocomplete="off" autocorrect="off" spellcheck="false">
             </div>
-            <div class="ollama-field">
-              <label class="ollama-label" for="ollama-analysis-model">Modelo análisis</label>
-              <input class="ollama-input" type="text" id="ollama-analysis-model"
-                placeholder="deepseek-r1:7b" autocomplete="off" autocorrect="off" spellcheck="false">
+            <div class="ollama-models-row">
+              <div class="ollama-field">
+                <label class="ollama-label" for="ollama-vision-model">Modelo visión</label>
+                <input class="ollama-input" type="text" id="ollama-vision-model"
+                  placeholder="qwen2.5-vl:7b" autocomplete="off" autocorrect="off" spellcheck="false">
+              </div>
+              <div class="ollama-field">
+                <label class="ollama-label" for="ollama-analysis-model">Modelo análisis</label>
+                <input class="ollama-input" type="text" id="ollama-analysis-model"
+                  placeholder="deepseek-r1:7b" autocomplete="off" autocorrect="off" spellcheck="false">
+              </div>
             </div>
-          </div>
-          <div class="ollama-field" style="margin-top:2px;">
-            <label class="ollama-label" for="ollama-mode">Modo</label>
-            <select class="ollama-input" id="ollama-mode">
-              <option value="hybrid">Híbrido — visión → DeepSeek (recomendado)</option>
-              <option value="single">Solo visión (un modelo, más rápido)</option>
-            </select>
-          </div>
-          <button class="ollama-save-btn" onclick="saveOllamaConfig()">💾 Guardar</button>
-          <div class="ollama-hint">
-            Requiere Ollama corriendo localmente con CORS habilitado:<br>
-            <code>OLLAMA_ORIGINS="https://vientonorte.github.io" ollama serve</code>
+            <div class="ollama-field" style="margin-top:2px;">
+              <label class="ollama-label" for="ollama-mode">Modo</label>
+              <select class="ollama-input" id="ollama-mode">
+                <option value="hybrid">Híbrido — visión → DeepSeek (recomendado)</option>
+                <option value="single">Solo visión (un modelo, más rápido)</option>
+              </select>
+            </div>
+            <button class="ollama-save-btn" onclick="saveOllamaConfig()">💾 Guardar</button>
+            <div class="ollama-hint">
+              Requiere Ollama corriendo localmente con CORS habilitado:<br>
+              <code>OLLAMA_ORIGINS="https://vientonorte.github.io" ollama serve</code>
+            </div>
           </div>
         </div>
-      </div>
+
+        <!-- Config OpenClaw (Claude) -->
+        <div class="ai-prov-cfg" id="aicfg-claude">
+          <div class="ollama-config-inner">
+            <div class="ollama-field">
+              <label class="ollama-label" for="bj-claude-key">Anthropic API Key</label>
+              <div class="ai-key-row">
+                <input class="ollama-input" type="password" id="bj-claude-key"
+                  placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false">
+                <button class="ai-key-save" onclick="saveBJKey('claude')">💾</button>
+              </div>
+            </div>
+            <div class="ollama-field">
+              <label class="ollama-label" for="bj-claude-model">Modelo</label>
+              <input class="ollama-input" type="text" id="bj-claude-model"
+                value="claude-haiku-4-5-20251001" autocomplete="off" spellcheck="false">
+            </div>
+            <div class="ai-prov-note">
+              🐾 <strong>OpenClaw</strong> — Vision nativa, no requiere Ollama.<br>
+              La key se guarda en localStorage, nunca sale del browser.
+            </div>
+          </div>
+        </div>
+
+        <!-- Config DeepSeek Cloud -->
+        <div class="ai-prov-cfg" id="aicfg-deepseek">
+          <div class="ollama-config-inner">
+            <div class="ollama-field">
+              <label class="ollama-label" for="bj-deepseek-key">DeepSeek API Key</label>
+              <div class="ai-key-row">
+                <input class="ollama-input" type="password" id="bj-deepseek-key"
+                  placeholder="sk-..." autocomplete="off" spellcheck="false">
+                <button class="ai-key-save" onclick="saveBJKey('deepseek')">💾</button>
+              </div>
+            </div>
+            <div class="ai-prov-note purple">
+              🔷 <strong>DeepSeek Cloud</strong> — API oficial, modelo <strong>deepseek-vl2</strong> (visión).<br>
+              No requiere Ollama local.
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /ollama-config -->
+
       <!-- Barra de estado -->
       <div class="ollama-status info" id="ollama-status" role="status" aria-live="polite"></div>
       <!-- Acciones principales -->
       <div class="ollama-actions">
-        <button class="ollama-analyze-btn" id="ollama-analyze-btn" onclick="analyzeBujoWithOllama()">
+        <button class="ollama-analyze-btn" id="ollama-analyze-btn" onclick="analyzeBujoWithAI()">
           <span id="ollama-btn-icon">🤖</span>
-          <span id="ollama-btn-label">Analizar con DeepSeek</span>
+          <span id="ollama-btn-label">Analizar con IA</span>
         </button>
         <button class="ollama-ping-btn" onclick="checkOllamaStatus()"
-          title="Verificar conexión con Ollama" aria-label="Verificar conexión">
+          title="Verificar conexión" aria-label="Verificar conexión" id="ollama-ping-btn">
           🔌
         </button>
       </div>
+    </div>
+    <!-- ═══ CMS SYNC PANEL (Supabase) ═══ -->
+    <div class="cms-panel" id="cms-panel">
+      <div class="cms-panel-head">
+        <div class="cms-panel-title">
+          <span class="cms-dot" id="cms-dot"></span>
+          🔗 Sync CMS · Supabase
+        </div>
+        <button class="cms-cfg-btn" onclick="toggleCMSConfig()" id="cms-cfg-toggle"
+          aria-expanded="false" aria-controls="cms-config">⚙️ Config</button>
+      </div>
+      <div class="cms-config" id="cms-config" role="region" aria-label="Configuración CMS Sync">
+        <div class="ollama-config-inner">
+          <div class="ollama-field">
+            <label class="ollama-label" for="cms-url">Supabase URL</label>
+            <input class="ollama-input" type="url" id="cms-url"
+              placeholder="https://xxxx.supabase.co" autocomplete="off" autocorrect="off" spellcheck="false">
+          </div>
+          <div class="ollama-field">
+            <label class="ollama-label" for="cms-key">Anon Key</label>
+            <input class="ollama-input" type="text" id="cms-key"
+              placeholder="sb_publishable_..." autocomplete="off" autocorrect="off" spellcheck="false">
+          </div>
+          <button class="ollama-save-btn" onclick="saveCMSConfig()">💾 Guardar</button>
+        </div>
+      </div>
+      <div class="cms-status" id="cms-status"></div>
+      <div class="cms-actions">
+        <button class="cms-push-btn" id="cms-push-btn" onclick="pushToSupabase()" disabled>
+          ↑ Enviar al CMS
+        </button>
+        <button class="cms-pull-btn" id="cms-pull-btn" onclick="pullFromSupabase()" disabled>
+          ↓ Traer tareas
+        </button>
+      </div>
+      <div class="cms-last-sync" id="cms-last-sync"></div>
     </div>
     <!-- ═══ FALLBACK MANUAL (colapsable) ═══ -->
     <div>
@@ -1508,6 +1689,20 @@ async function analyzeBujoWithOllama() {
     setOllamaDot('ok');
     setOllamaStatus(`✓ ${items.length} ítem${items.length > 1 ? 's' : ''} extraído${items.length > 1 ? 's' : ''} · Marca y agrega al tablero`, 'ok');
 
+    // Auto-push a Supabase si está configurado
+    const cmsCfg = getCMSConfig();
+    if (cmsCfg.url && cmsCfg.key) {
+      const supaItems = items.map(i => ({
+        titulo: i.text || i.titulo || '',
+        tipo: i.type || i.tipo || 'personal',
+        fecha: i.date || i.fecha || null,
+        hora: i.time || i.hora || null,
+        notas: i.notes || i.notas || null,
+        fuente: 'table-ro·deepseek'
+      })).filter(i => i.titulo);
+      pushToSupabase(supaItems);
+    }
+
   } catch (err) {
     console.error('Ollama error:', err);
     setOllamaDot('err');
@@ -1522,7 +1717,232 @@ async function analyzeBujoWithOllama() {
   }
 }
 
+/* ══════════════════════════════════════════════
+   AI MULTI-PROVIDER (OpenClaw · Ollama · DeepSeek)
+══════════════════════════════════════════════ */
+
+let activeAIProv = 'ollama';
+
+const AI_PROV_LABELS = {
+  ollama:   '🦙 Ollama · Análisis local',
+  claude:   '🐾 OpenClaw · Anthropic API',
+  deepseek: '🔷 DeepSeek · Cloud API'
+};
+
+function setAIProv(btn) {
+  document.querySelectorAll('.ai-prov-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  activeAIProv = btn.dataset.p;
+
+  // Actualizar label del panel
+  const lbl = document.getElementById('ai-prov-label');
+  if (lbl) lbl.textContent = AI_PROV_LABELS[activeAIProv] || '';
+
+  // Mostrar sección de config correspondiente
+  document.querySelectorAll('.ai-prov-cfg').forEach(el => el.classList.remove('active'));
+  const cfg = document.getElementById('aicfg-' + activeAIProv);
+  if (cfg) cfg.classList.add('active');
+
+  // Dot: ocultar para cloud providers (no tienen ping de Ollama)
+  const pingBtn = document.getElementById('ollama-ping-btn');
+  if (pingBtn) pingBtn.style.display = activeAIProv === 'ollama' ? '' : 'none';
+  setOllamaDot('');
+
+  // Cargar keys guardadas
+  if (activeAIProv === 'claude') {
+    const k = localStorage.getItem('ai_key_claude');
+    const el = document.getElementById('bj-claude-key');
+    if (k && el) el.value = k;
+  } else if (activeAIProv === 'deepseek') {
+    const k = localStorage.getItem('ai_key_deepseek');
+    const el = document.getElementById('bj-deepseek-key');
+    if (k && el) el.value = k;
+  }
+}
+
+function saveBJKey(prov) {
+  const el = document.getElementById(prov === 'claude' ? 'bj-claude-key' : 'bj-deepseek-key');
+  if (!el || !el.value.trim()) return;
+  localStorage.setItem('ai_key_' + prov, el.value.trim());
+  setOllamaStatus('✓ API Key guardada', 'ok');
+}
+
+function dataUriPartsIdx(dataUri) {
+  const [header, b64] = dataUri.split(',');
+  const mime = header.match(/data:([^;]+)/)?.[1] || 'image/jpeg';
+  return { b64, mime };
+}
+
+/* ── Prompt compartido (responde JSON) ── */
+function buildMultiProviderPrompt() {
+  return `Eres un asistente de Bullet Journal. Analiza la imagen y extrae TODOS los ítems visibles.
+Devuelve ÚNICAMENTE un array JSON válido, sin texto adicional:
+[{"text":"texto literal del ítem","type":"personal|vinculos|camila|trabajo|fin|bienestar"}]
+
+Clasificación:
+- personal: trámites, pendientes propios, salud personal
+- vinculos: relaciones, amigos, familia, social
+- camila: todo relacionado con Camila
+- trabajo: proyectos, clientes, reuniones laborales
+- fin: finanzas, pagos, presupuesto
+- bienestar: terapia, meditación, deporte, escritura reflexiva`;
+}
+
+/* ── Claude API ── */
+async function callClaudeAPIBujo(images) {
+  const apiKey = document.getElementById('bj-claude-key')?.value.trim()
+    || localStorage.getItem('ai_key_claude') || '';
+  if (!apiKey) throw new Error('Falta API Key de Claude. Ábrela en ⚙️ Config.');
+
+  const model = document.getElementById('bj-claude-model')?.value.trim() || 'claude-haiku-4-5-20251001';
+  const prompt = buildMultiProviderPrompt();
+
+  // Tomar la primera imagen para análisis
+  const { b64, mime } = dataUriPartsIdx('data:image/jpeg;base64,' + images[0]);
+  const safeMime = ['image/jpeg','image/png','image/gif','image/webp'].includes(mime) ? mime : 'image/jpeg';
+
+  setOllamaStatus(`🐾 ${model} procesando imagen…`, 'info');
+
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: 1500,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: safeMime, data: images[0] } },
+          { type: 'text', text: prompt }
+        ]
+      }]
+    })
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.error?.message || `Anthropic ${resp.status}`);
+  }
+  const data = await resp.json();
+  return data.content?.[0]?.text || '';
+}
+
+/* ── DeepSeek Cloud API ── */
+async function callDeepSeekAPIBujo(images) {
+  const apiKey = document.getElementById('bj-deepseek-key')?.value.trim()
+    || localStorage.getItem('ai_key_deepseek') || '';
+  if (!apiKey) throw new Error('Falta API Key de DeepSeek. Ábrela en ⚙️ Config.');
+
+  const prompt = buildMultiProviderPrompt();
+  setOllamaStatus('🔷 DeepSeek Cloud procesando imagen…', 'info');
+
+  const resp = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + apiKey
+    },
+    body: JSON.stringify({
+      model: 'deepseek-vl2',
+      max_tokens: 1500,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + images[0] } },
+          { type: 'text', text: prompt }
+        ]
+      }]
+    })
+  });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.error?.message || `DeepSeek ${resp.status}`);
+  }
+  const data = await resp.json();
+  return data.choices?.[0]?.message?.content || '';
+}
+
+/* ── Router principal ── */
+async function analyzeBujoWithAI() {
+  if (activeAIProv === 'ollama') {
+    // Usa el flujo Ollama existente
+    return analyzeBujoWithOllama();
+  }
+
+  const images = getBJImagesBase64();
+  if (!images.length) {
+    setOllamaStatus('📷 Sube al menos una foto del BuJo primero', 'warn');
+    document.getElementById('ollama-status').style.display = 'block';
+    return;
+  }
+
+  setOllamaBtn(true);
+  setOllamaDot('checking');
+
+  try {
+    let rawResult = '';
+    if (activeAIProv === 'claude')   rawResult = await callClaudeAPIBujo(images);
+    if (activeAIProv === 'deepseek') rawResult = await callDeepSeekAPIBujo(images);
+
+    const items = parseOllamaItems(rawResult);
+    if (!items.length) {
+      setOllamaDot('err');
+      setOllamaStatus('⚠ No se encontraron ítems. Respuesta pegada abajo para revisión.', 'warn');
+      const pa = document.getElementById('paste-area');
+      if (pa) pa.value = rawResult;
+      return;
+    }
+    items.forEach(item => bjList.appendChild(makeBJItem(item)));
+    showBJItems();
+    setOllamaDot('ok');
+    setOllamaStatus(`✓ ${items.length} ítem${items.length > 1 ? 's' : ''} extraído${items.length > 1 ? 's' : ''} · Marca y agrega al tablero`, 'ok');
+
+    // Auto-push Supabase si está configurado
+    const cmsCfg = getCMSConfig();
+    if (cmsCfg.url && cmsCfg.key) {
+      const supaItems = items.map(i => ({
+        titulo: i.text, tipo: i.type, fecha: null, hora: null,
+        notas: null, fuente: 'table-ro·' + activeAIProv
+      })).filter(i => i.titulo);
+      pushToSupabase(supaItems);
+    }
+  } catch (err) {
+    setOllamaDot('err');
+    setOllamaStatus(`✗ ${err.message}`, 'err');
+  } finally {
+    setOllamaBtn(false);
+  }
+}
+
+/* ── Actualizar label del botón según proveedor ── */
+const _origSetOllamaBtn = setOllamaBtn;
+// Sobreescribimos para actualizar el label dinámicamente
+setOllamaBtn = function(loading) {
+  const btn = document.getElementById('ollama-analyze-btn');
+  const icon = document.getElementById('ollama-btn-icon');
+  const label = document.getElementById('ollama-btn-label');
+  if (!btn) return;
+  btn.disabled = loading;
+  if (loading) {
+    if (icon) icon.outerHTML = '<span class="ollama-spinner" id="ollama-btn-icon"></span>';
+    if (label) label.textContent = 'Analizando…';
+  } else {
+    const spinEl = document.getElementById('ollama-btn-icon');
+    if (spinEl) spinEl.outerHTML = '<span id="ollama-btn-icon">🤖</span>';
+    const labels = { ollama:'Analizar con Ollama', claude:'Analizar con OpenClaw', deepseek:'Analizar con DeepSeek' };
+    if (label) label.textContent = labels[activeAIProv] || 'Analizar con IA';
+  }
+};
+
 // Restaurar config guardada y estado inicial del dot
+function isHttpsContext() {
+  return location.protocol === 'https:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1';
+}
+
 function initOllamaUI() {
   const cfg = getOllamaConfig();
   const u = document.getElementById('ollama-url');
@@ -1533,13 +1953,268 @@ function initOllamaUI() {
   if (vm) vm.value = cfg.visionModel;
   if (am) am.value = cfg.analysisModel;
   if (mo) mo.value = cfg.mode;
-  // El dot empieza neutro — el usuario hace ping manual o lanza análisis
   setOllamaDot('');
+
+  // Detectar Mixed Content: HTTPS → HTTP localhost = bloqueado por el browser
+  if (isHttpsContext()) {
+    const panel = document.getElementById('ollama-panel');
+    if (!panel) return;
+
+    // Insertar banner de aviso antes de las acciones
+    const existing = document.getElementById('ollama-https-warn');
+    if (!existing) {
+      const warn = document.createElement('div');
+      warn.id = 'ollama-https-warn';
+      warn.style.cssText = [
+        'background:rgba(251,191,36,.1)',
+        'border:1px solid rgba(251,191,36,.3)',
+        'border-radius:10px',
+        'padding:11px 13px',
+        'margin-bottom:10px',
+        'font-size:.7rem',
+        'line-height:1.6',
+        'color:#fcd34d'
+      ].join(';');
+      warn.innerHTML = `
+        <div style="font-weight:800;margin-bottom:5px;display:flex;align-items:center;gap:6px;">
+          ⚠️ Ollama requiere abrirlo desde localhost
+        </div>
+        <div style="color:rgba(252,211,77,.8);margin-bottom:8px;">
+          Esta página corre en <strong>HTTPS</strong> y Ollama en <strong>HTTP</strong>.
+          El browser bloquea esa mezcla por seguridad (Mixed Content).
+        </div>
+        <div style="font-weight:700;margin-bottom:4px;color:#fcd34d;">Para usar DeepSeek:</div>
+        <div style="font-family:'Courier New',monospace;font-size:.62rem;background:rgba(0,0,0,.35);padding:8px 10px;border-radius:7px;line-height:1.8;color:#fde68a;word-break:break-all;">
+          cd ~/Documents/table-ro<br>
+          ./start-ollama.sh<br>
+          <span style="color:rgba(253,230,138,.55)"># Luego abre:</span><br>
+          open http://localhost:8080
+        </div>
+        <div style="margin-top:8px;font-size:.63rem;color:rgba(252,211,77,.7);">
+          Las demás funciones del tablero siguen disponibles aquí en GitHub Pages.
+        </div>`;
+
+      const actions = panel.querySelector('.ollama-actions');
+      if (actions) panel.insertBefore(warn, actions);
+
+      // Deshabilitar el botón de análisis cuando está en HTTPS
+      const analyzeBtn = document.getElementById('ollama-analyze-btn');
+      const pingBtn = panel.querySelector('.ollama-ping-btn');
+      if (analyzeBtn) {
+        analyzeBtn.disabled = true;
+        analyzeBtn.title = 'Abre el tablero desde localhost para usar Ollama';
+      }
+      if (pingBtn) {
+        pingBtn.disabled = true;
+        pingBtn.title = 'No disponible en HTTPS';
+      }
+      setOllamaDot('err');
+    }
+  }
 }
 
 // ═══ FIN INTEGRACIÓN OLLAMA / DEEPSEEK ═══════════════════
 
-loadBoard(); renderWeek(); initGAuthUI(); initOllamaUI();
+// ═══ INTEGRACIÓN CMS · SUPABASE ══════════════════════════
+const CMS_LS_KEY = 'tablero_cms_config';
+// Credenciales Supabase (se sobreescriben si el usuario las cambia en Config)
+const CMS_DEFAULTS = {
+  url: 'https://mitbnblikyiohnoenuag.supabase.co',
+  key: 'sb_publishable_lLKMlQhrmbeYRwyFmVtGKQ_j4Pte3XM'
+};
+
+function getCMSConfig() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(CMS_LS_KEY));
+    return (saved && saved.url && saved.key) ? saved : CMS_DEFAULTS;
+  } catch { return CMS_DEFAULTS; }
+}
+
+function saveCMSConfig() {
+  const url = (document.getElementById('cms-url')?.value || '').trim().replace(/\/$/, '');
+  const key = (document.getElementById('cms-key')?.value || '').trim();
+  if (!url || !key) { setCMSStatus('Completa URL y key antes de guardar.', 'warn'); return; }
+  localStorage.setItem(CMS_LS_KEY, JSON.stringify({ url, key }));
+  document.getElementById('cms-config')?.classList.remove('open');
+  document.getElementById('cms-cfg-toggle')?.setAttribute('aria-expanded', 'false');
+  setCMSStatus('✓ Config guardada', 'ok');
+  enableCMSButtons(true);
+  pingCMS();
+}
+
+function toggleCMSConfig() {
+  const cfg = document.getElementById('cms-config');
+  const btn = document.getElementById('cms-cfg-toggle');
+  const open = cfg?.classList.toggle('open');
+  btn?.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+
+function setCMSStatus(msg, type) {
+  const el = document.getElementById('cms-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = `cms-status show ${type || 'info'}`;
+}
+
+function setCMSDot(state) {
+  const d = document.getElementById('cms-dot');
+  if (d) d.className = `cms-dot${state ? ' ' + state : ''}`;
+}
+
+function enableCMSButtons(on) {
+  ['cms-push-btn', 'cms-pull-btn'].forEach(id => {
+    const b = document.getElementById(id);
+    if (b) b.disabled = !on;
+  });
+}
+
+function setLastSync() {
+  const el = document.getElementById('cms-last-sync');
+  if (el) el.textContent = `Último sync: ${new Date().toLocaleTimeString('es-CL')}`;
+}
+
+async function pingCMS() {
+  const { url, key } = getCMSConfig();
+  if (!url || !key) return;
+  setCMSDot('syncing');
+  try {
+    const r = await Promise.race([
+      fetch(`${url}/rest/v1/tareas?limit=1`, {
+        headers: { apikey: key, Authorization: `Bearer ${key}` }
+      }),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout')), 8000))
+    ]);
+    if (r.ok) {
+      setCMSDot('ok');
+      setCMSStatus('✓ Conectado a Supabase', 'ok');
+    } else {
+      const err = await r.json().catch(() => ({}));
+      setCMSDot('err');
+      setCMSStatus(`✗ Error ${r.status}: ${err.message || r.statusText}`, 'err');
+    }
+  } catch (e) {
+    setCMSDot('err');
+    setCMSStatus(`✗ Sin conexión: ${e.message}`, 'err');
+  }
+}
+
+// Push: sube los ítems BuJo actuales a Supabase
+async function pushToSupabase(itemsOverride) {
+  const { url, key } = getCMSConfig();
+  if (!url || !key) { setCMSStatus('Configura Supabase primero.', 'warn'); return; }
+
+  // Usa ítems pasados directamente (post-análisis) o los del DOM
+  let items = itemsOverride;
+  if (!items) {
+    const rows = document.querySelectorAll('#bj-list .bj-item');
+    items = Array.from(rows).map(r => ({
+      titulo: r.querySelector('.bj-title')?.textContent?.trim() || '',
+      tipo: r.dataset.type || 'personal',
+      fecha: r.dataset.date || null,
+      hora: r.dataset.time || null,
+      notas: r.dataset.notes || null,
+      fuente: 'table-ro'
+    })).filter(i => i.titulo);
+  }
+
+  if (!items.length) { setCMSStatus('No hay ítems para enviar.', 'warn'); return; }
+
+  const pushBtn = document.getElementById('cms-push-btn');
+  if (pushBtn) { pushBtn.disabled = true; pushBtn.textContent = '↑ Enviando…'; }
+  setCMSDot('syncing');
+  setCMSStatus(`Enviando ${items.length} ítem(s)…`, 'info');
+
+  try {
+    const r = await Promise.race([
+      fetch(`${url}/rest/v1/tareas`, {
+        method: 'POST',
+        headers: {
+          apikey: key,
+          Authorization: `Bearer ${key}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=representation'
+        },
+        body: JSON.stringify(items)
+      }),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout (30s)')), 30000))
+    ]);
+
+    if (r.ok || r.status === 201) {
+      setCMSDot('ok');
+      setCMSStatus(`✓ ${items.length} ítem(s) enviados al CMS`, 'ok');
+      setLastSync();
+    } else {
+      const err = await r.json().catch(() => ({}));
+      setCMSDot('err');
+      setCMSStatus(`✗ Error ${r.status}: ${err.message || r.statusText}`, 'err');
+    }
+  } catch (e) {
+    setCMSDot('err');
+    setCMSStatus(`✗ ${e.message}`, 'err');
+  } finally {
+    if (pushBtn) { pushBtn.disabled = false; pushBtn.innerHTML = '↑ Enviar al CMS'; }
+  }
+}
+
+// Pull: trae tareas del CMS y las muestra en bj-list
+async function pullFromSupabase() {
+  const { url, key } = getCMSConfig();
+  if (!url || !key) { setCMSStatus('Configura Supabase primero.', 'warn'); return; }
+
+  const pullBtn = document.getElementById('cms-pull-btn');
+  if (pullBtn) { pullBtn.disabled = true; pullBtn.textContent = '↓ Trayendo…'; }
+  setCMSDot('syncing');
+  setCMSStatus('Trayendo tareas del CMS…', 'info');
+
+  try {
+    const r = await Promise.race([
+      fetch(`${url}/rest/v1/tareas?order=created_at.desc&limit=50`, {
+        headers: { apikey: key, Authorization: `Bearer ${key}`, Accept: 'application/json' }
+      }),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('Timeout (15s)')), 15000))
+    ]);
+
+    if (!r.ok) { throw new Error(`HTTP ${r.status}`); }
+    const data = await r.json();
+
+    if (!data.length) { setCMSStatus('No hay tareas en el CMS aún.', 'warn'); setCMSDot('ok'); return; }
+
+    // Convertir a formato BuJo interno y renderizar
+    window._bjItems = data.map(t => ({
+      text: t.titulo,
+      type: t.tipo || 'personal',
+      date: t.fecha || '',
+      time: t.hora || '',
+      notes: t.notas || '',
+      done: t.completado || false
+    }));
+    renderBJ(window._bjItems);
+    document.getElementById('bj-section').style.display = '';
+    setCMSDot('ok');
+    setCMSStatus(`✓ ${data.length} tarea(s) traídas del CMS`, 'ok');
+    setLastSync();
+  } catch (e) {
+    setCMSDot('err');
+    setCMSStatus(`✗ ${e.message}`, 'err');
+  } finally {
+    if (pullBtn) { pullBtn.disabled = false; pullBtn.textContent = '↓ Traer tareas'; }
+  }
+}
+
+function initCMSSync() {
+  const cfg = getCMSConfig();
+  if (cfg.url) document.getElementById('cms-url').value = cfg.url;
+  if (cfg.key) document.getElementById('cms-key').value = cfg.key;
+  if (cfg.url && cfg.key) {
+    enableCMSButtons(true);
+    pingCMS();
+  } else {
+    setCMSStatus('Configura Supabase con ⚙️ Config', 'info');
+  }
+}
+// ═══ FIN INTEGRACIÓN CMS · SUPABASE ══════════════════════
+
+loadBoard(); renderWeek(); initGAuthUI(); initOllamaUI(); initCMSSync();
 </script>
 </body>
 </html>
