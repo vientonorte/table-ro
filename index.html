@@ -1730,6 +1730,9 @@ const AI_PROV_LABELS = {
 };
 
 function setAIProv(btn) {
+  // acepta tanto el elemento DOM como un string con el provider
+  if (typeof btn === 'string') btn = document.querySelector(`.ai-prov-btn[data-p="${btn}"]`);
+  if (!btn) return;
   document.querySelectorAll('.ai-prov-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   activeAIProv = btn.dataset.p;
@@ -1747,6 +1750,16 @@ function setAIProv(btn) {
   const pingBtn = document.getElementById('ollama-ping-btn');
   if (pingBtn) pingBtn.style.display = activeAIProv === 'ollama' ? '' : 'none';
   setOllamaDot('');
+
+  // En HTTPS: Ollama bloqueado, cloud providers sí funcionan
+  const analyzeBtn = document.getElementById('ollama-analyze-btn');
+  const httpsWarn = document.getElementById('ollama-https-warn');
+  if (analyzeBtn && isHttpsContext()) {
+    const isOllama = activeAIProv === 'ollama';
+    analyzeBtn.disabled = isOllama;
+    analyzeBtn.title = isOllama ? 'Abre el tablero desde localhost para usar Ollama' : '';
+    if (httpsWarn) httpsWarn.style.display = isOllama ? '' : 'none';
+  }
 
   // Cargar keys guardadas
   if (activeAIProv === 'claude') {
