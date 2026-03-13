@@ -254,12 +254,16 @@ h1{
 .review-list{display:flex;flex-direction:column;gap:8px;max-height:250px;overflow:auto;}
 .review-item{border:1px solid var(--bd);border-radius:10px;background:rgba(255,255,255,.03);padding:8px;display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:start;}
 .review-item.low-confidence{border-color:#f59e0b;box-shadow:0 0 0 1px rgba(245,158,11,.25) inset;}
+.bujo-steps .step.on{color:#c4b5fd;border-color:rgba(168,85,247,.45);background:rgba(124,58,237,.18)}
+.review-toolbar{display:flex;gap:8px;margin-bottom:8px;}
+.review-list{display:flex;flex-direction:column;gap:8px;max-height:250px;overflow:auto;}
+.review-item{border:1px solid var(--bd);border-radius:10px;background:rgba(255,255,255,.03);padding:8px;display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:start;}
+.review-item.low-confidence{border-color:#f59e0b;}
 .review-item.uncertain{border-color:#f87171;}
 .review-fields{display:grid;grid-template-columns:1fr 105px 76px;gap:6px;}
 .review-fields input,.review-fields select{font-size:.68rem;background:rgba(255,255,255,.06);border:1px solid var(--bd);color:var(--txt);border-radius:6px;padding:7px;min-height:34px;}
 .review-meta{font-size:.58rem;color:var(--mut);margin-top:4px;display:flex;gap:8px;flex-wrap:wrap;}
 @media(max-width:560px){.review-fields{grid-template-columns:1fr;}}
-.review-empty{font-size:.67rem;color:var(--mut);padding:10px;border:1px dashed var(--bd);border-radius:8px;text-align:center;}
 
 /* ── Ollama panel ── */
 .ollama-panel{
@@ -1006,6 +1010,7 @@ h1{
 
         <!-- Config Proxy Seguro -->
         <div class="ai-prov-cfg active" id="aicfg-proxy">
+        <div class="ai-prov-cfg" id="aicfg-proxy">
           <div class="ollama-config-inner">
             <div class="ollama-field">
               <label class="ollama-label" for="bj-proxy-endpoint">Endpoint análisis BuJo</label>
@@ -1301,6 +1306,7 @@ const BUJO_STORAGE_KEY='bujo_review_draft_v2';
 const BUJO_ENDPOINTS_KEY='bujo_proxy_endpoints_v1';
 const BUJO_ALLOWED_TYPES=new Set(['event','task','note','reference','habit','uncertain']);
 const bujoState={batchId:null,images:[],items:[],summary:null,lastModalFocus:null,lastApplied:null};
+const bujoState={batchId:null,images:[],items:[],summary:null,lastModalFocus:null};
 const uploadManager={
   allowedTypes:['image/jpeg','image/png','image/heic','image/heif','image/jpg','image/webp'],
   errors:[],
@@ -1321,6 +1327,8 @@ const uploadManager={
     setBujoStep(bujoState.images.length ? 2 : 1);
   },
   remove(id){ bujoState.images=bujoState.images.filter(i=>i.id!==id); imagePreviewRenderer.render(); setBujoStep(bujoState.images.length ? 2 : 1); persistBujoDraft(); }
+  },
+  remove(id){ bujoState.images=bujoState.images.filter(i=>i.id!==id); imagePreviewRenderer.render(); persistBujoDraft(); }
 };
 const imagePreviewRenderer={
   render(){
@@ -1348,6 +1356,7 @@ const dedupeService={
     EVENTS.forEach(ev=>{ this.seen.add(`${ev.allDay?'event':'task'}|${(ev.title||'').replace(/^📓\s*/,'').trim().toLowerCase()}|${ev.iso||''}|${ev.time||''}`); });
   },
   has(item){const k=this.keyFor(item); if(this.seen.has(k)) return true; this.seen.add(k); return false;}
+  seen:new Set(), reset(){this.seen.clear();}, has(item){const k=this.keyFor(item); if(this.seen.has(k)) return true; this.seen.add(k); return false;}
 };
 const reviewState={
   setBatch(batch){ bujoState.batchId=batch.batch_id||uid('batch'); dedupeService.reset(); bujoState.items=(batch.items||[]).map(normalizeItem).filter(Boolean).map(it=>({...it,duplicate:dedupeService.has(it)})); persistBujoDraft(); reviewRenderer.render(); },
@@ -1391,6 +1400,22 @@ const calendarSyncService={
     return out;
   }
 };
+};
+const boardMapper={
+  toCard(item){ const calMap={event:'vinculos',task:'personal',habit:'bienestar',note:'bujo',reference:'bujo',uncertain:'bujo'}; return {title:`📓 ${item.title}`,cal:calMap[item.type]||'bujo',detail:`Origen BuJo: ${bujoState.batchId}`}; },
+  canCreate(item){ return ['event','task','habit'].includes(item.type); }
+};
+const calendarSyncService={
+  async sync(items){
+    const endpoint=aiAnalysisService.calendarEndpoint; if(!endpoint) return [];
+    const out=[];
+    for (const item of items){
+      if(item.type!=='event' || !item.date){ out.push({id:item.id,status:'skipped'}); continue; }
+      try{ const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({item,batch_id:bujoState.batchId})}); out.push({id:item.id,status:r.ok?'ok':'error'});}catch{ out.push({id:item.id,status:'error'}); }
+    }
+    return out;
+  }
+};
 const batchHistoryService={history:[], push(summary){ this.history.unshift({...summary,at:new Date().toISOString()}); this.history=this.history.slice(0,10); }};
 const accessibilityHelpers={ announce(msg){ const el=document.getElementById('ollama-status'); if(el){el.textContent=msg;el.style.display='block';} }, focusDrawer(){document.getElementById('bj-input')?.focus();} };
 const errorReporter={ report(err,context){ console.error('BuJo error',context,err); setOllamaStatus(`✗ ${context}: ${err.message||err}`,'err'); } };
@@ -1399,6 +1424,10 @@ function parsePaste(){ const txt=document.getElementById('paste-area').value.tri
 function renderBJ(items){ bujoState.items=(items||[]).map(i=>normalizeItem(i)); reviewRenderer.render(); }
 function addToBoard(){ return applyBujoBatch(); }
 function clearBJ(){ bujoState.images=[]; bujoState.items=[]; bujoState.batchId=null; imagePreviewRenderer.render(); reviewRenderer.render(); document.getElementById('paste-area').value=''; localStorage.removeItem(BUJO_STORAGE_KEY); setSummary(''); setBujoStep(1); }
+function parsePaste(){ const txt=document.getElementById('paste-area').value.trim(); if(!txt) return; const parsed=[]; txt.split('\n').forEach(ln=>{ const m=ln.trim().match(/^([●◆—○\-\*>•])\s+(.+)$/); if(!m) return; parsed.push(normalizeItem({raw_text:m[2],title:m[2],type:SYM_MAP[m[1]]||'uncertain'})); }); bujoState.items.push(...parsed); reviewRenderer.render(); document.getElementById('paste-area').value=''; persistBujoDraft(); }
+function renderBJ(items){ bujoState.items=(items||[]).map(i=>normalizeItem(i)); reviewRenderer.render(); }
+function addToBoard(){ return applyBujoBatch(); }
+function clearBJ(){ bujoState.images=[]; bujoState.items=[]; bujoState.batchId=null; imagePreviewRenderer.render(); reviewRenderer.render(); document.getElementById('paste-area').value=''; localStorage.removeItem(BUJO_STORAGE_KEY); setSummary(''); }
 const inp=document.getElementById('bj-input'); const upz=document.getElementById('upzone');
 inp.addEventListener('change',e=>uploadManager.onFiles(e.target.files));
 upz.addEventListener('dragover',e=>{e.preventDefault();upz.classList.add('drag');});
@@ -1432,6 +1461,13 @@ async function applyBujoBatch(){
   const firstBody=document.querySelector('.wday-body'); let cards=0;
   const createdCards=[];
   selected.filter(boardMapper.canCreate).forEach(item=>{ const card=makeCard(boardMapper.toCard(item)); card.dataset.batchId=bujoState.batchId||'batch_manual'; firstBody?.appendChild(card); firstBody?.querySelector('.day-empty')?.remove(); cards++; createdCards.push(card); });
+function restoreBujoDraft(){ try{ const d=JSON.parse(localStorage.getItem(BUJO_STORAGE_KEY)||'{}'); if(d&&Array.isArray(d.items)){ bujoState.batchId=d.batchId||null; bujoState.images=Array.isArray(d.images)?d.images:[]; bujoState.items=d.items.map(normalizeItem).filter(Boolean); imagePreviewRenderer.render(); reviewRenderer.render(); } }catch{} }
+function saveBujoEndpoints(){ aiAnalysisService.saveEndpoints(); setOllamaStatus('✓ Endpoints guardados','ok'); }
+function setSummary(msg,type='info'){ const el=document.getElementById('batch-summary'); if(!el) return; el.className='ollama-status '+type; el.style.display=msg?'block':'none'; el.textContent=msg; }
+async function applyBujoBatch(){
+  const selected=bujoState.items.filter(i=>i.selected); if(!selected.length){ setSummary('Selecciona al menos un ítem para continuar.','warn'); return; }
+  const firstBody=document.querySelector('.wday-body'); let cards=0;
+  selected.filter(boardMapper.canCreate).forEach(item=>{ const card=makeCard(boardMapper.toCard(item)); firstBody?.appendChild(card); firstBody?.querySelector('.day-empty')?.remove(); cards++; });
   const syncRes=await calendarSyncService.sync(selected);
   const synced=syncRes.filter(r=>r.status==='ok').length;
   const manual=selected.filter(i=>i.needs_review||i.type==='uncertain').length;
@@ -1446,6 +1482,7 @@ function undoLastBujoBatch(){
   bujoState.lastApplied=null;
   document.querySelectorAll('.wday').forEach(updateDayCount);
   setSummary('Último lote deshecho en tablero.','ok');
+  batchHistoryService.push({batchId:bujoState.batchId,cards,synced,manual}); setSummary(summary,'ok'); closeDrawer();
 }
 const SOURCES=[
   {id:'personal',name:'Personal · Vínculos · Laboral',desc:'gaete.gaona@gmail.com',cal:'personal',color:'#EC4899',icon:'👤',gcalId:'gaete.gaona@gmail.com',readonly:false,icsUrl:'https://calendar.google.com/calendar/ical/gaete.gaona%40gmail.com/public/basic.ics',embedUrl:'https://calendar.google.com/calendar/embed?src=gaete.gaona%40gmail.com&ctz=America%2FSantiago',lsKey:'ics_personal'},
@@ -1894,6 +1931,8 @@ async function analyzeBujoWithAI() {
     setBujoStep(2);
     const payloadRaw = await aiAnalysisService.analyzeViaProxy(bujoState.images);
     const payload = validateProxyResponse(payloadRaw);
+    const payload = await aiAnalysisService.analyzeViaProxy(bujoState.images);
+    if (!payload || !Array.isArray(payload.items)) throw new Error('Respuesta sin items válidos');
     reviewState.setBatch(payload);
     const issues = bujoState.items.filter(i => i.needs_review).length;
     setOllamaDot('ok');
