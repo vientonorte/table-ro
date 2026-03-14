@@ -158,11 +158,10 @@
             align-items: center;
             gap: 7px;
             padding: 7px 16px;
-            border-radius: 8px;
-            border: none;
-            background: linear-gradient(135deg, rgba(168, 85, 247, .25), rgba(236, 72, 153, .15));
-            border: 1px solid rgba(168, 85, 247, .4);
-            color: #d8b4fe;
+            border-radius: var(--r);
+            border: 1px solid color-mix(in srgb, var(--bujo) 50%, transparent);
+            background: linear-gradient(135deg, var(--bujo-a), color-mix(in srgb, var(--ro-a) 60%, transparent));
+            color: color-mix(in srgb, var(--bujo) 80%, var(--txt));
             font-family: 'Nunito', sans-serif;
             font-weight: 800;
             font-size: .75rem;
@@ -175,16 +174,17 @@
         }
         
         .bujo-btn:hover {
-            background: linear-gradient(135deg, rgba(168, 85, 247, .38), rgba(236, 72, 153, .22));
+            background: linear-gradient(135deg, color-mix(in srgb, var(--bujo-a) 180%, transparent), color-mix(in srgb, var(--ro-a) 100%, transparent));
             transform: translateY(-1px);
-            box-shadow: 0 4px 16px rgba(168, 85, 247, .25);
+            box-shadow: 0 4px 16px color-mix(in srgb, var(--bujo) 30%, transparent);
+            border-color: var(--bujo);
         }
         
         .bujo-btn .badge {
             position: absolute;
             top: -5px;
             right: -5px;
-            background: #EC4899;
+            background: var(--bujo);
             color: #fff;
             font-size: .55rem;
             font-weight: 900;
@@ -2864,7 +2864,7 @@
             zone.addEventListener('dragover', e => {
                 if (!DRAG.card) return;
                 e.preventDefault();
-                zone.closest('.wday') ? .classList.add('drag-over-col');
+                zone.closest('.wday')?.classList.add('drag-over-col');
                 removePH();
                 const ph = document.createElement('div');
                 ph.className = 'drop-placeholder';
@@ -2883,18 +2883,18 @@
             });
             zone.addEventListener('dragleave', e => {
                 if (!zone.contains(e.relatedTarget)) {
-                    zone.closest('.wday') ? .classList.remove('drag-over-col');
+                    zone.closest('.wday')?.classList.remove('drag-over-col');
                     removePH();
                 }
             });
             zone.addEventListener('drop', e => {
                 e.preventDefault();
                 if (!DRAG.card) return;
-                zone.closest('.wday') ? .classList.remove('drag-over-col');
+                zone.closest('.wday')?.classList.remove('drag-over-col');
                 const ph = zone.querySelector('.drop-placeholder');
                 ph ? zone.insertBefore(DRAG.card, ph) : zone.appendChild(DRAG.card);
                 removePH();
-                zone.querySelector('.day-empty') ? .remove();
+                zone.querySelector('.day-empty')?.remove();
                 updateDayCount(zone.closest('.wday'));
             });
         }
