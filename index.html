@@ -2272,7 +2272,7 @@
                                 </div>
                             </div>
                             <div class="ai-prov-note purple">
-                                🔷 <strong>DeepSeek Cloud</strong> — API oficial, modelo <strong>deepseek-vl2</strong> (visión).<br> No requiere Ollama local.
+                                🔷🐾 <strong>Pipeline dual QA</strong> — Claude transcribe la imagen → DeepSeek extrae ítems → Claude valida.<br> Requiere ambas API keys (Anthropic + DeepSeek).
                             </div>
                         </div>
                     </div>
@@ -3421,8 +3421,8 @@ let activeAIProv = 'ollama';
 
 const AI_PROV_LABELS = {
   ollama:'🦙 Ollama · Análisis local',
-  claude:'🐾 OpenClaw · Claude',
-  deepseek:'🔷 DeepSeek Cloud'
+  claude:'🐾 OpenClaw · Claude directo',
+  deepseek:'🔷🐾 Dual QA · Claude + DeepSeek'
 };
 
 function setAIProv(btn) {
@@ -3440,7 +3440,7 @@ function setAIProv(btn) {
   const pingBtn = document.getElementById('ollama-ping-btn');
   if (pingBtn) pingBtn.style.display = activeAIProv === 'ollama' ? '' : 'none';
   const label = document.getElementById('ollama-btn-label');
-  if (label) label.textContent = activeAIProv === 'ollama' ? 'Analizar con Ollama' : activeAIProv === 'claude' ? 'Analizar con Claude' : 'Analizar con DeepSeek';
+  if (label) label.textContent = activeAIProv === 'ollama' ? 'Analizar con Ollama' : activeAIProv === 'claude' ? 'Analizar con Claude' : 'Dual QA · Claude → DeepSeek → Claude';
 }
 
 function saveBJKey(provider) {
@@ -3471,35 +3471,74 @@ async function callClaudeAPIBujo(imagesB64) {
   return (data.content || []).map(b => b.text || '').join('');
 }
 
-async function callDeepSeekAPIBujo(imagesB64) {
-  const key = localStorage.getItem('bj_deepseek_key') || '';
-  if (!key) throw new Error('Configura tu DeepSeek API Key en ⚙️ Config');
-  // DeepSeek chat no soporta imágenes — pipeline híbrido: Ollama visión local → DeepSeek análisis cloud
-  let transcription = '';
-  if (imagesB64.length) {
-    const cfg = getOllamaConfig();
-    setOllamaStatus('👁 1/2 · ' + cfg.visionModel + ' transcribiendo (local)…', 'info');
-    try {
-      transcription = await callOllamaAPI(
-        cfg.url, cfg.visionModel,
-        [{ role: 'user', content: 'Transcribe fielmente todo el texto manuscrito de esta página de bullet journal. Preserva los símbolos (●, ○, ◆, —, >, *). Devuelve solo la transcripción.' }],
-        imagesB64
-      );
-      transcription = stripThinkTags(transcription);
-    } catch (e) {
-      throw new Error('DeepSeek necesita Ollama local para visión. ' + e.message);
-    }
-  }
-  if (!transcription.trim()) throw new Error('No se pudo transcribir. Verifica que Ollama corra con modelo de visión.');
-  setOllamaStatus('🔷 2/2 · DeepSeek analizando…', 'info');
+// ── Pipeline dual QA: Claude (visión+transcripción) → DeepSeek (extracción) → Claude (validación) ──
+async function callClaudeRaw(key, model, messages) {
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model, max_tokens: 2048, messages })
+  });
+  if (!resp.ok) throw new Error('Claude API ' + resp.status);
+  const data = await resp.json();
+  return (data.content || []).map(b => b.text || '').join('');
+}
+
+async function callDeepSeekRaw(key, messages) {
   const resp = await fetch('https://api.deepseek.com/chat/completions', {
     method: 'POST',
     headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: buildBujoPrompt(transcription) }], max_tokens: 2048 })
+    body: JSON.stringify({ model: 'deepseek-chat', messages, max_tokens: 2048 })
   });
-  if (!resp.ok) { const errTxt = await resp.text().catch(function(){ return ''; }); throw new Error('DeepSeek API ' + resp.status + ': ' + errTxt.slice(0,100)); }
+  if (!resp.ok) { const t = await resp.text().catch(function(){ return ''; }); throw new Error('DeepSeek API ' + resp.status + ': ' + t.slice(0,100)); }
   const data = await resp.json();
   return data.choices?.[0]?.message?.content || '';
+}
+
+async function callDeepSeekAPIBujo(imagesB64) {
+  const dsKey = localStorage.getItem('bj_deepseek_key') || '';
+  const clKey = localStorage.getItem('bj_claude_key') || '';
+  const clModel = document.getElementById('bj-claude-model')?.value || 'claude-haiku-4-5-20251001';
+  if (!dsKey) throw new Error('Configura tu DeepSeek API Key en ⚙️ Config');
+  if (!clKey) throw new Error('Pipeline dual requiere también la Anthropic API Key en ⚙️ Config → OpenClaw');
+
+  // ── PASO 1/3: Claude transcribe la imagen ──
+  setOllamaStatus('🐾 1/3 · Claude transcribiendo imagen…', 'info');
+  const visionContent = [
+    ...imagesB64.map(b64 => ({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: b64 } })),
+    { type: 'text', text: 'Transcribe fielmente TODO el texto manuscrito de esta página de bullet journal. Preserva exactamente los símbolos (●, ○, ◆, —, >, *, →, ×), los saltos de línea y la sangría. Marca como [ilegible] lo que no puedas leer. Devuelve solo la transcripción sin comentarios.' }
+  ];
+  const transcription = await callClaudeRaw(clKey, clModel, [{ role: 'user', content: visionContent }]);
+  if (!transcription.trim()) throw new Error('Claude no devolvió transcripción.');
+
+  // ── PASO 2/3: DeepSeek extrae y clasifica ítems ──
+  setOllamaStatus('🔷 2/3 · DeepSeek extrayendo ítems…', 'info');
+  const dsResult = await callDeepSeekRaw(dsKey, [{ role: 'user', content: buildBujoPrompt(transcription) }]);
+  const dsItems = parseOllamaItems(dsResult);
+  if (!dsItems.length) throw new Error('DeepSeek no extrajo ítems del texto transcrito.');
+
+  // ── PASO 3/3: Claude valida y corrige la extracción ──
+  setOllamaStatus('🐾 3/3 · Claude validando extracción…', 'info');
+  const qaPrompt = `Eres un QA reviewer. Otro modelo (DeepSeek) analizó un bullet journal y extrajo estos ítems:
+
+## Transcripción original:
+${transcription}
+
+## Extracción de DeepSeek:
+${JSON.stringify(dsItems, null, 2)}
+
+## Tu tarea:
+1. Compara la extracción contra la transcripción original
+2. Corrige errores de categorización (personal, vinculos, camila, trabajo, fin, bienestar)
+3. Agrega ítems que DeepSeek haya omitido
+4. Elimina duplicados o ítems inventados
+5. Responde ÚNICAMENTE con el JSON corregido, sin texto adicional:
+[{"text":"texto","type":"categoria"}]`;
+
+  const qaResult = await callClaudeRaw(clKey, clModel, [{ role: 'user', content: qaPrompt }]);
+  const qaItems = parseOllamaItems(qaResult);
+
+  // Si el QA de Claude devolvió resultados, usarlos; si no, mantener los de DeepSeek
+  return qaItems.length ? qaResult : dsResult;
 }
 
 async function analyzeBujoWithAI() {
