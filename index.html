@@ -2352,9 +2352,14 @@
                     <div class="ftag" style="background:rgba(236,72,153,.12);border-color:#EC4899;color:#EC4899" onclick="filterBJ('bienestar',this)">Bienestar</div>
                 </div>
                 <div class="bj-list" id="bj-list"></div>
-                <div class="btn-row" style="margin-top:10px;">
-                    <button class="btn btn-p" onclick="addToBoard()">＋ Agregar al tablero</button>
-                    <button class="btn btn-g" onclick="clearBJ()">🗑 Limpiar</button>
+                <div class="mfield" style="margin-top:10px;display:flex;align-items:center;gap:8px;">
+                    <label style="font-size:.68rem;color:var(--mut);white-space:nowrap">📅 Día destino</label>
+                    <select id="bj-day-sel" style="flex:1;font-size:.68rem"></select>
+                </div>
+                <div class="btn-row" style="margin-top:8px;">
+                    <button class="btn btn-p" style="flex:1;justify-content:center" onclick="addAllToBoard()">＋ Agregar todo</button>
+                    <button class="btn btn-g" onclick="addToBoard(false)">☑ Selección</button>
+                    <button class="btn btn-g" onclick="clearBJ()">🗑</button>
                 </div>
             </div>
             <div class="hint"><span>💡</span> Simbología BuJo: <strong style="color:#EC4899">●</strong> Personal &nbsp;<strong style="color:#7C3AED">◆</strong> Vínculos &nbsp;<strong style="color:#EC4899">○</strong> Bienestar &nbsp;<strong style="color:#F97316">*</strong>                Trabajo &nbsp;<strong style="color:#10B981">></strong> Camila</div>
@@ -2955,7 +2960,8 @@ function renderWeek(){
   });
   applyCardStates();
 }
-function openDrawer(){ bujoState.lastModalFocus=document.activeElement; document.getElementById('drawer').classList.add('open'); document.getElementById('overlay').classList.add('open'); accessibilityHelpers?.focusDrawer?.(); }
+function populateBJDaySel(){ const sel=document.getElementById('bj-day-sel'); if(!sel) return; sel.innerHTML=''; const today=isoOf(new Date()); Array.from({length:7},(_,i)=>addDays(weekStart,i)).forEach(d=>{ const iso=isoOf(d); const opt=document.createElement('option'); opt.value=iso; opt.textContent=FDAYS[d.getDay()]+' '+d.getDate(); if(iso===today) opt.selected=true; sel.appendChild(opt); }); }
+function openDrawer(){ populateBJDaySel(); bujoState.lastModalFocus=document.activeElement; document.getElementById('drawer').classList.add('open'); document.getElementById('overlay').classList.add('open'); accessibilityHelpers?.focusDrawer?.(); }
 function closeDrawer(){ document.getElementById('drawer').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); if(bujoState.lastModalFocus&&bujoState.lastModalFocus.focus) bujoState.lastModalFocus.focus(); }
 const BJ_CAL={
   personal:{c:'#EC4899',l:'Personal'}, vinculos:{c:'#7C3AED',l:'Vínculos'},
@@ -2972,7 +2978,9 @@ function showBJItems(){ bjSec.style.display=bjList.children.length?'block':'none
 BUJO_INIT.forEach(o=>bjList.appendChild(makeBJItem(o))); showBJItems();
 function parsePaste(){ const txt=document.getElementById('paste-area').value.trim(); if(!txt) return; let added=0; txt.split('\n').forEach(ln=>{ const m=ln.trim().match(/^([●◆—○\-\*])\s+(.+)$/); if(!m) return; bjList.appendChild(makeBJItem({text:m[2].trim(),type:SYM_MAP[m[1]]||'personal'})); added++; }); document.getElementById('paste-area').value=''; if(added) showBJItems(); }
 function filterBJ(type,btn){ document.querySelectorAll('#ftags .ftag').forEach(t=>t.classList.remove('on')); btn.classList.add('on'); document.querySelectorAll('#bj-list .bj-item').forEach(el=>{ el.style.display=(type==='all'||el.dataset.type===type)?'flex':'none'; }); }
-function addToBoard(){ const checked=[...document.querySelectorAll('#bj-list .bj-item')].filter(el=>el.querySelector('input').checked); if(!checked.length){ alert('Marca las tareas que quieres agregar ☝️'); return; } const firstBody=document.querySelector('.wday-body'); checked.forEach(el=>{ const txt=el.querySelector('.bj-item-text').textContent; const calKey=el.dataset.type||'bujo'; const card=makeCard({title:'📓 '+txt,cal:calKey}); firstBody?.appendChild(card); firstBody?.querySelector('.day-empty')?.remove(); el.remove(); }); showBJItems(); closeDrawer(); }
+function getBJTargetDay(){ return document.getElementById('bj-day-sel')?.value || isoOf(new Date()); }
+function addToBoard(all=false){ const items=[...document.querySelectorAll('#bj-list .bj-item')].filter(el=>all||el.querySelector('input').checked); if(!items.length){ if(!all) alert('Marca las tareas que quieres agregar ☝️'); return; } const iso=getBJTargetDay(); const body=document.getElementById('wb-'+iso)||document.querySelector('.wday-body'); items.forEach(el=>{ const txt=el.querySelector('.bj-item-text').textContent; const calKey=el.dataset.type||'bujo'; const card=makeCard({title:'📓 '+txt,cal:calKey}); if(body){body.appendChild(card); const emp=body.querySelector('.day-empty'); if(emp) emp.remove();} el.remove(); }); if(body) updateDayCount(body.closest('.wday')); showBJItems(); scheduleAutoSave(); renderWeek(); closeDrawer(); }
+function addAllToBoard(){ addToBoard(true); }
 function clearBJ(){ bjList.innerHTML=''; document.getElementById('paste-area').value=''; document.getElementById('thumbs').innerHTML=''; showBJItems(); }
 const inp=document.getElementById('bj-input'); const upz=document.getElementById('upzone'); const ths=document.getElementById('thumbs');
 inp.addEventListener('change',e=>handleFiles(e.target.files));
@@ -2994,6 +3002,13 @@ function parseICS(text,calKey){
   blocks.forEach(blk=>{ const end=blk.indexOf('END:VEVENT'); if(end>-1) blk=blk.slice(0,end); const get=key=>{ const m=blk.match(new RegExp(`^${key}[^:\\r\\n]*:(.+)$`,'m')); return m?m[1].trim().replace(/\\n/gi,'').replace(/\\,/g,',').replace(/\\\\/g,'\\'):null; }; if((get('STATUS')||'').toUpperCase()==='CANCELLED') return; const dtRaw=get('DTSTART')||''; const summary=(get('SUMMARY')||'(sin título)').slice(0,80); const uid=get('UID')||''; let iso=null,time=null,allDay=false; const dt=dtRaw.replace(/\s/g,''); if(/^\d{8}T\d{6}/.test(dt)){ const y=dt.slice(0,4),mo=dt.slice(4,6),d=dt.slice(6,8),h=dt.slice(9,11),mi=dt.slice(11,13); if(dt.endsWith('Z')){ const d2=new Date(`${y}-${mo}-${d}T${h}:${mi}:00Z`); const fmt=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(d2); const[datePart,timePart]=(fmt+', 00:00').split(', '); iso=datePart; time=timePart.replace(/^24:/,'00:').slice(0,5); } else { iso=`${y}-${mo}-${d}`; time=`${h}:${mi}`; } } else if(/^\d{8}$/.test(dt)){ iso=`${dt.slice(0,4)}-${dt.slice(4,6)}-${dt.slice(6,8)}`; allDay=true; } if(!iso) return; const evDate=new Date(iso); if(evDate<from||evDate>to) return; evs.push({iso,title:summary,cal:calKey,time,allDay,uid,fromCal:true}); });
   return evs;
 }
+// ─── ICS cache helpers ───
+const ICS_CACHE_TTL = 15 * 60 * 1000; // 15 min
+function icsCache(srcId){ try{ return JSON.parse(localStorage.getItem('ics_cache_'+srcId)||'null'); }catch(_){ return null; } }
+function setIcsCache(srcId,evs){ try{ localStorage.setItem('ics_cache_'+srcId,JSON.stringify({ts:Date.now(),evs})); }catch(_){} }
+function clearIcsCache(srcId){ localStorage.removeItem('ics_cache_'+srcId); }
+async function syncSourceCached(srcId){ const cache=icsCache(srcId); if(cache&&(Date.now()-cache.ts)<ICS_CACHE_TTL){ for(let i=EVENTS.length-1;i>=0;i--){ const src=SOURCES.find(s=>s.id===srcId); if(src&&EVENTS[i].cal===src.cal&&EVENTS[i].uid) EVENTS.splice(i,1); } EVENTS.push(...cache.evs); const src=SOURCES.find(s=>s.id===srcId); SYNC_STATUS[srcId]={ok:true,count:cache.evs.length,time:new Date(cache.ts),via:'cache'}; setSourceStatus(srcId,'ok',cache.evs.length); syncSource(srcId,null); return; } syncSource(srcId,null); }
+async function syncAllCached(){ await Promise.allSettled(SOURCES.map(s=>syncSourceCached(s.id))); renderWeek(); }
 async function syncSource(srcId,btn){
   const src=SOURCES.find(s=>s.id===srcId); if(!src) return;
   if(btn){btn.textContent='⏳';btn.disabled=true;} updateSyncTopBtn('syncing'); setSourceStatus(srcId,'loading');
@@ -3022,6 +3037,7 @@ async function syncSource(srcId,btn){
     }
     for(let i=EVENTS.length-1;i>=0;i--){ if(EVENTS[i].cal===src.cal&&EVENTS[i].uid) EVENTS.splice(i,1); } EVENTS.push(...newEvs);
     SYNC_STATUS[srcId]={ok:true,count:newEvs.length,time:new Date(),via:gToken&&src.gcalId?'API':icsVia};
+    if(!gToken||!src.gcalId) setIcsCache(srcId,newEvs);
     setSourceStatus(srcId,'ok',newEvs.length); if(btn){btn.textContent='✓ OK';setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},1800);} renderWeek(); updateSyncTopBtn('synced');
   } catch(err){ SYNC_STATUS[srcId]={ok:false,error:err.message,time:new Date()}; setSourceStatus(srcId,'error',0,err.message); if(btn){btn.textContent='⚠️';setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},2500);} updateSyncTopBtn('error'); }
 }
@@ -3360,9 +3376,15 @@ async function analyzeBujoWithOllama() {
       return;
     }
     reviewState.setBatch({batch_id:uid('batch'),items});
+    // Auto-seleccionar todos los ítems extraídos
+    items.forEach(item=>{ if(item.text||item.title){ bjList.appendChild(makeBJItem({text:item.text||item.title,type:item.type||'uncertain'})); } });
+    document.querySelectorAll('#bj-list .bj-item input[type=checkbox]').forEach(cb=>cb.checked=true);
+    showBJItems();
+    // Actualizar selector de día y mostrar sección
+    populateBJDaySel();
     setOllamaDot('ok');
     const reviewPending = bujoState.items.filter(i=>i.needs_review).length;
-    setOllamaStatus(`✓ ${items.length} ítem${items.length > 1 ? 's' : ''} extraído${items.length > 1 ? 's' : ''} · ${reviewPending} con revisión`, reviewPending ? 'warn' : 'ok');
+    setOllamaStatus(`✓ ${items.length} ítem${items.length > 1 ? 's' : ''} extraído${items.length > 1 ? 's' : ''} · todos seleccionados · elige día y presiona "+ Agregar todo"`, 'ok');
 
     // Auto-push a Supabase si está configurado
     const cmsCfg = getCMSConfig();
@@ -3444,9 +3466,11 @@ async function analyzeBujoWithAI() {
       return;
     }
     items.forEach(item => bjList.appendChild(makeBJItem(item)));
+    document.querySelectorAll('#bj-list .bj-item input[type=checkbox]').forEach(cb=>cb.checked=true);
     showBJItems();
+    populateBJDaySel();
     setOllamaDot('ok');
-    setOllamaStatus(`✓ ${bujoState.items.length} ítems detectados · ${issues} requieren revisión`, issues ? 'warn' : 'ok');
+    setOllamaStatus(`✓ ${items.length} ítem${items.length>1?'s':''} detectado${items.length>1?'s':''} · todos seleccionados · elige día y presiona "+ Agregar todo"`, 'ok');
   } catch (err) {
     setOllamaDot('err');
   } finally {
@@ -3722,7 +3746,21 @@ function initCMSSync() {
 }
 // ═══ FIN INTEGRACIÓN CMS · SUPABASE ══════════════════════
 
+// ─── Auto-save con debounce ───
+let _autoSaveT=null;
+function scheduleAutoSave(){ clearTimeout(_autoSaveT); _autoSaveT=setTimeout(()=>{ saveBoard(); },3000); }
+(function patchAutoSave(){
+  const orig=makeCard;
+  // patch click en .done-toggle via delegación
+  document.addEventListener('change',e=>{ if(e.target.matches('.bj-item input[type=checkbox]')||e.target.matches('.det-area')) scheduleAutoSave(); });
+  document.addEventListener('click',e=>{ if(e.target.matches('.done-toggle')||e.target.closest('.done-toggle')) scheduleAutoSave(); });
+})();
+
 loadBoard(); renderWeek(); initGAuthUI(); initOllamaUI(); initCMSSync();
+
+// ─── Auto-sync al cargar y cada 15 min ───
+setTimeout(()=>syncAllCached(), 1500);
+setInterval(()=>syncAllCached(), ICS_CACHE_TTL);
     </script>
 </body>
 
