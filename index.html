@@ -2864,7 +2864,7 @@
             zone.addEventListener('dragover', e => {
                 if (!DRAG.card) return;
                 e.preventDefault();
-                zone.closest('.wday') ? .classList.add('drag-over-col');
+                zone.closest('.wday')?.classList.add('drag-over-col');
                 removePH();
                 const ph = document.createElement('div');
                 ph.className = 'drop-placeholder';
@@ -2883,18 +2883,18 @@
             });
             zone.addEventListener('dragleave', e => {
                 if (!zone.contains(e.relatedTarget)) {
-                    zone.closest('.wday') ? .classList.remove('drag-over-col');
+                    zone.closest('.wday')?.classList.remove('drag-over-col');
                     removePH();
                 }
             });
             zone.addEventListener('drop', e => {
                 e.preventDefault();
                 if (!DRAG.card) return;
-                zone.closest('.wday') ? .classList.remove('drag-over-col');
+                zone.closest('.wday')?.classList.remove('drag-over-col');
                 const ph = zone.querySelector('.drop-placeholder');
                 ph ? zone.insertBefore(DRAG.card, ph) : zone.appendChild(DRAG.card);
                 removePH();
-                zone.querySelector('.day-empty') ? .remove();
+                zone.querySelector('.day-empty')?.remove();
                 updateDayCount(zone.closest('.wday'));
             });
         }
