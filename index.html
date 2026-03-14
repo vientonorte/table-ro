@@ -380,6 +380,14 @@
         <span class="btn-label">🤖 Analizar Bullet</span>
       </button>
 
+                    <div class="btn-row" style="margin-top:6px;">
+                        <button class="btn btn-g" style="width:100%;justify-content:center;" onclick="continueWithoutAI()">↪ Continuar sin IA (modo manual)</button>
+                    </div>
+
+                    <div id="ai-fallback-note" class="hint" style="display:none;">
+                        <span>⚠️</span> No se pudo analizar con IA. Puedes continuar en modo manual desde el Paso 4.
+                    </div>
+
                     <div class="progress-bar-wrap" id="ai-progress-wrap" style="display:none;" aria-live="polite">
                         <div class="progress-bar" id="ai-progress"></div>
                     </div>

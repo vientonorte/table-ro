@@ -260,49 +260,80 @@ const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 const MONTHS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
 const FDAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
-function isoOf(d) { const y = d.getFullYear(),
+function isoOf(d) {
+    const y = d.getFullYear(),
         m = d.getMonth() + 1,
-        dd = d.getDate(); return `${y}-${String(m).padStart(2,'0')}-${String(dd).padStart(2,'0')}`; }
+        dd = d.getDate();
+    return `${y}-${String(m).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+}
 
-function addDays(d, n) { const r = new Date(d);
-    r.setDate(r.getDate() + n); return r; }
+function addDays(d, n) {
+    const r = new Date(d);
+    r.setDate(r.getDate() + n);
+    return r;
+}
 
-function mondayOf(d) { const r = new Date(d);
-    r.setHours(12, 0, 0, 0); const day = r.getDay();
-    r.setDate(r.getDate() - (day === 0 ? 6 : day - 1)); return r; }
+function mondayOf(d) {
+    const r = new Date(d);
+    r.setHours(12, 0, 0, 0);
+    const day = r.getDay();
+    r.setDate(r.getDate() - (day === 0 ? 6 : day - 1));
+    return r;
+}
 
 // UX IMPROVEMENT: announcer accesible reutilizable.
-function announce(msg) { const live = document.getElementById('sr-live'); if (!live) return;
+function announce(msg) {
+    const live = document.getElementById('sr-live');
+    if (!live) return;
     live.textContent = '';
-    setTimeout(() => { live.textContent = msg; }, 15); }
+    setTimeout(() => { live.textContent = msg; }, 15);
+}
 let BUJO_STEP = 1;
 let SYNC_ADVANCED = false;
 // UX IMPROVEMENT: flujo guiado en 5 pasos para reducir carga cognitiva.
-function setBujoStep(step) { BUJO_STEP = Math.max(1, Math.min(5, Number(step || 1)));
+function setBujoStep(step) {
+    BUJO_STEP = Math.max(1, Math.min(5, Number(step || 1)));
     document.querySelectorAll('.step-pill').forEach((el, idx) => el.classList.toggle('active', idx + 1 === BUJO_STEP));
     document.querySelectorAll('.step-panel').forEach((el, idx) => el.classList.toggle('active', idx + 1 === BUJO_STEP));
-    announce(`Paso ${BUJO_STEP} activo en captura BuJo`); }
+    announce(`Paso ${BUJO_STEP} activo en captura BuJo`);
+}
 
-function toggleLegend() { const panel = document.getElementById('legend-panel'); const btn = document.getElementById('filter-toggle-btn'); if (!panel || !btn) return;
+function toggleLegend() {
+    const panel = document.getElementById('legend-panel');
+    const btn = document.getElementById('filter-toggle-btn');
+    if (!panel || !btn) return;
     panel.hidden = !panel.hidden;
     btn.setAttribute('aria-expanded', panel.hidden ? 'false' : 'true');
-    btn.classList.toggle('selected', !panel.hidden); }
+    btn.classList.toggle('selected', !panel.hidden);
+}
 
-function toggleToolsMenu(event) { event?.stopPropagation(); const menu = document.getElementById('tool-menu'); const btn = document.getElementById('tools-btn'); if (!menu || !btn) return; const open = !menu.classList.contains('open');
+function toggleToolsMenu(event) {
+  event?.stopPropagation();
+    const menu = document.getElementById('tool-menu');
+    const btn = document.getElementById('tools-btn');
+    if (!menu || !btn) return;
+    const open = !menu.classList.contains('open');
     menu.classList.toggle('open', open);
     btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-    btn.classList.toggle('selected', open); }
+    btn.classList.toggle('selected', open);
+}
 
-function closeToolsMenu() { const menu = document.getElementById('tool-menu'); const btn = document.getElementById('tools-btn'); if (!menu || !btn) return;
+function closeToolsMenu() {
+    const menu = document.getElementById('tool-menu');
+    const btn = document.getElementById('tools-btn');
+    if (!menu || !btn) return;
     menu.classList.remove('open');
     btn.setAttribute('aria-expanded', 'false');
-    btn.classList.remove('selected'); }
+    btn.classList.remove('selected');
+}
 // UX IMPROVEMENT: vista simple por defecto y vista avanzada bajo demanda.
-function setSyncView(advanced) { SYNC_ADVANCED = !!advanced;
+function setSyncView(advanced) {
+    SYNC_ADVANCED = !!advanced;
     document.body.classList.toggle('sync-simple', !SYNC_ADVANCED);
-  document.getElementById('sync-simple-btn')?.classList.toggle('selected', !SYNC_ADVANCED);
-  document.getElementById('sync-advanced-btn')?.classList.toggle('selected', SYNC_ADVANCED);
-    renderCalSources(); }
+    document.getElementById('sync-simple-btn')?.classList.toggle('selected', !SYNC_ADVANCED);
+    document.getElementById('sync-advanced-btn')?.classList.toggle('selected', SYNC_ADVANCED);
+    renderCalSources();
+}
 const KIND_LABELS = { task: 'Tarea', event: 'Evento', note: 'Nota', habit: 'Hábito' };
 
 function normalizeKind(kind, fallbackTitle = '') { if (['task', 'event', 'note', 'habit'].includes(kind)) return kind; if (/^(📅|⏰)/.test(fallbackTitle)) return 'event'; if (/^(📝)/.test(fallbackTitle)) return 'note'; if (/^(🔁)/.test(fallbackTitle)) return 'habit'; return 'task'; }
@@ -317,7 +348,7 @@ function setupDrop(zone) {
     zone.addEventListener('dragover', e => {
         if (!DRAG.card) return;
         e.preventDefault();
-    zone.closest('.wday')?.classList.add('drag-over-col');
+        zone.closest('.wday')?.classList.add('drag-over-col');
         removePH();
         const ph = document.createElement('div');
         ph.className = 'drop-placeholder';
@@ -325,16 +356,20 @@ function setupDrop(zone) {
         const after = cards.reduce((cl, ch) => { const b = ch.getBoundingClientRect(); const off = e.clientY - b.top - b.height / 2; return (off < 0 && off > cl.off) ? { off, el: ch } : cl; }, { off: -Infinity }).el;
         after ? zone.insertBefore(ph, after) : zone.appendChild(ph);
     });
-    zone.addEventListener('dragleave', e => { if (!zone.contains(e.relatedTarget)) { zone.closest('.wday')?.classList.remove('drag-over-col');
-            removePH(); } });
+    zone.addEventListener('dragleave', e => {
+        if (!zone.contains(e.relatedTarget)) {
+            zone.closest('.wday')?.classList.remove('drag-over-col');
+            removePH();
+        }
+    });
     zone.addEventListener('drop', e => {
         e.preventDefault();
         if (!DRAG.card) return;
-      zone.closest('.wday')?.classList.remove('drag-over-col');
+        zone.closest('.wday')?.classList.remove('drag-over-col');
         const ph = zone.querySelector('.drop-placeholder');
         ph ? zone.insertBefore(DRAG.card, ph) : zone.appendChild(DRAG.card);
         removePH();
-      zone.querySelector('.day-empty')?.remove();
+        zone.querySelector('.day-empty')?.remove();
         updateDayCount(zone.closest('.wday'));
     });
 }
@@ -617,6 +652,34 @@ function renderAIResult(provider, parsed){
   target.style.display='block';
   target.innerHTML=`<div class="ai-result"><strong>${providerLabel(provider)}</strong> · ${parsed.items.length} ítems${warnings.length ? `<br><br><strong>Warnings:</strong><br>${warnings.map(w => `• ${w}`).join('<br>')}` : ''}</div>`;
 }
+function showAIFallbackNote(msg='No se pudo analizar con IA. Puedes continuar en modo manual desde el Paso 4.'){
+  const note = document.getElementById('ai-fallback-note');
+  if(!note) return;
+  note.style.display = 'block';
+  note.innerHTML = `<span>⚠️</span> ${msg}`;
+}
+function hideAIFallbackNote(){
+  const note = document.getElementById('ai-fallback-note');
+  if(!note) return;
+  note.style.display = 'none';
+}
+function isQuotaErrorMessage(msg){
+  const t = String(msg || '').toLowerCase();
+  return (
+    t.includes('quota') ||
+    t.includes('insufficient_quota') ||
+    t.includes('rate limit') ||
+    t.includes('429') ||
+    t.includes('exceeded your current quota') ||
+    t.includes('credit') ||
+    t.includes('billing')
+  );
+}
+function continueWithoutAI(){
+  setBujoStep(4);
+  showAIFallbackNote('Has continuado en modo manual. Pega o corrige texto en el Paso 4 y luego agrega al tablero.');
+  announce('Continuaste en modo manual sin análisis IA');
+}
 async function callClaude(prompt){
   // TODO SECURITY: llamada directa desde frontend expone metadata y uso de key en cliente.
   const apiKey=getActiveKey('claude'); const model=getActiveModel('claude'); if(!apiKey) throw new Error('Falta Claude API Key');
@@ -652,6 +715,7 @@ async function callGemini(prompt){
 async function analyzeBujo(){
   if(!bjImages.length){ alert('Sube al menos una foto de tu BuJo.'); return; }
   saveAIForm();
+  hideAIFallbackNote();
   const provider=resolveProvider(); const apiKey=getActiveKey(provider);
   if(!apiKey){ alert(`Configura la API Key de ${providerLabel(provider)} en ⚙️ Admin.`); return; }
   const btn=document.getElementById('ai-analyze-btn');
@@ -682,7 +746,15 @@ async function analyzeBujo(){
     setTimeout(()=>{ btn.innerHTML='<div class="spin"></div><span class="btn-label">🤖 Analizar Bullet</span>'; btn.disabled=false; },2200);
   }catch(err){
     console.error(err);
+    const msg = String(err?.message || err || 'Error desconocido al analizar');
     btn.classList.remove('loading'); btn.innerHTML=`<span class="btn-label" style="color:#fca5a5;">⚠️ ${String(err.message).slice(0,60)}</span>`;
+    if(isQuotaErrorMessage(msg)){
+      showAIFallbackNote('Se detectó límite de cuota del proveedor. Continúa en modo manual desde el Paso 4.');
+      setBujoStep(4);
+      alert('La IA devolvió error de cuota/límite. Te movimos al Paso 4 para continuar en modo manual.');
+    }else{
+      showAIFallbackNote('No se pudo analizar con IA en este intento. Puedes continuar manualmente en el Paso 4.');
+    }
     setTimeout(()=>{ btn.innerHTML='<div class="spin"></div><span class="btn-label">🤖 Analizar Bullet</span>'; btn.disabled=false; },3000);
   }finally{
     setTimeout(()=>{ progressWrap.style.display='none'; progressBar.style.width='0%'; },1200);
