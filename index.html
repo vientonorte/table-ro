@@ -2870,12 +2870,7 @@
             zone.addEventListener('dragover', e => {
                 if (!DRAG.card) return;
                 e.preventDefault();
-<<<<<<< Updated upstream
-                const wd1 = zone.closest('.wday');
-                if (wd1) wd1.classList.add('drag-over-col');
-=======
-                zone.closest('.wday') ?.classList.add('drag-over-col');
->>>>>>> Stashed changes
+                zone.closest('.wday')?.classList.add('drag-over-col');
                 removePH();
                 const ph = document.createElement('div');
                 ph.className = 'drop-placeholder';
@@ -2894,33 +2889,18 @@
             });
             zone.addEventListener('dragleave', e => {
                 if (!zone.contains(e.relatedTarget)) {
-<<<<<<< Updated upstream
-                    const wd2 = zone.closest('.wday');
-                    if (wd2) wd2.classList.remove('drag-over-col');
-=======
-                    zone.closest('.wday') ?.classList.remove('drag-over-col');
->>>>>>> Stashed changes
+                    zone.closest('.wday')?.classList.remove('drag-over-col');
                     removePH();
                 }
             });
             zone.addEventListener('drop', e => {
                 e.preventDefault();
                 if (!DRAG.card) return;
-<<<<<<< Updated upstream
-                const wd3 = zone.closest('.wday');
-                if (wd3) wd3.classList.remove('drag-over-col');
-                const ph = zone.querySelector('.drop-placeholder');
-                ph ? zone.insertBefore(DRAG.card, ph) : zone.appendChild(DRAG.card);
-                removePH();
-                const emp = zone.querySelector('.day-empty');
-                if (emp) emp.remove();
-=======
-                zone.closest('.wday') ?.classList.remove('drag-over-col');
+                zone.closest('.wday')?.classList.remove('drag-over-col');
                 const ph = zone.querySelector('.drop-placeholder');
                 ph ? zone.insertBefore(DRAG.card, ph) : zone.appendChild(DRAG.card);
                 removePH();
                 zone.querySelector('.day-empty')?.remove();
->>>>>>> Stashed changes
                 updateDayCount(zone.closest('.wday'));
             });
         }
@@ -2976,16 +2956,9 @@ function renderWeek(){
   });
   applyCardStates();
 }
-<<<<<<< Updated upstream
-function populateBJDaySel(){ const sel=document.getElementById('bj-day-sel'); if(!sel) return; sel.innerHTML=''; const today=isoOf(new Date()); Array.from({length:7},(_,i)=>addDays(weekStart,i)).forEach(d=>{ const iso=isoOf(d); const opt=document.createElement('option'); opt.value=iso; opt.textContent=FDAYS[d.getDay()]+' '+d.getDate(); if(iso===today) opt.selected=true; sel.appendChild(opt); }); }
-const bujoState = { lastModalFocus: null, images: [], items: [], batchId: null };
-const reviewState = { setBatch(data){ bujoState.items = data.items || []; bujoState.batchId = data.batch_id || null; } };
-function openDrawer(){ populateBJDaySel(); bujoState.lastModalFocus=document.activeElement; document.getElementById('drawer').classList.add('open'); document.getElementById('overlay').classList.add('open'); if(typeof accessibilityHelpers!=='undefined') accessibilityHelpers?.focusDrawer?.(); }
-=======
 // ─── Estado global BuJo ───
 const bujoState = { lastModalFocus: null, images: [], items: [], batchId: null };
 function openDrawer(){ bujoState.lastModalFocus=document.activeElement; document.getElementById('drawer').classList.add('open'); document.getElementById('overlay').classList.add('open'); }
->>>>>>> Stashed changes
 function closeDrawer(){ document.getElementById('drawer').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); if(bujoState.lastModalFocus&&bujoState.lastModalFocus.focus) bujoState.lastModalFocus.focus(); }
 const BJ_CAL={
   personal:{c:'#EC4899',l:'Personal'}, vinculos:{c:'#7C3AED',l:'Vínculos'},
@@ -3399,18 +3372,6 @@ async function analyzeBujoWithOllama() {
       }
       return;
     }
-<<<<<<< Updated upstream
-    reviewState.setBatch({batch_id:uid('batch'),items});
-    // Auto-seleccionar todos los ítems extraídos
-    items.forEach(item=>{ if(item.text||item.title){ bjList.appendChild(makeBJItem({text:item.text||item.title,type:item.type||'uncertain'})); } });
-    document.querySelectorAll('#bj-list .bj-item input[type=checkbox]').forEach(cb=>cb.checked=true);
-    showBJItems();
-    // Actualizar selector de día y mostrar sección
-    populateBJDaySel();
-    setOllamaDot('ok');
-    const reviewPending = bujoState.items.filter(i=>i.needs_review).length;
-    setOllamaStatus(`✓ ${items.length} ítem${items.length > 1 ? 's' : ''} extraído${items.length > 1 ? 's' : ''} · todos seleccionados · elige día y presiona "+ Agregar todo"`, 'ok');
-=======
     // Agregar ítems extraídos al BuJo list
     items.forEach(item => {
       if (item.title || item.text) {
@@ -3419,13 +3380,10 @@ async function analyzeBujoWithOllama() {
     });
     document.querySelectorAll('#bj-list .bj-item input[type=checkbox]').forEach(cb => cb.checked = true);
     showBJItems();
-
     bujoState.items = items;
     bujoState.batchId = 'batch-' + Date.now();
     setOllamaDot('ok');
-    const reviewPending = items.filter(i => i.needs_review).length;
-    setOllamaStatus(`✓ ${items.length} ítem${items.length > 1 ? 's' : ''} extraído${items.length > 1 ? 's' : ''} · todos seleccionados · elige día y presiona "+ Agregar"`, 'ok');
->>>>>>> Stashed changes
+    setOllamaStatus(`✓ ${items.length} ítem${items.length > 1 ? 's' : ''} extraído${items.length > 1 ? 's' : ''} · todos seleccionados`, 'ok');
 
     // Auto-push a Supabase si está configurado
     const cmsCfg = getCMSConfig();
@@ -3516,16 +3474,30 @@ async function callClaudeAPIBujo(imagesB64) {
 async function callDeepSeekAPIBujo(imagesB64) {
   const key = localStorage.getItem('bj_deepseek_key') || '';
   if (!key) throw new Error('Configura tu DeepSeek API Key en ⚙️ Config');
-  const content = [
-    ...imagesB64.map(b64 => ({ type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + b64 } })),
-    { type: 'text', text: buildBujoPrompt('(imagen adjunta — transcribe y extrae ítems)') }
-  ];
+  // DeepSeek chat no soporta imágenes — pipeline híbrido: Ollama visión local → DeepSeek análisis cloud
+  let transcription = '';
+  if (imagesB64.length) {
+    const cfg = getOllamaConfig();
+    setOllamaStatus('👁 1/2 · ' + cfg.visionModel + ' transcribiendo (local)…', 'info');
+    try {
+      transcription = await callOllamaAPI(
+        cfg.url, cfg.visionModel,
+        [{ role: 'user', content: 'Transcribe fielmente todo el texto manuscrito de esta página de bullet journal. Preserva los símbolos (●, ○, ◆, —, >, *). Devuelve solo la transcripción.' }],
+        imagesB64
+      );
+      transcription = stripThinkTags(transcription);
+    } catch (e) {
+      throw new Error('DeepSeek necesita Ollama local para visión. ' + e.message);
+    }
+  }
+  if (!transcription.trim()) throw new Error('No se pudo transcribir. Verifica que Ollama corra con modelo de visión.');
+  setOllamaStatus('🔷 2/2 · DeepSeek analizando…', 'info');
   const resp = await fetch('https://api.deepseek.com/chat/completions', {
     method: 'POST',
     headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content }], max_tokens: 2048 })
+    body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content: buildBujoPrompt(transcription) }], max_tokens: 2048 })
   });
-  if (!resp.ok) throw new Error(`DeepSeek API ${resp.status}`);
+  if (!resp.ok) { const errTxt = await resp.text().catch(function(){ return ''; }); throw new Error('DeepSeek API ' + resp.status + ': ' + errTxt.slice(0,100)); }
   const data = await resp.json();
   return data.choices?.[0]?.message?.content || '';
 }
@@ -3551,22 +3523,12 @@ async function analyzeBujoWithAI() {
       if (pa) pa.value = stripThinkTags(rawResult);
       return;
     }
-<<<<<<< Updated upstream
-    items.forEach(item => bjList.appendChild(makeBJItem(item)));
-    document.querySelectorAll('#bj-list .bj-item input[type=checkbox]').forEach(cb=>cb.checked=true);
-    showBJItems();
-    populateBJDaySel();
-    setOllamaDot('ok');
-    setOllamaStatus(`✓ ${items.length} ítem${items.length>1?'s':''} detectado${items.length>1?'s':''} · todos seleccionados · elige día y presiona "+ Agregar todo"`, 'ok');
-=======
     items.forEach(item => bjList.appendChild(makeBJItem({ text: item.title || item.text, type: item.type || 'uncertain' })));
     document.querySelectorAll('#bj-list .bj-item input[type=checkbox]').forEach(cb => cb.checked = true);
     showBJItems();
-
     bujoState.items = items;
     setOllamaDot('ok');
     setOllamaStatus(`✓ ${items.length} ítem${items.length > 1 ? 's' : ''} detectado${items.length > 1 ? 's' : ''} · todos seleccionados`, 'ok');
->>>>>>> Stashed changes
   } catch (err) {
     setOllamaDot('err');
     setOllamaStatus(`✗ ${err.message}`, 'err');
