@@ -84,183 +84,285 @@
  *   ics_*              — URLs privadas por fuente ICS
  */
 
-const CAL={
-  personal:  {c:'#EC4899',bg:'rgba(236,72,153,.16)', l:'Personal'},
-  vinculos:  {c:'#7C3AED',bg:'rgba(124,58,237,.16)',l:'Vínculos'},
-  camila:    {c:'#10B981',bg:'rgba(16,185,129,.16)', l:'Camila'},
-  trabajo:   {c:'#F97316',bg:'rgba(249,115,22,.16)', l:'Sura'},
-  fin:       {c:'#FB923C',bg:'rgba(251,146,60,.16)',  l:'Finanzas'},
-  bujo:      {c:'#C084FC',bg:'rgba(192,132,252,.16)',l:'📓 BuJo'},
+const CAL = {
+    personal: { c: '#EC4899', bg: 'rgba(236,72,153,.16)', l: 'Personal' },
+    vinculos: { c: '#7C3AED', bg: 'rgba(124,58,237,.16)', l: 'Vínculos' },
+    camila: { c: '#10B981', bg: 'rgba(16,185,129,.16)', l: 'Camila' },
+    trabajo: { c: '#F97316', bg: 'rgba(249,115,22,.16)', l: 'Sura' },
+    fin: { c: '#FB923C', bg: 'rgba(251,146,60,.16)', l: 'Finanzas' },
+    bujo: { c: '#C084FC', bg: 'rgba(192,132,252,.16)', l: '📓 BuJo' },
 };
 
-const EVENTS=[
-  {iso:'2026-03-05',title:'Agendar eventos mensuales',cal:'personal',allDay:true},
-  {iso:'2026-03-05',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
-  {iso:'2026-03-05',title:'Design Check',cal:'trabajo',time:'08:30'},
-  {iso:'2026-03-05',title:'Exámenes',cal:'camila',time:'07:00'},
-  {iso:'2026-03-05',title:'Laboral',cal:'camila',time:'10:00'},
-  {iso:'2026-03-05',title:'Dental 🦷',cal:'camila',time:'16:00'},
-  {iso:'2026-03-05',title:'Listado tareas Smorg',cal:'personal',time:'18:15'},
-  {iso:'2026-03-05',title:'Juntos Chill 💚',cal:'camila',time:'21:00'},
-  {iso:'2026-03-06',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
-  {iso:'2026-03-06',title:'Kinesiología',cal:'personal',time:'08:30'},
-  {iso:'2026-03-06',title:'Resp. Hogar c/Rö',cal:'camila',time:'10:00'},
-  {iso:'2026-03-06',title:'Hatha Yoga 🧘',cal:'personal',time:'12:45'},
-  {iso:'2026-03-06',title:'Radar pendiente',cal:'personal',time:'15:00'},
-  {iso:'2026-03-06',title:'Check in planes c/Lily',cal:'vinculos',time:'20:30'},
-  {iso:'2026-03-06',title:'Juntos Chill 💚',cal:'camila',time:'21:30'},
-  {iso:'2026-03-07',title:'Cita conmigo 🏝️',cal:'camila',allDay:true},
-  {iso:'2026-03-07',title:'Viajar a Viña 🚂',cal:'personal',time:'07:00'},
-  {iso:'2026-03-07',title:'Día en Viña ☀️',cal:'vinculos',time:'12:45'},
-  {iso:'2026-03-07',title:'Ocio',cal:'camila',time:'14:30'},
-  {iso:'2026-03-08',title:'8M 🌸',cal:'camila',allDay:true},
-  {iso:'2026-03-08',title:'Volver Santiago',cal:'personal',time:'08:00'},
-  {iso:'2026-03-08',title:'Selfradar',cal:'personal',time:'09:00'},
-  {iso:'2026-03-08',title:'8M marcha',cal:'camila',time:'10:00'},
-  {iso:'2026-03-08',title:'Check Financiero 💰',cal:'personal',time:'12:30'},
-  {iso:'2026-03-08',title:'Bici Paseo 🚴',cal:'personal',time:'14:15'},
-  {iso:'2026-03-08',title:'Juntos Chill 💚',cal:'camila',time:'17:00'},
-  {iso:'2026-03-09',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
-  {iso:'2026-03-09',title:'Cursos Domestika 💻',cal:'camila',time:'09:30'},
-  {iso:'2026-03-09',title:'Psicoterapia · Rodrigo',cal:'personal',time:'12:00'},
-  {iso:'2026-03-09',title:'Agendar Masaje 🕯️',cal:'personal',time:'16:00'},
-  {iso:'2026-03-09',title:'Compra Frutas y Verduras 🛒',cal:'personal',time:'17:45'},
-  {iso:'2026-03-10',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
-  {iso:'2026-03-10',title:'Ir al Parque 🌳',cal:'personal',time:'07:15'},
-  {iso:'2026-03-10',title:'Almuerzo',cal:'camila',time:'12:45'},
-  {iso:'2026-03-10',title:'Kine',cal:'personal',time:'15:00'},
-  {iso:'2026-03-10',title:'Juntos Chill 💚',cal:'camila',time:'21:00'},
-  {iso:'2026-03-11',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
-  {iso:'2026-03-11',title:'Psicoterapia FONASA · Camila',cal:'camila',time:'16:00'},
-  {iso:'2026-03-12',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
-  {iso:'2026-03-12',title:'Juntos Chill 💚',cal:'camila',time:'21:00'},
-  {iso:'2026-03-13',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
-  {iso:'2026-03-13',title:'Kinesiología',cal:'personal',time:'08:30'},
-  {iso:'2026-03-13',title:'Cita RedSalud 🏥',cal:'personal',time:'14:15'},
-  {iso:'2026-03-13',title:'Escalada 🧗',cal:'personal',time:'16:00'},
-  {iso:'2026-03-14',title:'Ordenar 🏠',cal:'personal',time:'08:30'},
-  {iso:'2026-03-14',title:'Smorgasboard',cal:'vinculos',time:'10:00'},
-  {iso:'2026-03-15',title:'Check Financiero 💰',cal:'personal',time:'07:15'},
-  {iso:'2026-03-15',title:'Selfradar',cal:'personal',time:'09:00'},
-  {iso:'2026-03-15',title:'Bici Paseo 🚴',cal:'personal',time:'14:15'},
-  {iso:'2026-03-15',title:'Juntos Chill 💚',cal:'camila',time:'17:00'},
-  {iso:'2026-03-16',title:'PAGO GC 💸',cal:'fin',time:'14:00'},
-  {iso:'2026-03-16',title:'Compra Frutas y Verduras 🛒',cal:'personal',time:'17:45'},
-  {iso:'2026-03-16',title:'Psicoterapia · Rodrigo',cal:'personal',time:'12:00'},
-  {iso:'2026-03-17',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
-  {iso:'2026-03-18',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
-  {iso:'2026-03-19',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
-  {iso:'2026-03-20',title:'Kinesiología',cal:'personal',time:'08:30'},
-  {iso:'2026-03-21',title:'Ordenar 🏠',cal:'personal',time:'08:30'},
-  {iso:'2026-03-21',title:'Smorgasboard',cal:'vinculos',time:'10:00'},
-  {iso:'2026-03-22',title:'Check Financiero 💰',cal:'personal',time:'07:15'},
-  {iso:'2026-03-22',title:'Selfradar',cal:'personal',time:'09:00'},
-  {iso:'2026-03-22',title:'Bici Paseo 🚴',cal:'personal',time:'14:15'},
-  {iso:'2026-03-22',title:'Juntos Chill 💚',cal:'camila',time:'17:00'},
-  {iso:'2026-03-23',title:'Compra Frutas y Verduras 🛒',cal:'personal',time:'17:45'},
-  {iso:'2026-03-23',title:'Psicoterapia · Rodrigo',cal:'personal',time:'12:00'},
-  {iso:'2026-03-24',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
-  {iso:'2026-03-25',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
-  {iso:'2026-03-26',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
-  {iso:'2026-03-27',title:'Kinesiología',cal:'personal',time:'08:30'},
-  {iso:'2026-03-28',title:'Ordenar 🏠',cal:'personal',time:'08:30'},
-  {iso:'2026-03-28',title:'Smorgasboard',cal:'vinculos',time:'10:00'},
-  {iso:'2026-03-29',title:'Check Financiero 💰',cal:'personal',time:'07:15'},
-  {iso:'2026-03-29',title:'Selfradar',cal:'personal',time:'09:00'},
-  {iso:'2026-03-29',title:'Bici Paseo 🚴',cal:'personal',time:'14:15'},
-  {iso:'2026-03-30',title:'Compra Frutas y Verduras 🛒',cal:'personal',time:'17:45'},
-  {iso:'2026-03-30',title:'Psicoterapia · Rodrigo',cal:'personal',time:'12:00'},
+const EVENTS = [
+    { iso: '2026-03-05', title: 'Agendar eventos mensuales', cal: 'personal', allDay: true },
+    { iso: '2026-03-05', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
+    { iso: '2026-03-05', title: 'Design Check', cal: 'trabajo', time: '08:30' },
+    { iso: '2026-03-05', title: 'Exámenes', cal: 'camila', time: '07:00' },
+    { iso: '2026-03-05', title: 'Laboral', cal: 'camila', time: '10:00' },
+    { iso: '2026-03-05', title: 'Dental 🦷', cal: 'camila', time: '16:00' },
+    { iso: '2026-03-05', title: 'Listado tareas Smorg', cal: 'personal', time: '18:15' },
+    { iso: '2026-03-05', title: 'Juntos Chill 💚', cal: 'camila', time: '21:00' },
+    { iso: '2026-03-06', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
+    { iso: '2026-03-06', title: 'Kinesiología', cal: 'personal', time: '08:30' },
+    { iso: '2026-03-06', title: 'Resp. Hogar c/Rö', cal: 'camila', time: '10:00' },
+    { iso: '2026-03-06', title: 'Hatha Yoga 🧘', cal: 'personal', time: '12:45' },
+    { iso: '2026-03-06', title: 'Radar pendiente', cal: 'personal', time: '15:00' },
+    { iso: '2026-03-06', title: 'Check in planes c/Lily', cal: 'vinculos', time: '20:30' },
+    { iso: '2026-03-06', title: 'Juntos Chill 💚', cal: 'camila', time: '21:30' },
+    { iso: '2026-03-07', title: 'Cita conmigo 🏝️', cal: 'camila', allDay: true },
+    { iso: '2026-03-07', title: 'Viajar a Viña 🚂', cal: 'personal', time: '07:00' },
+    { iso: '2026-03-07', title: 'Día en Viña ☀️', cal: 'vinculos', time: '12:45' },
+    { iso: '2026-03-07', title: 'Ocio', cal: 'camila', time: '14:30' },
+    { iso: '2026-03-08', title: '8M 🌸', cal: 'camila', allDay: true },
+    { iso: '2026-03-08', title: 'Volver Santiago', cal: 'personal', time: '08:00' },
+    { iso: '2026-03-08', title: 'Selfradar', cal: 'personal', time: '09:00' },
+    { iso: '2026-03-08', title: '8M marcha', cal: 'camila', time: '10:00' },
+    { iso: '2026-03-08', title: 'Check Financiero 💰', cal: 'personal', time: '12:30' },
+    { iso: '2026-03-08', title: 'Bici Paseo 🚴', cal: 'personal', time: '14:15' },
+    { iso: '2026-03-08', title: 'Juntos Chill 💚', cal: 'camila', time: '17:00' },
+    { iso: '2026-03-09', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
+    { iso: '2026-03-09', title: 'Cursos Domestika 💻', cal: 'camila', time: '09:30' },
+    { iso: '2026-03-09', title: 'Psicoterapia · Rodrigo', cal: 'personal', time: '12:00' },
+    { iso: '2026-03-09', title: 'Agendar Masaje 🕯️', cal: 'personal', time: '16:00' },
+    { iso: '2026-03-09', title: 'Compra Frutas y Verduras 🛒', cal: 'personal', time: '17:45' },
+    { iso: '2026-03-10', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
+    { iso: '2026-03-10', title: 'Ir al Parque 🌳', cal: 'personal', time: '07:15' },
+    { iso: '2026-03-10', title: 'Almuerzo', cal: 'camila', time: '12:45' },
+    { iso: '2026-03-10', title: 'Kine', cal: 'personal', time: '15:00' },
+    { iso: '2026-03-10', title: 'Juntos Chill 💚', cal: 'camila', time: '21:00' },
+    { iso: '2026-03-11', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
+    { iso: '2026-03-11', title: 'Psicoterapia FONASA · Camila', cal: 'camila', time: '16:00' },
+    { iso: '2026-03-12', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
+    { iso: '2026-03-12', title: 'Juntos Chill 💚', cal: 'camila', time: '21:00' },
+    { iso: '2026-03-13', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
+    { iso: '2026-03-13', title: 'Kinesiología', cal: 'personal', time: '08:30' },
+    { iso: '2026-03-13', title: 'Cita RedSalud 🏥', cal: 'personal', time: '14:15' },
+    { iso: '2026-03-13', title: 'Escalada 🧗', cal: 'personal', time: '16:00' },
+    { iso: '2026-03-14', title: 'Ordenar 🏠', cal: 'personal', time: '08:30' },
+    { iso: '2026-03-14', title: 'Smorgasboard', cal: 'vinculos', time: '10:00' },
+    { iso: '2026-03-15', title: 'Check Financiero 💰', cal: 'personal', time: '07:15' },
+    { iso: '2026-03-15', title: 'Selfradar', cal: 'personal', time: '09:00' },
+    { iso: '2026-03-15', title: 'Bici Paseo 🚴', cal: 'personal', time: '14:15' },
+    { iso: '2026-03-15', title: 'Juntos Chill 💚', cal: 'camila', time: '17:00' },
+    { iso: '2026-03-16', title: 'PAGO GC 💸', cal: 'fin', time: '14:00' },
+    { iso: '2026-03-16', title: 'Compra Frutas y Verduras 🛒', cal: 'personal', time: '17:45' },
+    { iso: '2026-03-16', title: 'Psicoterapia · Rodrigo', cal: 'personal', time: '12:00' },
+    { iso: '2026-03-17', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
+    { iso: '2026-03-18', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
+    { iso: '2026-03-19', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
+    { iso: '2026-03-20', title: 'Kinesiología', cal: 'personal', time: '08:30' },
+    { iso: '2026-03-21', title: 'Ordenar 🏠', cal: 'personal', time: '08:30' },
+    { iso: '2026-03-21', title: 'Smorgasboard', cal: 'vinculos', time: '10:00' },
+    { iso: '2026-03-22', title: 'Check Financiero 💰', cal: 'personal', time: '07:15' },
+    { iso: '2026-03-22', title: 'Selfradar', cal: 'personal', time: '09:00' },
+    { iso: '2026-03-22', title: 'Bici Paseo 🚴', cal: 'personal', time: '14:15' },
+    { iso: '2026-03-22', title: 'Juntos Chill 💚', cal: 'camila', time: '17:00' },
+    { iso: '2026-03-23', title: 'Compra Frutas y Verduras 🛒', cal: 'personal', time: '17:45' },
+    { iso: '2026-03-23', title: 'Psicoterapia · Rodrigo', cal: 'personal', time: '12:00' },
+    { iso: '2026-03-24', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
+    { iso: '2026-03-25', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
+    { iso: '2026-03-26', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
+    { iso: '2026-03-27', title: 'Kinesiología', cal: 'personal', time: '08:30' },
+    { iso: '2026-03-28', title: 'Ordenar 🏠', cal: 'personal', time: '08:30' },
+    { iso: '2026-03-28', title: 'Smorgasboard', cal: 'vinculos', time: '10:00' },
+    { iso: '2026-03-29', title: 'Check Financiero 💰', cal: 'personal', time: '07:15' },
+    { iso: '2026-03-29', title: 'Selfradar', cal: 'personal', time: '09:00' },
+    { iso: '2026-03-29', title: 'Bici Paseo 🚴', cal: 'personal', time: '14:15' },
+    { iso: '2026-03-30', title: 'Compra Frutas y Verduras 🛒', cal: 'personal', time: '17:45' },
+    { iso: '2026-03-30', title: 'Psicoterapia · Rodrigo', cal: 'personal', time: '12:00' },
 ];
 
-const BUJO_INIT=[
-  {text:'Enviar cotización Cris (p:36)',          type:'trabajo'},
-  {text:'Enviar Job Description → Cony y Amaya', type:'trabajo'},
-  {text:'Solicitar planificación Cony y Amaya',  type:'trabajo'},
-  {text:'Enviar proyecto Mtz — CASO UX01',        type:'trabajo'},
-  {text:'TERMINAR FAN p34',                       type:'trabajo'},
-  {text:'Seguimiento stancar - RE',               type:'trabajo'},
-  {text:'Checkin financiero',                     type:'personal'},
-  {text:'Mantenimiento PSCI',                     type:'personal'},
-  {text:'DNA cirugía — Mamá (primeros pasos)',    type:'personal'},
-  {text:'Psiquiatría 9:39',                       type:'personal'},
-  {text:'Día con Lily (proponer fecha)',           type:'vinculos'},
-  {text:'Reunión Zuleima — Coliseum 3 noches',    type:'vinculos'},
-  {text:'RADAR con Castillo',                     type:'vinculos'},
-  {text:'Seguimiento NEC Camila',                 type:'camila'},
-  {text:'Seguimiento NEC Lily',                   type:'vinculos'},
-  {text:'Depren general 2×1 — revisar',           type:'personal'},
+const BUJO_INIT = [
+    { text: 'Enviar cotización Cris (p:36)', type: 'trabajo' },
+    { text: 'Enviar Job Description → Cony y Amaya', type: 'trabajo' },
+    { text: 'Solicitar planificación Cony y Amaya', type: 'trabajo' },
+    { text: 'Enviar proyecto Mtz — CASO UX01', type: 'trabajo' },
+    { text: 'TERMINAR FAN p34', type: 'trabajo' },
+    { text: 'Seguimiento stancar - RE', type: 'trabajo' },
+    { text: 'Checkin financiero', type: 'personal' },
+    { text: 'Mantenimiento PSCI', type: 'personal' },
+    { text: 'DNA cirugía — Mamá (primeros pasos)', type: 'personal' },
+    { text: 'Psiquiatría 9:39', type: 'personal' },
+    { text: 'Día con Lily (proponer fecha)', type: 'vinculos' },
+    { text: 'Reunión Zuleima — Coliseum 3 noches', type: 'vinculos' },
+    { text: 'RADAR con Castillo', type: 'vinculos' },
+    { text: 'Seguimiento NEC Camila', type: 'camila' },
+    { text: 'Seguimiento NEC Lily', type: 'vinculos' },
+    { text: 'Depren general 2×1 — revisar', type: 'personal' },
 ];
 
-const PERMS_DEFAULT={
-  personal:  {perm:'rw',   enabled:true,  adminRequired:false},
-  finanzas:  {perm:'ro',   enabled:true,  adminRequired:false},
-  trabajo:   {perm:'admin',enabled:false, adminRequired:true},
-  camila:    {perm:'query',enabled:true,  adminRequired:false},
+const PERMS_DEFAULT = {
+    personal: { perm: 'rw', enabled: true, adminRequired: false },
+    finanzas: { perm: 'ro', enabled: true, adminRequired: false },
+    trabajo: { perm: 'admin', enabled: false, adminRequired: true },
+    camila: { perm: 'query', enabled: true, adminRequired: false },
 };
 
-const SOURCES=[
-  {id:'personal', name:'Personal · Vínculos · Laboral', desc:'gaete.gaona@gmail.com', cal:'personal', color:'#EC4899', icon:'👤',
-   gcalId:'gaete.gaona@gmail.com', readonly:false,
-   icsUrl:'https://calendar.google.com/calendar/ical/gaete.gaona%40gmail.com/public/basic.ics',
-   embedUrl:'https://calendar.google.com/calendar/embed?src=gaete.gaona%40gmail.com&ctz=America%2FSantiago',
-   lsKey:'ics_personal', permKey:'personal'},
-  {id:'finanzas', name:'Finanzas Personales', desc:'grupo finanzas', cal:'fin', color:'#FB923C', icon:'💰',
-   gcalId:'9616f51a807e24559b4df624c70d7fe1d81de62f9aa8baf44c1190db5887b12f@group.calendar.google.com', readonly:true,
-   icsUrl:'https://calendar.google.com/calendar/ical/9616f51a807e24559b4df624c70d7fe1d81de62f9aa8baf44c1190db5887b12f%40group.calendar.google.com/public/basic.ics',
-   embedUrl:'https://calendar.google.com/calendar/embed?src=9616f51a807e24559b4df624c70d7fe1d81de62f9aa8baf44c1190db5887b12f%40group.calendar.google.com&ctz=America%2FSantiago',
-   lsKey:'ics_finanzas', permKey:'finanzas'},
-  {id:'trabajo', name:'Sura Investments', desc:'Outlook Office 365 · Solo Lectura Admin', cal:'trabajo', color:'#F97316', icon:'🏢',
-   gcalId:null, readonly:true,
-   icsUrl:'https://outlook.office365.com/owa/calendar/1ec82b2e6c504125abafa8cd1db794b7@surainvestments.com/80353e1836164569848df1cc2404366c17529804927850062492/calendar.ics',
-   embedUrl:null, lsKey:'ics_trabajo', permKey:'trabajo'},
-  {id:'camila', name:'Camila', desc:'c.camilapalma@gmail.com · Consulta', cal:'camila', color:'#10B981', icon:'💚',
-   gcalId:'c.camilapalma@gmail.com', readonly:true,
-   icsUrl:'https://calendar.google.com/calendar/ical/c.camilapalma%40gmail.com/public/basic.ics',
-   embedUrl:'https://calendar.google.com/calendar/embed?src=c.camilapalma%40gmail.com&ctz=America%2FSantiago',
-   lsKey:'ics_camila', permKey:'camila'},
+const SOURCES = [{
+        id: 'personal',
+        name: 'Personal · Vínculos · Laboral',
+        desc: 'gaete.gaona@gmail.com',
+        cal: 'personal',
+        color: '#EC4899',
+        icon: '👤',
+        gcalId: 'gaete.gaona@gmail.com',
+        readonly: false,
+        icsUrl: 'https://calendar.google.com/calendar/ical/gaete.gaona%40gmail.com/public/basic.ics',
+        embedUrl: 'https://calendar.google.com/calendar/embed?src=gaete.gaona%40gmail.com&ctz=America%2FSantiago',
+        lsKey: 'ics_personal',
+        permKey: 'personal'
+    },
+    {
+        id: 'finanzas',
+        name: 'Finanzas Personales',
+        desc: 'grupo finanzas',
+        cal: 'fin',
+        color: '#FB923C',
+        icon: '💰',
+        gcalId: '9616f51a807e24559b4df624c70d7fe1d81de62f9aa8baf44c1190db5887b12f@group.calendar.google.com',
+        readonly: true,
+        icsUrl: 'https://calendar.google.com/calendar/ical/9616f51a807e24559b4df624c70d7fe1d81de62f9aa8baf44c1190db5887b12f%40group.calendar.google.com/public/basic.ics',
+        embedUrl: 'https://calendar.google.com/calendar/embed?src=9616f51a807e24559b4df624c70d7fe1d81de62f9aa8baf44c1190db5887b12f%40group.calendar.google.com&ctz=America%2FSantiago',
+        lsKey: 'ics_finanzas',
+        permKey: 'finanzas'
+    },
+    {
+        id: 'trabajo',
+        name: 'Sura Investments',
+        desc: 'Outlook Office 365 · Solo Lectura Admin',
+        cal: 'trabajo',
+        color: '#F97316',
+        icon: '🏢',
+        gcalId: null,
+        readonly: true,
+        icsUrl: 'https://outlook.office365.com/owa/calendar/1ec82b2e6c504125abafa8cd1db794b7@surainvestments.com/80353e1836164569848df1cc2404366c17529804927850062492/calendar.ics',
+        embedUrl: null,
+        lsKey: 'ics_trabajo',
+        permKey: 'trabajo'
+    },
+    {
+        id: 'camila',
+        name: 'Camila',
+        desc: 'c.camilapalma@gmail.com · Consulta',
+        cal: 'camila',
+        color: '#10B981',
+        icon: '💚',
+        gcalId: 'c.camilapalma@gmail.com',
+        readonly: true,
+        icsUrl: 'https://calendar.google.com/calendar/ical/c.camilapalma%40gmail.com/public/basic.ics',
+        embedUrl: 'https://calendar.google.com/calendar/embed?src=c.camilapalma%40gmail.com&ctz=America%2FSantiago',
+        lsKey: 'ics_camila',
+        permKey: 'camila'
+    },
 ];
 
-const DAYS=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
-const MONTHS=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-const FDAYS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
-function isoOf(d){const y=d.getFullYear(),m=d.getMonth()+1,dd=d.getDate();return `${y}-${String(m).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;}
-function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r;}
-function mondayOf(d){const r=new Date(d);r.setHours(12,0,0,0);const day=r.getDay();r.setDate(r.getDate()-(day===0?6:day-1));return r;}
+const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+const MONTHS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+const FDAYS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
-const DRAG={card:null};
-function removePH(){document.querySelectorAll('.drop-placeholder').forEach(p=>p.remove());}
-function setupDrop(zone){
-  zone.addEventListener('dragover',e=>{
-    if(!DRAG.card)return;e.preventDefault();
-    zone.closest('.wday')?.classList.add('drag-over-col');removePH();
-    const ph=document.createElement('div');ph.className='drop-placeholder';
-    const cards=[...zone.querySelectorAll('.card:not(.dragging)')];
-    const after=cards.reduce((cl,ch)=>{const b=ch.getBoundingClientRect();const off=e.clientY-b.top-b.height/2;return(off<0&&off>cl.off)?{off,el:ch}:cl;},{off:-Infinity}).el;
-    after?zone.insertBefore(ph,after):zone.appendChild(ph);
-  });
-  zone.addEventListener('dragleave',e=>{if(!zone.contains(e.relatedTarget)){zone.closest('.wday')?.classList.remove('drag-over-col');removePH();}});
-  zone.addEventListener('drop',e=>{
-    e.preventDefault();if(!DRAG.card)return;
-    zone.closest('.wday')?.classList.remove('drag-over-col');
-    const ph=zone.querySelector('.drop-placeholder');
-    ph?zone.insertBefore(DRAG.card,ph):zone.appendChild(DRAG.card);
-    removePH();zone.querySelector('.day-empty')?.remove();updateDayCount(zone.closest('.wday'));
-  });
+function isoOf(d) { const y = d.getFullYear(),
+        m = d.getMonth() + 1,
+        dd = d.getDate(); return `${y}-${String(m).padStart(2,'0')}-${String(dd).padStart(2,'0')}`; }
+
+function addDays(d, n) { const r = new Date(d);
+    r.setDate(r.getDate() + n); return r; }
+
+function mondayOf(d) { const r = new Date(d);
+    r.setHours(12, 0, 0, 0); const day = r.getDay();
+    r.setDate(r.getDate() - (day === 0 ? 6 : day - 1)); return r; }
+
+// UX IMPROVEMENT: announcer accesible reutilizable.
+function announce(msg) { const live = document.getElementById('sr-live'); if (!live) return;
+    live.textContent = '';
+    setTimeout(() => { live.textContent = msg; }, 15); }
+let BUJO_STEP = 1;
+let SYNC_ADVANCED = false;
+// UX IMPROVEMENT: flujo guiado en 5 pasos para reducir carga cognitiva.
+function setBujoStep(step) { BUJO_STEP = Math.max(1, Math.min(5, Number(step || 1)));
+    document.querySelectorAll('.step-pill').forEach((el, idx) => el.classList.toggle('active', idx + 1 === BUJO_STEP));
+    document.querySelectorAll('.step-panel').forEach((el, idx) => el.classList.toggle('active', idx + 1 === BUJO_STEP));
+    announce(`Paso ${BUJO_STEP} activo en captura BuJo`); }
+
+function toggleLegend() { const panel = document.getElementById('legend-panel'); const btn = document.getElementById('filter-toggle-btn'); if (!panel || !btn) return;
+    panel.hidden = !panel.hidden;
+    btn.setAttribute('aria-expanded', panel.hidden ? 'false' : 'true');
+    btn.classList.toggle('selected', !panel.hidden); }
+
+function toggleToolsMenu(event) { event ? .stopPropagation(); const menu = document.getElementById('tool-menu'); const btn = document.getElementById('tools-btn'); if (!menu || !btn) return; const open = !menu.classList.contains('open');
+    menu.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.classList.toggle('selected', open); }
+
+function closeToolsMenu() { const menu = document.getElementById('tool-menu'); const btn = document.getElementById('tools-btn'); if (!menu || !btn) return;
+    menu.classList.remove('open');
+    btn.setAttribute('aria-expanded', 'false');
+    btn.classList.remove('selected'); }
+// UX IMPROVEMENT: vista simple por defecto y vista avanzada bajo demanda.
+function setSyncView(advanced) { SYNC_ADVANCED = !!advanced;
+    document.body.classList.toggle('sync-simple', !SYNC_ADVANCED);
+    document.getElementById('sync-simple-btn') ? .classList.toggle('selected', !SYNC_ADVANCED);
+    document.getElementById('sync-advanced-btn') ? .classList.toggle('selected', SYNC_ADVANCED);
+    renderCalSources(); }
+const KIND_LABELS = { task: 'Tarea', event: 'Evento', note: 'Nota', habit: 'Hábito' };
+
+function normalizeKind(kind, fallbackTitle = '') { if (['task', 'event', 'note', 'habit'].includes(kind)) return kind; if (/^(📅|⏰)/.test(fallbackTitle)) return 'event'; if (/^(📝)/.test(fallbackTitle)) return 'note'; if (/^(🔁)/.test(fallbackTitle)) return 'habit'; return 'task'; }
+
+function sourceLabel(src) { return src === 'bujo' ? 'BuJo' : src === 'gcal' ? 'Google' : src === 'ics' ? 'ICS' : 'Manual'; }
+
+const DRAG = { card: null };
+
+function removePH() { document.querySelectorAll('.drop-placeholder').forEach(p => p.remove()); }
+
+function setupDrop(zone) {
+    zone.addEventListener('dragover', e => {
+        if (!DRAG.card) return;
+        e.preventDefault();
+        zone.closest('.wday') ? .classList.add('drag-over-col');
+        removePH();
+        const ph = document.createElement('div');
+        ph.className = 'drop-placeholder';
+        const cards = [...zone.querySelectorAll('.card:not(.dragging)')];
+        const after = cards.reduce((cl, ch) => { const b = ch.getBoundingClientRect(); const off = e.clientY - b.top - b.height / 2; return (off < 0 && off > cl.off) ? { off, el: ch } : cl; }, { off: -Infinity }).el;
+        after ? zone.insertBefore(ph, after) : zone.appendChild(ph);
+    });
+    zone.addEventListener('dragleave', e => { if (!zone.contains(e.relatedTarget)) { zone.closest('.wday') ? .classList.remove('drag-over-col');
+            removePH(); } });
+    zone.addEventListener('drop', e => {
+        e.preventDefault();
+        if (!DRAG.card) return;
+        zone.closest('.wday') ? .classList.remove('drag-over-col');
+        const ph = zone.querySelector('.drop-placeholder');
+        ph ? zone.insertBefore(DRAG.card, ph) : zone.appendChild(DRAG.card);
+        removePH();
+        zone.querySelector('.day-empty') ? .remove();
+        updateDayCount(zone.closest('.wday'));
+    });
 }
-function updateDayCount(wday){if(!wday)return;const n=wday.querySelectorAll('.card').length;const el=wday.querySelector('.day-count');if(el)el.textContent=n+' evento'+(n!==1?'s':'');}
 
-function makeCard(ev){
-  const ci=CAL[ev.cal]||CAL.bujo;
-  const el=document.createElement('div');
-  el.className='card';el.style.setProperty('--cc',ci.c);el.draggable=true;el.dataset.cal=ev.cal||'bujo';
-  const tStr=ev.allDay?'Todo el día':(ev.time||'');
-  const perm=getPermForCal(ev.cal);
-  const syncBtn=(perm==='rw'&&!ev.fromCal)?`<button class="sync-btn" title="Agregar a Google Calendar" onclick="syncToGCal(event,this)">📅</button>`:'';
-  const detailContent=ev.detail
-    ?`<div class="card-detail show"><textarea class="det-area" rows="2" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${ev.detail}</textarea></div>`
-    :`<div class="card-detail"><textarea class="det-area" rows="2" placeholder="Notas..." onclick="event.stopPropagation()" onmousedown="event.stopPropagation()"></textarea></div>`;
-  el.innerHTML=`<div class="card-row"><div class="chk"></div><div style="flex:1;min-width:0"><div class="ct">${ev.title}</div>${tStr?`<div class="ctime">⏰ ${tStr}</div>`:''}<span class="ctag" style="color:${ci.c}">${ci.l}</span></div><div class="card-actions">${syncBtn}<button class="det-btn${ev.detail?' open':''}" title="Detalles" onclick="toggleDetail(event,this)">···</button></div></div>${detailContent}`;
-  el.querySelector('.chk').addEventListener('click',e=>{e.stopPropagation();el.classList.toggle('done');});
+function updateDayCount(wday) { if (!wday) return; const n = wday.querySelectorAll('.card').length; const el = wday.querySelector('.day-count'); if (el) el.textContent = n + ' evento' + (n !== 1 ? 's' : ''); }
+
+function makeCard(ev) {
+    const ci = CAL[ev.cal] || CAL.bujo;
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.style.setProperty('--cc', ci.c);
+    el.draggable = true;
+    el.dataset.cal = ev.cal || 'bujo';
+    const src = ev.source || (ev.fromCal ? 'gcal' : 'manual');
+    const kind = normalizeKind(ev.kind, ev.title || '');
+    el.dataset.source = src;
+    el.dataset.kind = kind;
+    const tStr = ev.allDay ? 'Todo el día' : (ev.time || '');
+    const perm = getPermForCal(ev.cal);
+    const readonly = !!ev.readonly || ev.fromCal;
+    const syncBtn = (perm === 'rw' && !ev.fromCal) ? `<button class="sync-btn" title="Agregar a Google Calendar" aria-label="Sincronizar esta tarjeta con Google Calendar" onclick="syncToGCal(event,this)">📅</button>` : '';
+    const detailContent = ev.detail ?
+        `<div class="card-detail show"><textarea class="det-area" rows="2" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${ev.detail}</textarea></div>` :
+        `<div class="card-detail"><textarea class="det-area" rows="2" placeholder="Notas..." onclick="event.stopPropagation()" onmousedown="event.stopPropagation()"></textarea></div>`;
+    el.innerHTML = `<div class="card-row"><div class="chk" aria-hidden="true"></div><div style="flex:1;min-width:0"><div class="ct">${ev.title}</div>${tStr?`<div class="ctime">⏰ ${tStr}</div>`:''}<div class="card-meta"><span class="ctag" style="color:${ci.c}">${ci.l}</span><span class="kind-badge">${KIND_LABELS[kind]||'Tarea'}</span><span class="src-badge ${src}${readonly?' readonly':''}">${sourceLabel(src)}</span></div></div><div class="card-actions">${syncBtn}<button class="det-btn${ev.detail?' open':''}" title="Detalles" aria-label="Editar detalles" onclick="toggleDetail(event,this)">···</button></div></div>${detailContent}`;
+  el.classList.toggle('is-readonly',readonly);el.setAttribute('tabindex','0');el.setAttribute('role','group');el.setAttribute('aria-label',`${KIND_LABELS[kind]||'Tarea'}: ${ev.title}`);
+  el.querySelector('.chk').addEventListener('click',e=>{e.stopPropagation();el.classList.toggle('done');announce(el.classList.contains('done')?'Tarjeta marcada como completada':'Tarjeta marcada como pendiente');});
+  el.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();el.querySelector('.chk')?.click();}});
   el.addEventListener('dragstart',e=>{DRAG.card=el;setTimeout(()=>el.classList.add('dragging'),0);e.dataTransfer.effectAllowed='move';});
   el.addEventListener('dragend',()=>{el.classList.remove('dragging');removePH();document.querySelectorAll('.drag-over-col').forEach(z=>z.classList.remove('drag-over-col'));DRAG.card=null;});
   if(ev.detail)el.querySelector('.card-detail').classList.add('show');
@@ -344,15 +446,15 @@ function renderWeek(){
       if(ev.allDay){
         const pill=document.createElement('div');pill.className='aday-pill';pill.dataset.cal=ev.cal||'bujo';
         const ci=CAL[ev.cal];pill.style.setProperty('--cc',ci.c);pill.style.setProperty('--ccbg',ci.bg);pill.textContent=ev.title;body.appendChild(pill);
-      }else{body.appendChild(makeCard({...ev,fromCal:true}));}
+      }else{body.appendChild(makeCard(ev));}
     });
     applyFilter();
   });
   applyCardStates();
 }
 
-function openDrawer(){document.getElementById('drawer').classList.add('open');document.getElementById('overlay').classList.add('open');}
-function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('overlay').classList.remove('open');}
+function openDrawer(){document.getElementById('drawer').classList.add('open');document.getElementById('overlay').classList.add('open');setBujoStep(1);announce('Captura de Bullet Journal abierta');}
+function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('overlay').classList.remove('open');announce('Captura de Bullet Journal cerrada');}
 
 let bjImages=[];
 const SYM_MAP={'●':'personal','○':'personal','◆':'vinculos','—':'personal','-':'personal','*':'trabajo','>':'camila','$':'fin','•':'personal','✦':'vinculos','⬡':'camila'};
@@ -402,6 +504,7 @@ function saveAIForm(){
   saveAICfg();
 }
 function saveAIAdmin(){
+  // TODO SECURITY: almacenar API keys en localStorage es riesgoso ante XSS; mover secretos a backend seguro.
   AI_CFG.provider = document.getElementById('adm-ai-provider')?.value || AI_CFG.provider;
   AI_CFG.providers.claude.key = (document.getElementById('adm-claude-key')?.value || '').trim();
   AI_CFG.providers.claude.model = (document.getElementById('adm-claude-model')?.value || 'claude-sonnet-4-6').trim();
@@ -471,6 +574,7 @@ inp.addEventListener('change',e=>handleFiles(e.target.files));
 upz.addEventListener('dragover',e=>{e.preventDefault();upz.classList.add('drag');});
 upz.addEventListener('dragleave',()=>upz.classList.remove('drag'));
 upz.addEventListener('drop',e=>{e.preventDefault();upz.classList.remove('drag');handleFiles(e.dataTransfer.files);});
+function renderThumbs(){ths.innerHTML='';bjImages.forEach((img,idx)=>{const w=document.createElement('div');w.className='thumb';w.innerHTML=`<img src="data:${img.mimeType};base64,${img.base64}"><button class="thumb-del" onclick="removeImage(${idx})">✕</button>`;ths.appendChild(w);});}
 function handleFiles(files){
   [...files].forEach(f=>{
     if(!f.type.startsWith('image/'))return;
@@ -478,16 +582,15 @@ function handleFiles(files){
     r.onload=ev=>{
       const base64=ev.target.result.split(',')[1];
       bjImages.push({base64,mimeType:f.type,name:f.name});
-      const w=document.createElement('div');w.className='thumb';
-      w.innerHTML=`<img src="${ev.target.result}"><button class="thumb-del" onclick="removeImage(${bjImages.length-1},this)">✕</button>`;
-      ths.appendChild(w);
+      renderThumbs();
       document.getElementById('ai-analyze-btn').disabled=false;
       updateAIStatus();
+      updateBujoSummary();
     };
     r.readAsDataURL(f);
   });
 }
-function removeImage(idx,btn){ bjImages.splice(idx,1); btn.closest('.thumb').remove(); if(bjImages.length===0)document.getElementById('ai-analyze-btn').disabled=true; updateAIStatus(); }
+function removeImage(idx){ bjImages.splice(idx,1); renderThumbs(); if(bjImages.length===0)document.getElementById('ai-analyze-btn').disabled=true; updateAIStatus(); updateBujoSummary(); }
 
 function buildBujoPrompt(){
   const flags = AI_CFG.flags;
@@ -515,6 +618,7 @@ function renderAIResult(provider, parsed){
   target.innerHTML=`<div class="ai-result"><strong>${providerLabel(provider)}</strong> · ${parsed.items.length} ítems${warnings.length ? `<br><br><strong>Warnings:</strong><br>${warnings.map(w => `• ${w}`).join('<br>')}` : ''}</div>`;
 }
 async function callClaude(prompt){
+  // TODO SECURITY: llamada directa desde frontend expone metadata y uso de key en cliente.
   const apiKey=getActiveKey('claude'); const model=getActiveModel('claude'); if(!apiKey) throw new Error('Falta Claude API Key');
   const content=[...bjImages.map(img=>({type:'image',source:{type:'base64',media_type:img.mimeType,data:img.base64}})),{type:'text',text:prompt}];
   const res=await fetch('https://api.anthropic.com/v1/messages',{
@@ -525,6 +629,7 @@ async function callClaude(prompt){
   return getClaudeText(await res.json());
 }
 async function callOpenAI(prompt){
+  // TODO SECURITY: llamada directa desde frontend con bearer token; preferir proxy backend.
   const apiKey=getActiveKey('openai'); const model=getActiveModel('openai'); if(!apiKey) throw new Error('Falta OpenAI API Key');
   const content=[...bjImages.map(img=>({type:'input_image',image_url:`data:${img.mimeType};base64,${img.base64}`,detail:AI_CFG.profile==='quality'?'high':'auto'})),{type:'input_text',text:prompt}];
   const res=await fetch('https://api.openai.com/v1/responses',{
@@ -535,6 +640,7 @@ async function callOpenAI(prompt){
   return getOpenAIText(await res.json());
 }
 async function callGemini(prompt){
+  // TODO SECURITY: API key visible en red del cliente; migrar a backend para producción.
   const apiKey=getActiveKey('gemini'); const model=getActiveModel('gemini'); if(!apiKey) throw new Error('Falta Gemini API Key');
   const parts=[...bjImages.map(img=>({inlineData:{mimeType:img.mimeType,data:img.base64}})),{text:prompt}];
   const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`,{
@@ -569,7 +675,7 @@ async function analyzeBujo(){
       bjList.appendChild(makeBJItem({text:item.text.trim(),type:item.type||'personal',kind:item.kind||'task',details:item.details||'',timeText:item.time_text||'',dateText:item.date_text||'',confidence:item.confidence ?? 0}));
       added++;
     });
-    progressBar.style.width='100%'; showBJItems(); updateBadge();
+    progressBar.style.width='100%'; showBJItems(); updateBadge(); updateBujoSummary(); setBujoStep(3); announce(`Análisis completado con ${added} ítems`);
     btn.classList.remove('loading'); btn.innerHTML=`<span class="btn-label" style="color:#86efac;">✓ ${added} ítems · ${providerLabel(provider)}</span>`;
     setTimeout(()=>{ btn.innerHTML='<div class="spin"></div><span class="btn-label">🤖 Analizar Bullet</span>'; btn.disabled=false; },2200);
   }catch(err){
@@ -583,17 +689,21 @@ async function analyzeBujo(){
 
 const bjList=document.getElementById('bj-list');
 const bjSec=document.getElementById('bj-section');
+function updateBujoSummary(){const rows=[...document.querySelectorAll('#bj-list .bj-item')];const total=rows.length;const low=rows.filter(el=>Number(el.dataset.confidence||1)<.6).length;const selected=rows.filter(el=>el.querySelector('input')?.checked).length;const t=document.getElementById('sum-total');if(t)t.textContent=String(total);const l=document.getElementById('sum-low');if(l)l.textContent=String(low);const s=document.getElementById('sum-selected');if(s)s.textContent=String(selected);}
+function selectAllBJ(checked){document.querySelectorAll('#bj-list .bj-item input[type=checkbox]').forEach(chk=>{chk.checked=checked;});updateBujoSummary();}
 function makeBJItem(obj){
   const ci = BJ_CAL[obj.type] || BJ_CAL.bujo;
   const el = document.createElement('div');
   el.className='bj-item'; el.dataset.type=obj.type; el.dataset.kind=obj.kind||'task'; el.dataset.detail=obj.details||''; el.dataset.time=obj.timeText||''; el.dataset.date=obj.dateText||''; el.dataset.confidence=String(obj.confidence ?? '');
+  if(Number(obj.confidence ?? 1) < .6) el.classList.add('low-confidence');
   el.style.setProperty('--cc',ci.c);
   const meta=[obj.kind ? obj.kind.toUpperCase() : '', obj.timeText || '', obj.dateText || ''].filter(Boolean).join(' · ');
   el.innerHTML=`<input type="checkbox"><span class="bj-item-text">${obj.text}</span>${meta ? `<span class="bj-item-cat">${meta}</span>` : ''}<span class="bj-item-cat" style="color:${ci.c}">${ci.l}</span>`;
+  el.querySelector('input')?.addEventListener('change',()=>updateBujoSummary());
   return el;
 }
 function updateBadge(){ const n=document.querySelectorAll('#bj-list .bj-item').length; const b=document.getElementById('bj-badge');const btn=document.getElementById('bujo-btn'); b.textContent=n;b.style.display=n>0?'flex':'none';btn.classList.toggle('has-items',n>0); }
-function showBJItems(){ bjSec.style.display=bjList.children.length?'block':'none'; updateBadge(); }
+function showBJItems(){ bjSec.style.display=bjList.children.length?'block':'none'; updateBadge(); updateBujoSummary(); }
 BUJO_INIT.forEach(o=>bjList.appendChild(makeBJItem(o))); showBJItems();
 function parsePaste(){
   const txt=document.getElementById('paste-area').value.trim(); if(!txt) return;
@@ -603,7 +713,7 @@ function parsePaste(){
     if(!m) return;
     bjList.appendChild(makeBJItem({text:m[2].trim(),type:SYM_MAP[m[1]]||'personal'})); added++;
   });
-  document.getElementById('paste-area').value=''; if(added) showBJItems();
+  document.getElementById('paste-area').value=''; if(added){ showBJItems(); setBujoStep(3); }
 }
 function filterBJ(type,btn){ document.querySelectorAll('#ftags .ftag').forEach(t=>t.classList.remove('on'));btn.classList.add('on'); document.querySelectorAll('#bj-list .bj-item').forEach(el=>{el.style.display=(type==='all'||el.dataset.type===type)?'flex':'none';}); }
 function normalizeHHMM(txt){ const m=String(txt||'').trim().match(/^([01]?\d|2[0-3])[:.]([0-5]\d)$/); if(!m) return ''; return `${String(m[1]).padStart(2,'0')}:${m[2]}`; }
@@ -618,12 +728,12 @@ function addToBoard(){
     const detail=[el.dataset.detail, el.dataset.date ? `Fecha detectada: ${el.dataset.date}` : ''].filter(Boolean).join('\n');
     const time=normalizeHHMM(el.dataset.time);
     const prefix=kind==='event'?'📅':kind==='note'?'📝':kind==='habit'?'🔁':'📓';
-    const card=makeCard({title:`${prefix} ${txt}`,cal:calKey,time,detail,fromCal:false});
+    const card=makeCard({title:`${prefix} ${txt}`,cal:calKey,time,detail,fromCal:false,source:'bujo',kind});
     firstBody?.appendChild(card); firstBody?.querySelector('.day-empty')?.remove(); el.remove();
   });
   showBJItems(); closeDrawer();
 }
-function clearBJ(){ bjList.innerHTML=''; document.getElementById('paste-area').value=''; ths.innerHTML=''; bjImages=[]; document.getElementById('ai-analyze-btn').disabled=true; document.getElementById('ai-result-preview').style.display='none'; showBJItems(); updateAIStatus(); }
+function clearBJ(){ bjList.innerHTML=''; document.getElementById('paste-area').value=''; ths.innerHTML=''; bjImages=[]; document.getElementById('ai-analyze-btn').disabled=true; document.getElementById('ai-result-preview').style.display='none'; showBJItems(); updateAIStatus(); setBujoStep(1); announce('Captura BuJo limpiada'); }
 
 const HIDDEN=new Set();
 function toggleCat(keys,el){ const cats=typeof keys==='string'?[keys]:keys; const wasOff=el.classList.contains('off'); if(wasOff){cats.forEach(k=>HIDDEN.delete(k));el.classList.remove('off');} else{cats.forEach(k=>HIDDEN.add(k));el.classList.add('off');} applyFilter(); }
@@ -651,7 +761,7 @@ function parseICS(text,calKey){
     }else if(/^\d{8}$/.test(dt)){iso=`${dt.slice(0,4)}-${dt.slice(4,6)}-${dt.slice(6,8)}`;allDay=true;}
     if(!iso)return;
     const evDate=new Date(iso);if(evDate<from||evDate>to)return;
-    evs.push({iso,title:summary,cal:calKey,time,allDay,uid,fromCal:true});
+    evs.push({iso,title:summary,cal:calKey,time,allDay,uid,fromCal:true,source:'ics',kind:'event',readonly:true});
   });
   return evs;
 }
@@ -715,14 +825,14 @@ function renderCalSources(){
       <div class="src-status">${statusHtml}</div>
     </div>
     <div class="src-actions">
-      ${src.embedUrl?`<button class="btn btn-g" style="padding:4px 8px;font-size:.62rem" onclick="window.open('${src.embedUrl}','_blank')">↗</button>`:''}
-      ${src.lsKey?`<button class="btn btn-g" style="padding:4px 8px;font-size:.62rem" onclick="startConfig('${src.id}',event)">⚙️</button>`:''}
+      ${SYNC_ADVANCED&&src.embedUrl?`<button class="btn btn-g" style="padding:4px 8px;font-size:.62rem" onclick="window.open('${src.embedUrl}','_blank')">↗</button>`:''}
+      ${SYNC_ADVANCED&&src.lsKey?`<button class="btn btn-g" style="padding:4px 8px;font-size:.62rem" onclick="startConfig('${src.id}',event)">⚙️</button>`:''}
       <button class="btn btn-p" style="padding:4px 10px;font-size:.64rem" onclick="syncSource('${src.id}',this)" ${enabled?'':'disabled title="Habilitar en ⚙️ Permisos"'}>🔄</button>
     </div>`;
     cont.appendChild(card);
   });
 }
-function openCalModal(){renderCalSources();document.getElementById('cal-modal').classList.add('open');}
+function openCalModal(){setSyncView(false);renderCalSources();document.getElementById('cal-modal').classList.add('open');announce('Panel de sincronización abierto en vista simple');}
 function closeCalModal(){document.getElementById('cal-modal').classList.remove('open');cancelConfig();}
 
 const GCAL_API='https://www.googleapis.com/calendar/v3';
@@ -773,7 +883,7 @@ async function fetchGCalEvents(calId,calKey,readonly=true){
     if(start.date){iso=start.date;allDay=true;}
     else if(start.dateTime){ const d=new Date(start.dateTime); const fmt=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(d); const[dp,tp]=(fmt+', 00:00').split(', ');iso=dp;time=tp.replace(/^24:/,'00:').slice(0,5); }
     if(!iso)return null;
-    return{iso,title:(item.summary||'(sin título)').slice(0,80),cal:calKey,time,allDay,uid:item.id,fromCal:true,readonly};
+    return{iso,title:(item.summary||'(sin título)').slice(0,80),cal:calKey,time,allDay,uid:item.id,fromCal:true,readonly,source:'gcal',kind:'event'};
   }).filter(Boolean);
 }
 async function syncToGCal(e,btn){
@@ -805,10 +915,10 @@ function submitAdd(){
   const title=document.getElementById('add-title').value.trim();if(!title){document.getElementById('add-title').focus();return;}
   const iso=document.getElementById('add-day').value;const time=document.getElementById('add-time').value; const cat=document.getElementById('add-cat').value;const detail=document.getElementById('add-detail').value.trim();
   const body=document.getElementById('wb-'+iso);
-  if(body){const card=makeCard({title,cal:cat,time,detail,fromCal:false});body.appendChild(card);body.querySelector('.day-empty')?.remove();updateDayCount(body.closest('.wday'));applyFilter();}
+  if(body){const card=makeCard({title,cal:cat,time,detail,fromCal:false,source:'manual',kind:'task'});body.appendChild(card);body.querySelector('.day-empty')?.remove();updateDayCount(body.closest('.wday'));applyFilter();}
   closeAddModal();
 }
-function openAdminModal(){ renderAdmCalUrls(); renderResIcal(); renderPermList(); hydrateAIAdmin(); document.getElementById('admin-modal').classList.add('open'); }
+function openAdminModal(){ renderAdmCalUrls(); renderResIcal(); renderPermList(); hydrateAIAdmin(); document.getElementById('admin-modal').classList.add('open'); announce('Panel de administración abierto'); }
 function closeAdminModal(){document.getElementById('admin-modal').classList.remove('open');}
 function switchTab(id,btn){ document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active')); btn.classList.add('active');document.getElementById('tab-'+id).classList.add('active'); if(id==='permisos')renderPermList(); }
 function toggleFaq(q){const a=q.nextElementSibling;const isOpen=q.classList.contains('open');document.querySelectorAll('.faq-q.open').forEach(x=>{x.classList.remove('open');x.nextElementSibling.classList.remove('open');});if(!isOpen){q.classList.add('open');a.classList.add('open');}}
@@ -833,7 +943,7 @@ function saveBoard(){
     const iso=body.id.replace('wb-','');
     body.querySelectorAll('.card').forEach(card=>{
       const title=card.querySelector('.ct')?.textContent||'';const cal=card.dataset.cal||'bujo';
-      const done=card.classList.contains('done');const detail=card.querySelector('.det-area')?.value||''; const time=(card.querySelector('.ctime')?.textContent||'').replace('⏰ ','').trim(); const hasSync=!!card.querySelector('.sync-btn'); const key=cardKey(iso,title,cal); states[key]={done,detail}; if(hasSync)extra.push({iso,title,cal,time,detail,fromCal:false});
+      const done=card.classList.contains('done');const detail=card.querySelector('.det-area')?.value||''; const time=(card.querySelector('.ctime')?.textContent||'').replace('⏰ ','').trim(); const hasSync=!!card.querySelector('.sync-btn'); const key=cardKey(iso,title,cal); const source=card.dataset.source||'manual'; const kind=card.dataset.kind||'task'; states[key]={done,detail}; if(hasSync)extra.push({iso,title,cal,time,detail,fromCal:false,source,kind});
     });
   });
   CARD_STATES=states;EXTRA_EVENTS=extra; localStorage.setItem('tablero_states_ro',JSON.stringify(states)); localStorage.setItem('tablero_extra_ro',JSON.stringify(extra));
@@ -845,6 +955,7 @@ function loadBoard(){
 }
 function applyCardStates(){ document.querySelectorAll('[id^="wb-"]').forEach(body=>{ const iso=body.id.replace('wb-',''); body.querySelectorAll('.card').forEach(card=>{ const title=card.querySelector('.ct')?.textContent||'';const cal=card.dataset.cal||'bujo'; const st=CARD_STATES[cardKey(iso,title,cal)];if(!st)return; if(st.done)card.classList.add('done'); if(st.detail){const area=card.querySelector('.det-area');if(area){area.value=st.detail;card.querySelector('.card-detail')?.classList.add('show');}} }); }); }
 
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeDrawer();closeAddModal();closeCalModal();closeAdminModal();} if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();saveBoard();} });
+document.addEventListener('click',e=>{ if(!e.target.closest('.tool-menu-wrap')) closeToolsMenu(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeDrawer();closeAddModal();closeCalModal();closeAdminModal();closeToolsMenu();} if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();saveBoard();} });
 (function restoreSura(){const sid=localStorage.getItem('gcal_sura_id');if(sid){const s=SOURCES.find(x=>x.id==='trabajo');if(s&&!s.gcalId)s.gcalId=sid;}})();
-loadPerms(); loadBoard(); renderWeek(); initGAuthUI(); hydrateAIForm(); hydrateAIAdmin(); updateAIStatus();
+loadPerms(); loadBoard(); renderWeek(); initGAuthUI(); hydrateAIForm(); hydrateAIAdmin(); updateAIStatus(); updateBujoSummary(); setSyncView(false);
