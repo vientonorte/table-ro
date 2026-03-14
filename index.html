@@ -2961,7 +2961,9 @@ function renderWeek(){
   applyCardStates();
 }
 function populateBJDaySel(){ const sel=document.getElementById('bj-day-sel'); if(!sel) return; sel.innerHTML=''; const today=isoOf(new Date()); Array.from({length:7},(_,i)=>addDays(weekStart,i)).forEach(d=>{ const iso=isoOf(d); const opt=document.createElement('option'); opt.value=iso; opt.textContent=FDAYS[d.getDay()]+' '+d.getDate(); if(iso===today) opt.selected=true; sel.appendChild(opt); }); }
-function openDrawer(){ populateBJDaySel(); bujoState.lastModalFocus=document.activeElement; document.getElementById('drawer').classList.add('open'); document.getElementById('overlay').classList.add('open'); accessibilityHelpers?.focusDrawer?.(); }
+const bujoState = { lastModalFocus: null, images: [], items: [], batchId: null };
+const reviewState = { setBatch(data){ bujoState.items = data.items || []; bujoState.batchId = data.batch_id || null; } };
+function openDrawer(){ populateBJDaySel(); bujoState.lastModalFocus=document.activeElement; document.getElementById('drawer').classList.add('open'); document.getElementById('overlay').classList.add('open'); if(typeof accessibilityHelpers!=='undefined') accessibilityHelpers?.focusDrawer?.(); }
 function closeDrawer(){ document.getElementById('drawer').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); if(bujoState.lastModalFocus&&bujoState.lastModalFocus.focus) bujoState.lastModalFocus.focus(); }
 const BJ_CAL={
   personal:{c:'#EC4899',l:'Personal'}, vinculos:{c:'#7C3AED',l:'Vínculos'},
@@ -3764,4 +3766,4 @@ setInterval(()=>syncAllCached(), ICS_CACHE_TTL);
     </script>
 </body>
 
-</html>
+</html> 
