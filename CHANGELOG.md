@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.0.3] — 2026-03-14
+
+### 🚑 Hotfix runtime
+
+- Corregido optional chaining malformado en [js/app.js](/Users/ro/Documents/GitHub/table-ro/js/app.js) que provocaba fallo de ejecución del frontend.
+- Actualizado versionado de assets en [index.html](/Users/ro/Documents/GitHub/table-ro/index.html) a `1.0.3` para invalidar caché de JS/CSS en producción.
+
 ## [1.0.2] — 2026-03-14
 
 ### 🔁 Cache busting del fix

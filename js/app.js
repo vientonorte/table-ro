@@ -308,7 +308,7 @@ function toggleLegend() {
 }
 
 function toggleToolsMenu(event) {
-    event ? .stopPropagation();
+  event?.stopPropagation();
     const menu = document.getElementById('tool-menu');
     const btn = document.getElementById('tools-btn');
     if (!menu || !btn) return;
@@ -330,8 +330,8 @@ function closeToolsMenu() {
 function setSyncView(advanced) {
     SYNC_ADVANCED = !!advanced;
     document.body.classList.toggle('sync-simple', !SYNC_ADVANCED);
-    document.getElementById('sync-simple-btn') ? .classList.toggle('selected', !SYNC_ADVANCED);
-    document.getElementById('sync-advanced-btn') ? .classList.toggle('selected', SYNC_ADVANCED);
+  document.getElementById('sync-simple-btn')?.classList.toggle('selected', !SYNC_ADVANCED);
+  document.getElementById('sync-advanced-btn')?.classList.toggle('selected', SYNC_ADVANCED);
     renderCalSources();
 }
 const KIND_LABELS = { task: 'Tarea', event: 'Evento', note: 'Nota', habit: 'Hábito' };
@@ -348,7 +348,7 @@ function setupDrop(zone) {
     zone.addEventListener('dragover', e => {
         if (!DRAG.card) return;
         e.preventDefault();
-        zone.closest('.wday') ? .classList.add('drag-over-col');
+    zone.closest('.wday')?.classList.add('drag-over-col');
         removePH();
         const ph = document.createElement('div');
         ph.className = 'drop-placeholder';
@@ -358,18 +358,18 @@ function setupDrop(zone) {
     });
     zone.addEventListener('dragleave', e => {
         if (!zone.contains(e.relatedTarget)) {
-            zone.closest('.wday') ? .classList.remove('drag-over-col');
+        zone.closest('.wday')?.classList.remove('drag-over-col');
             removePH();
         }
     });
     zone.addEventListener('drop', e => {
         e.preventDefault();
         if (!DRAG.card) return;
-        zone.closest('.wday') ? .classList.remove('drag-over-col');
+      zone.closest('.wday')?.classList.remove('drag-over-col');
         const ph = zone.querySelector('.drop-placeholder');
         ph ? zone.insertBefore(DRAG.card, ph) : zone.appendChild(DRAG.card);
         removePH();
-        zone.querySelector('.day-empty') ? .remove();
+      zone.querySelector('.day-empty')?.remove();
         updateDayCount(zone.closest('.wday'));
     });
 }
