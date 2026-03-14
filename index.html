@@ -2865,7 +2865,8 @@
             zone.addEventListener('dragover', e => {
                 if (!DRAG.card) return;
                 e.preventDefault();
-                const wd1 = zone.closest('.wday'); if (wd1) wd1.classList.add('drag-over-col');
+                const wd1 = zone.closest('.wday');
+                if (wd1) wd1.classList.add('drag-over-col');
                 removePH();
                 const ph = document.createElement('div');
                 ph.className = 'drop-placeholder';
@@ -2873,24 +2874,32 @@
                 const after = cards.reduce((cl, ch) => {
                     const b = ch.getBoundingClientRect();
                     const off = e.clientY - b.top - b.height / 2;
-                    return (off < 0 && off > cl.off) ? { off, el: ch } : cl;
-                }, { off: -Infinity }).el;
+                    return (off < 0 && off > cl.off) ? {
+                        off,
+                        el: ch
+                    } : cl;
+                }, {
+                    off: -Infinity
+                }).el;
                 after ? zone.insertBefore(ph, after) : zone.appendChild(ph);
             });
             zone.addEventListener('dragleave', e => {
                 if (!zone.contains(e.relatedTarget)) {
-                    const wd2 = zone.closest('.wday'); if (wd2) wd2.classList.remove('drag-over-col');
+                    const wd2 = zone.closest('.wday');
+                    if (wd2) wd2.classList.remove('drag-over-col');
                     removePH();
                 }
             });
             zone.addEventListener('drop', e => {
                 e.preventDefault();
                 if (!DRAG.card) return;
-                const wd3 = zone.closest('.wday'); if (wd3) wd3.classList.remove('drag-over-col');
+                const wd3 = zone.closest('.wday');
+                if (wd3) wd3.classList.remove('drag-over-col');
                 const ph = zone.querySelector('.drop-placeholder');
                 ph ? zone.insertBefore(DRAG.card, ph) : zone.appendChild(DRAG.card);
                 removePH();
-                const emp = zone.querySelector('.day-empty'); if (emp) emp.remove();
+                const emp = zone.querySelector('.day-empty');
+                if (emp) emp.remove();
                 updateDayCount(zone.closest('.wday'));
             });
         }
