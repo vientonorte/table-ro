@@ -3079,10 +3079,59 @@ const GCAL_SCOPES='https://www.googleapis.com/auth/calendar.events https://www.g
 const GCAL_CLIENT_ID='5033046467-kgd7gl4tekb4fkt90jq32rob4evmgnmn.apps.googleusercontent.com';
 let gToken=null; let tokenClient=null;
 function initGAuthUI(){ const savedId=localStorage.getItem('gcal_client_id')||GCAL_CLIENT_ID; const zone=document.getElementById('gcal-auth-zone'); if(!zone) return; zone.className='oauth-box disconnected'; const isLocalhost=location.hostname==='localhost'||location.hostname==='127.0.0.1'||location.hostname==='vientonorte.github.io'; const originWarning=!isLocalhost?`<div style="margin-top:7px;padding:6px 8px;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.3);border-radius:6px;font-size:.62rem;color:#fb923c;line-height:1.5">⚠️ Google OAuth requiere <strong>http://localhost</strong> como origen. Desde <code>file://</code> puede no funcionar.<br>Abre una terminal en la carpeta del archivo y ejecuta:<br><code style="background:rgba(0,0,0,.25);padding:2px 6px;border-radius:3px;display:inline-block;margin-top:3px">python3 -m http.server 8080</code><br>Luego abre <a href="http://localhost:8080/index.html" target="_blank" style="color:#fb923c">http://localhost:8080/index.html</a><br>Y agrega <code>http://localhost:8080</code> en <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:#fb923c">Authorized JS origins ↗</a></div>`:`<div style="font-size:.6rem;color:#10B981;margin-top:4px">✓ Origen correcto</div>`; zone.innerHTML=`<div style="font-size:.67rem;color:var(--mut);margin-bottom:6px;line-height:1.5">Sync bidireccional con Google Calendar.<br>Client ID ya configurado ✓</div><div class="mfield" style="margin-bottom:8px"><label for="gcal-client-id">Google OAuth Client ID</label><input type="text" id="gcal-client-id" value="${savedId}" style="font-size:.62rem;opacity:.75"></div>${originWarning}<button class="btn btn-p" onclick="gSignIn()" style="width:100%;justify-content:center;margin-top:9px">🔑 Conectar con Google</button>`; }
-function gSignIn(){ const clientId=((document.getElementById('gcal-client-id')?.value||'').trim())||GCAL_CLIENT_ID; if(!window.google?.accounts?.oauth2){alert('La librería GIS aún no cargó. Espera un segundo e intenta de nuevo.');return;} localStorage.setItem('gcal_client_id',clientId); tokenClient=google.accounts.oauth2.initTokenClient({client_id:clientId,scope:GCAL_SCOPES,callback:resp=>{if(resp.error){console.error('GIS error:',resp);return;} gToken=resp.access_token; updateAuthConnected(); syncAll();}}); tokenClient.requestAccessToken({prompt:'consent'}); }
+function gSignIn(){ const clientId=((document.getElementById('gcal-client-id')?.value||'').trim())||GCAL_CLIENT_ID; if(!window.google?.accounts?.oauth2){alert('La librería GIS aún no cargó. Espera un segundo e intenta de nuevo.');return;} localStorage.setItem('gcal_client_id',clientId); tokenClient=google.accounts.oauth2.initTokenClient({client_id:clientId,scope:GCAL_SCOPES,callback:async resp=>{if(resp.error){console.error('GIS error:',resp);return;} gToken=resp.access_token; updateAuthConnected(); await autoDiscoverCals(); syncAll();}}); tokenClient.requestAccessToken({prompt:'consent'}); }
 function gSignOut(){ if(gToken&&window.google?.accounts?.oauth2) google.accounts.oauth2.revoke(gToken,()=>{}); gToken=null; initGAuthUI(); renderCalSources(); }
 function updateAuthConnected(){ const zone=document.getElementById('gcal-auth-zone'); if(!zone) return; zone.className='oauth-box'; zone.innerHTML=`<div class="oauth-connected"><div class="oauth-dot"></div><span style="font-size:.73rem;color:#10B981;font-weight:700;flex:1">Google Calendar conectado ✓</span><button class="btn btn-g" style="padding:4px 10px;font-size:.6rem" onclick="listCals()">🔍 Detectar cals</button><button class="btn btn-g" style="padding:4px 10px;font-size:.6rem;margin-left:4px" onclick="gSignOut()">Salir</button></div><div style="font-size:.6rem;color:var(--mut);margin-top:5px">Sync bidireccional activo · Personal lectura+escritura · Finanzas/Camila/Sura solo lectura</div>`; renderCalSources(); }
-async function listCals(){ if(!gToken){alert('Conecta primero Google Calendar');return;} try{const resp=await fetch(`${GCAL_API}/users/me/calendarList?maxResults=50`,{headers:{'Authorization':`Bearer ${gToken}`}}); if(!resp.ok) throw new Error(`Error ${resp.status}`); const data=await resp.json(); const items=(data.items||[]); const sura=items.find(c=>/(sura|investments)/i.test(c.summary)||/(sura|investments)/i.test(c.id)); if(sura){const src=SOURCES.find(s=>s.id==='trabajo');if(src&&!src.gcalId){src.gcalId=sura.id;src.desc=sura.summary;alert(`🏢 Sura detectado: "${sura.summary}"\nID: ${sura.id}\nEl próximo sync lo incluirá automáticamente.`);localStorage.setItem('gcal_sura_id',sura.id);renderCalSources();}} const zone=document.getElementById('gcal-auth-zone'); const extra=document.getElementById('gcal-cal-list'); if(!extra&&zone){const div=document.createElement('div');div.id='gcal-cal-list';div.style='margin-top:8px;font-size:.62rem;color:var(--mut)';const names=items.map(c=>`· ${c.summary}`).join('<br>');div.innerHTML=`<strong style="color:#a78bfa">${items.length} calendarios detectados:</strong><br>${names}${sura?'<br><span style="color:#F97316">🏢 Sura encontrado ✓</span>':'<br><span style="color:var(--mut)">⚠️ Sura no detectado</span>'}`;zone.appendChild(div);}}catch(err){alert('Error al listar calendarios: '+err.message);} }
+// ═══ AUTO-DISCOVERY: matchea calendarios Google con SOURCES automáticamente ═══
+async function autoDiscoverCals(){
+  if(!gToken) return;
+  try{
+    const resp=await fetch(`${GCAL_API}/users/me/calendarList?maxResults=100`,{headers:{'Authorization':`Bearer ${gToken}`}});
+    if(!resp.ok) return;
+    const data=await resp.json();
+    const items=(data.items||[]);
+    let matched=0;
+    // Auto-match por email/id conocido
+    const MATCH_MAP={
+      'gaete.gaona@gmail.com':'personal',
+      'c.camilapalma@gmail.com':'camila'
+    };
+    items.forEach(cal=>{
+      const id=cal.id||'';
+      const summary=(cal.summary||'').toLowerCase();
+      // Match por email directo
+      if(MATCH_MAP[id]){
+        const src=SOURCES.find(s=>s.id===MATCH_MAP[id]);
+        if(src){ src.gcalId=id; matched++; }
+      }
+      // Match Finanzas por nombre
+      if(!SOURCES.find(s=>s.id==='finanzas').gcalId && (summary.includes('finanza')||summary.includes('finance')||id.includes('9616f51a807e'))){
+        SOURCES.find(s=>s.id==='finanzas').gcalId=id; matched++;
+      }
+      // Match Sura
+      if(/(sura|investments)/i.test(summary)||/(sura|investments)/i.test(id)){
+        const src=SOURCES.find(s=>s.id==='trabajo');
+        if(src&&!src.gcalId){ src.gcalId=id; src.desc=cal.summary||src.desc; localStorage.setItem('gcal_sura_id',id); matched++; }
+      }
+    });
+    console.log(`%c[AUTO-DISCOVERY] ${items.length} calendarios encontrados, ${matched} nuevos asociados`,'color:#a855f7;font-weight:bold');
+    renderCalSources();
+    // Mostrar lista en la UI
+    const zone=document.getElementById('gcal-auth-zone');
+    const existing=document.getElementById('gcal-cal-list');
+    if(existing) existing.remove();
+    if(zone){
+      const div=document.createElement('div');div.id='gcal-cal-list';div.style='margin-top:8px;font-size:.62rem;color:var(--mut);max-height:120px;overflow-y:auto';
+      const names=items.map(c=>{
+        const isMatched=SOURCES.some(s=>s.gcalId===c.id);
+        return `<span style="color:${isMatched?'#10B981':'var(--mut)'}">· ${c.summary}${isMatched?' ✓':''}</span>`;
+      }).join('<br>');
+      div.innerHTML=`<strong style="color:#a78bfa">${items.length} calendarios · ${matched} auto-asociados:</strong><br>${names}`;
+      zone.appendChild(div);
+    }
+  }catch(err){ console.warn('Auto-discovery error:',err.message); }
+}
+async function listCals(){ await autoDiscoverCals(); syncAll(); }
 async function fetchGCalEvents(calId,calKey,readonly=true){ if(!gToken) return null; const now=new Date(); const from=new Date(now); from.setMonth(from.getMonth()-1); const to=new Date(now); to.setMonth(to.getMonth()+4); const p=new URLSearchParams({timeMin:from.toISOString(),timeMax:to.toISOString(),singleEvents:'true',orderBy:'startTime',maxResults:'500'}); const resp=await fetch(`${GCAL_API}/calendars/${encodeURIComponent(calId)}/events?${p}`,{headers:{'Authorization':`Bearer ${gToken}`}}); if(resp.status===401){gToken=null;gSignOut();return null;} if(!resp.ok) throw new Error(`GCal API ${resp.status}`); const data=await resp.json(); return (data.items||[]).map(item=>{const start=item.start;let iso,time,allDay=false;if(start.date){iso=start.date;allDay=true;}else if(start.dateTime){const d=new Date(start.dateTime);const fmt=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(d);const[dp,tp]=(fmt+', 00:00').split(', ');iso=dp;time=tp.replace(/^24:/,'00:').slice(0,5);}if(!iso) return null;return {iso,title:(item.summary||'(sin título)').slice(0,80),cal:calKey,time,allDay,uid:item.id,fromCal:true,readonly};}).filter(Boolean); }
 async function pushEventToGCalAPI(ev,calId='gaete.gaona@gmail.com'){ if(!gToken) return false; let start,end; if(ev.allDay||!ev.time){const nd=new Date(ev.iso);nd.setDate(nd.getDate()+1);start={date:ev.iso};end={date:isoOf(nd)};}else{const[h,mi]=ev.time.split(':');const endH=String(parseInt(h)+1).padStart(2,'0');start={dateTime:`${ev.iso}T${h.padStart(2,'0')}:${mi||'00'}:00`,timeZone:'America/Santiago'};end={dateTime:`${ev.iso}T${endH}:${mi||'00'}:00`,timeZone:'America/Santiago'};} const body={summary:ev.title,start,end,description:ev.detail||''}; const resp=await fetch(`${GCAL_API}/calendars/${encodeURIComponent(calId)}/events`,{method:'POST',headers:{'Authorization':`Bearer ${gToken}`,'Content-Type':'application/json'},body:JSON.stringify(body)}); if(!resp.ok) throw new Error(`Push ${resp.status}`); return await resp.json(); }
 (function restoreSura(){ const sid=localStorage.getItem('gcal_sura_id'); if(sid){const s=SOURCES.find(x=>x.id==='trabajo');if(s&&!s.gcalId) s.gcalId=sid;} })();
