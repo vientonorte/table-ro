@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.0.2] — 2026-03-14
+
+### 🔁 Cache busting del fix
+
+- Actualizada la versión visible y las URLs de assets en [index.html](/Users/ro/Documents/GitHub/table-ro/index.html) a `1.0.2` para invalidar cualquier JS roto cacheado en producción.
+
 ## [1.0.1] — 2026-03-14
 
 ### 🧰 Fix de despliegue
