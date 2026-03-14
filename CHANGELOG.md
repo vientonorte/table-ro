@@ -11,6 +11,12 @@ All notable changes to this project will be documented in this file.
 - Añadido cache busting en los assets estáticos de [index.html](/Users/ro/Documents/GitHub/table-ro/index.html) para forzar recarga de [css/styles.css](/Users/ro/Documents/GitHub/table-ro/css/styles.css) y [js/app.js](/Users/ro/Documents/GitHub/table-ro/js/app.js) en GitHub Pages y navegadores con caché agresiva.
 - Actualizada la versión visible del documento a `1.0.1`.
 
+### 🐛 Fixes funcionales
+
+- Corregidos errores de sintaxis en [js/app.js](/Users/ro/Documents/GitHub/table-ro/js/app.js) que podían dejar la interfaz completa sin renderizar.
+- El análisis BuJo ahora reemplaza la lista de revisión con resultados reales en lugar de mezclar ítems demo.
+- Los ítems BuJo agregados al tablero intentan respetar la fecha detectada de la imagen en vez de caer siempre en el primer día visible.
+
 ## [1.0.0] — 2026-03-14
 
 ### 🚀 Lanzamiento a producción — v1.0
