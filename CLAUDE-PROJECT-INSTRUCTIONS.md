@@ -2,7 +2,7 @@
 
 ## Contexto
 
-Este es el tablero semanal personal de Rö. Es un archivo HTML único (`index.html`) sin framework ni build. Se despliega en GitHub Pages.
+Este es el tablero semanal personal de Rö. A partir de v1.0 el proyecto usa arquitectura multi-archivo. Se despliega en GitHub Pages.
 
 **Repo:** https://github.com/vientonorte/table-ro  
 **Live:** https://vientonorte.github.io/table-ro  
@@ -10,16 +10,28 @@ Este es el tablero semanal personal de Rö. Es un archivo HTML único (`index.ht
 
 ---
 
-## Arquitectura del archivo
+## Arquitectura de archivos (v1.0+)
 
-### Secciones principales de `index.html`
+```
+index.html       → estructura HTML (topbar, tablero, modales, drawer BuJo)
+css/styles.css   → todos los estilos (variables, componentes, animaciones)
+js/app.js        → toda la lógica (datos, render, sync, IA, storage)
+```
+
+**No modificar `index.v6.html`** — es archivo de respaldo.
+
+---
+
+## Secciones principales de `js/app.js`
 
 | Sección | Descripción |
 |---------|-------------|
-| `TOKENS (:root)` | Variables CSS de color por categoría |
 | `CAL {}` | Mapa de categorías → color + label |
 | `EVENTS []` | Array de eventos hardcodeados del mes |
-| `BUJO_INIT []` | Tareas iniciales precargadas del BuJo p.41 |
+| `BUJO_INIT []` | Tareas iniciales precargadas del BuJo |
+| `SOURCES []` | Fuentes de calendario (Google + ICS) |
+| `PERMS_DEFAULT {}` | Permisos por fuente (rw/ro/admin/query) |
+| `AI_CFG` | Config de proveedores IA (Claude/OpenAI/Gemini) |
 | `DRAG ENGINE` | Drag & drop entre columnas |
 | `makeCard()` | Renderiza cada card del tablero |
 | `renderWeek()` | Renderiza las 7 columnas de la semana activa |
@@ -31,6 +43,21 @@ Este es el tablero semanal personal de Rö. Es un archivo HTML único (`index.ht
 | `💾 GUARDAR / CARGAR` | Persistencia localStorage |
 | `🔑 GOOGLE OAUTH` | Google Identity Services token flow |
 | `📅 GCAL API v3` | fetchGCalEvents + pushEventToGCalAPI |
+
+---
+
+## Secciones principales de `css/styles.css`
+
+| Sección | Descripción |
+|---------|-------------|
+| `:root` | Variables CSS de color por categoría |
+| Base | Reset, body, tipografía |
+| Topbar | Barra de navegación superior |
+| Week board | Grid de 7 columnas |
+| Cards | Tarjetas de evento |
+| Modales | Quick-add, Sync, Admin |
+| Drawer | Panel lateral BuJo |
+| Animaciones | Transiciones y utilidades |
 
 ---
 
@@ -58,38 +85,44 @@ Este es el tablero semanal personal de Rö. Es un archivo HTML único (`index.ht
 
 ## Reglas para modificar el código
 
-1. **No romper el archivo único** — todo va en `index.html`
-2. **Mantener simbología BuJo** — Camila=verde, Vínculos=morado, Personal/Bienestar=rosa, Trabajo/Finanzas=naranja
-3. **Sin dependencias externas nuevas** — solo Google Fonts y GIS (ya incluidos)
-4. **localStorage keys:** `tablero_states_ro`, `tablero_extra_ro`, `gcal_client_id`, `gcal_sura_id`, `ics_*`
-5. **Zona horaria:** siempre `America/Santiago`
-6. **Al agregar eventos al array EVENTS:** formato `{iso:'YYYY-MM-DD', title:'...', cal:'categoría', time:'HH:MM'}` o `allDay:true`
+1. **CSS va en `css/styles.css`** — no agregar `<style>` inline en index.html
+2. **JS va en `js/app.js`** — no agregar `<script>` inline en index.html
+3. **Mantener simbología BuJo** — Camila=verde, Vínculos=morado, Personal/Bienestar=rosa, Trabajo/Finanzas=naranja
+4. **Sin dependencias externas nuevas** — solo Google Fonts y GIS (ya incluidos)
+5. **localStorage keys:** `tablero_states_ro`, `tablero_extra_ro`, `gcal_client_id`, `gcal_sura_id`, `ics_*`
+6. **Zona horaria:** siempre `America/Santiago`
+7. **Al agregar eventos al array EVENTS:** formato `{iso:'YYYY-MM-DD', title:'...', cal:'categoría', time:'HH:MM'}` o `allDay:true`
 
 ---
 
 ## Tareas frecuentes
 
 ### Agregar evento al tablero
-Añadir objeto al array `EVENTS` en el JS:
+En `js/app.js`, añadir objeto al array `EVENTS`:
 ```js
 {iso:'2026-03-15', title:'Mi evento', cal:'personal', time:'10:00'}
 ```
 
 ### Cambiar mes / año
-Actualizar el `<h1>` del topbar y el array `EVENTS` con las fechas del nuevo mes.
+1. Actualizar el `<h1>` del topbar en `index.html`
+2. Actualizar el array `EVENTS` en `js/app.js` con las fechas del nuevo mes
 
 ### Actualizar BuJo inicial (p.XX)
-Editar el array `BUJO_INIT` con los nuevos items de la página del BuJo.
+Editar el array `BUJO_INIT` en `js/app.js` con los nuevos items.
 
 ### Agregar nueva fuente de calendario
-Agregar objeto al array `SOURCES` con `id`, `name`, `cal`, `color`, `icon`, `gcalId`, `icsUrl`, `lsKey`.
+Agregar objeto al array `SOURCES` en `js/app.js` con `id`, `name`, `cal`, `color`, `icon`, `gcalId`, `icsUrl`, `lsKey`.
+
+### Agregar estilos nuevos
+Añadir al final de la sección correspondiente en `css/styles.css`.
 
 ---
 
 ## Flujo BuJo → Tablero
 
 1. Rö sube foto del BuJo al drawer o la comparte en el chat
-2. Claude analiza la imagen con el protocolo BuJo (transcripción + análisis semántico)
-3. Resultado en formato: `● texto`, `◆ texto`, `> texto`, etc.
-4. Rö pega el texto en el área del drawer → clic "✨ Procesar"
-5. Marca items → "＋ Agregar al tablero"
+2. Claude/GPT/Gemini analiza la imagen con el protocolo BuJo
+3. Resultado en formato JSON con ítems categorizados
+4. Los ítems aparecen en el drawer con checkboxes
+5. Rö marca los que quiere → clic "＋ Agregar al tablero"
+
