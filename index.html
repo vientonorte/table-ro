@@ -1,1 +1,1381 @@
-404: Not Found
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TABLERO — Rö · 2026</title>
+<link rel="preconnect" href="https://api.fontshare.com" crossorigin>
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=chillax@300,400,500,600,700&display=swap">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+@font-face{font-family:'Chillax';src:local('Chillax'),local('CHILLAX');font-display:swap;}
+:root{
+  --ro:#7C3AED; --ro-a:rgba(124,58,237,.18);
+  --camila:#10B981; --camila-a:rgba(16,185,129,.18);
+  --fin:#FB923C; --fin-a:rgba(251,146,60,.18);
+  --trab:#F97316; --trab-a:rgba(249,115,22,.18);
+  --shared:#3B82F6; --shared-a:rgba(59,130,246,.18);
+  --bujo:#A855F7; --bujo-a:rgba(168,85,247,.18);
+  --bg:#0D0D1A;
+  --s1:#131325; --s2:#1A1A35; --s3:#22223F;
+  --bd:rgba(255,255,255,.08);
+  --txt:#E2E8F0; --mut:#64748B;
+  --font-ui:'Chillax',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --font-display:'Chillax',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --r:12px; --sh:0 4px 24px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  font-family:var(--font-ui);
+  background:var(--bg);
+  background-image:
+    radial-gradient(ellipse at 15% 10%,rgba(124,58,237,.13) 0%,transparent 52%),
+    radial-gradient(ellipse at 88% 88%,rgba(236,72,153,.08) 0%,transparent 52%);
+  color:var(--txt); min-height:100vh;
+  display:flex; flex-direction:column; overflow-x:hidden;
+}
+/* TOPBAR */
+.topbar{
+  display:flex; align-items:center; gap:10px;
+  padding:12px 16px; flex-wrap:wrap;
+  border-bottom:1px solid var(--bd);
+  background:rgba(13,13,26,.9);
+  backdrop-filter:blur(12px);
+  position:sticky; top:0; z-index:100;
+}
+h1{
+  font-family:var(--font-display);
+  font-size:clamp(1.1rem,2.5vw,1.8rem);
+  background:linear-gradient(135deg,#a855f7,#ec4899,#f97316);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text; letter-spacing:2px; line-height:1; flex-shrink:0;
+}
+.topbar-sep{width:1px;height:26px;background:var(--bd);flex-shrink:0;}
+.wnav-group{display:flex;align-items:center;gap:6px;}
+.wnav{
+  background:var(--s2); border:1px solid var(--bd); color:var(--txt);
+  border-radius:8px; padding:5px 12px;
+  font-family:var(--font-ui); font-weight:800; font-size:.72rem;
+  cursor:pointer; transition:all .18s;
+}
+.wnav:hover{background:rgba(124,58,237,.22);border-color:rgba(124,58,237,.45);}
+.wnav.today{color:#a855f7;border-color:rgba(168,85,247,.4);}
+.wtitle{font-family:var(--font-display);font-size:.9rem;color:#fff;letter-spacing:.8px;white-space:nowrap;}
+.legend{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto;}
+.leg{display:flex;align-items:center;gap:4px;font-size:.62rem;font-weight:700;color:var(--mut);text-transform:uppercase;cursor:pointer;transition:opacity .15s;user-select:none;}
+.leg:hover{opacity:.7;}
+.leg.off{opacity:.28;}
+.leg.off .ldot{filter:grayscale(1);}
+.ldot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.bujo-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:8px;border:none;
+  background:linear-gradient(135deg,rgba(168,85,247,.25),rgba(236,72,153,.15));
+  border:1px solid rgba(168,85,247,.4);
+  color:#d8b4fe;font-family:var(--font-ui);
+  font-weight:800;font-size:.72rem;cursor:pointer;
+  text-transform:uppercase;letter-spacing:.7px;
+  transition:all .2s;flex-shrink:0;position:relative;
+}
+.bujo-btn:hover{background:linear-gradient(135deg,rgba(168,85,247,.38),rgba(236,72,153,.22));transform:translateY(-1px);}
+.bujo-btn .badge{
+  position:absolute;top:-5px;right:-5px;
+  background:#EC4899;color:#fff;
+  font-size:.55rem;font-weight:900;
+  width:16px;height:16px;border-radius:50%;
+  display:none;align-items:center;justify-content:center;
+}
+.bujo-btn.has-items .badge{display:flex;}
+/* WEEK BOARD */
+.week-wrap{flex:1;overflow-x:auto;padding:14px 14px 40px;}
+.wboard{
+  display:grid;
+  grid-template-columns:repeat(7,minmax(165px,1fr));
+  gap:9px;min-width:1060px;
+}
+.wday{
+  background:var(--s1);border-radius:var(--r);
+  border:1px solid var(--bd);box-shadow:var(--sh);
+  overflow:hidden;display:flex;flex-direction:column;
+  transition:border-color .18s;
+}
+.wday.is-today{border-color:rgba(168,85,247,.5);}
+.wday.drag-over-col{border-color:rgba(168,85,247,.7)!important;background:rgba(124,58,237,.06);}
+.wday-head{
+  padding:9px 11px 7px;background:var(--s2);
+  border-bottom:1px solid var(--bd);
+  display:flex;align-items:flex-end;justify-content:space-between;flex-shrink:0;
+}
+.day-name{font-family:var(--font-display);font-size:.82rem;color:var(--mut);letter-spacing:.6px;}
+.wday.is-today .day-name{color:#a855f7;}
+.day-num{font-size:1.4rem;font-weight:900;color:var(--txt);font-family:var(--font-ui);line-height:1;}
+.wday.is-today .day-num{background:linear-gradient(135deg,#7C3AED,#EC4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.day-count{font-size:.56rem;font-weight:800;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+.wday-body{padding:6px;display:flex;flex-direction:column;gap:4px;flex:1;min-height:80px;}
+.day-empty{color:var(--mut);font-size:.66rem;text-align:center;padding:16px 6px;opacity:.45;}
+.aday-pill{border-radius:5px;padding:2px 6px;font-size:.6rem;font-weight:800;border-left:3px solid var(--cc);background:var(--ccbg);color:var(--cc);}
+/* CARDS */
+.card{
+  background:rgba(255,255,255,.044);border-radius:7px;padding:7px 9px;
+  border-left:3px solid var(--cc,#7C3AED);
+  cursor:grab;user-select:none;
+  transition:transform .13s,background .13s,opacity .13s,box-shadow .13s;
+}
+.card:hover{background:rgba(255,255,255,.085);transform:translateX(2px);}
+.card:active{cursor:grabbing;}
+.card.dragging{opacity:.3;transform:scale(.96) rotate(-1.2deg);box-shadow:0 10px 36px rgba(0,0,0,.6);}
+.card.done{opacity:.35;}
+.card.done .ct{text-decoration:line-through;}
+.card-row{display:flex;align-items:flex-start;gap:5px;}
+.chk{width:13px;height:13px;border-radius:3px;border:2px solid var(--cc,#7C3AED);flex-shrink:0;margin-top:2px;position:relative;transition:background .16s;cursor:pointer;}
+.card.done .chk{background:var(--cc);}
+.card.done .chk::after{content:'✓';position:absolute;top:-2px;left:0px;font-size:9px;color:#fff;font-weight:900;}
+.ct{font-size:.74rem;font-weight:700;color:#e2e8f0;line-height:1.3;}
+.ctime{font-size:.61rem;color:var(--cc);margin-top:1px;font-weight:600;}
+.ctag{display:inline-block;font-size:.52rem;font-weight:800;text-transform:uppercase;padding:1px 5px;border-radius:20px;background:rgba(255,255,255,.07);color:var(--mut);margin-top:2px;}
+.drop-placeholder{height:34px;border-radius:6px;border:2px dashed rgba(168,85,247,.45);background:rgba(124,58,237,.08);pointer-events:none;flex-shrink:0;}
+.card-actions{display:flex;flex-direction:column;gap:2px;flex-shrink:0;align-items:center;margin-top:1px;}
+.sync-btn,.det-btn{background:none;border:none;cursor:pointer;padding:1px 2px;border-radius:3px;font-size:.66rem;line-height:1;color:var(--mut);transition:color .12s;width:17px;height:15px;display:flex;align-items:center;justify-content:center;}
+.sync-btn:hover{color:#10B981;}
+.det-btn:hover,.det-btn.open{color:#a78bfa;}
+.card-detail{display:none;margin-top:5px;}
+.card-detail.show{display:block;}
+.det-area{width:100%;resize:none;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:5px;padding:4px 7px;color:var(--txt);font-family:var(--font-ui);font-size:.67rem;line-height:1.4;}
+.det-area:focus{outline:1px solid rgba(167,139,250,.45);}
+/* DRAWER */
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(3px);z-index:200;opacity:0;pointer-events:none;transition:opacity .25s;}
+.drawer-overlay.open{opacity:1;pointer-events:all;}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(520px,100vw);background:var(--s1);border-left:1px solid var(--bd);box-shadow:-8px 0 40px rgba(0,0,0,.5);z-index:201;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);}
+.drawer.open{transform:translateX(0);}
+.drawer-head{padding:16px 18px;background:var(--s2);border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.drawer-title{font-family:var(--font-display);font-size:1.05rem;color:#fff;letter-spacing:1px;}
+.drawer-close{background:rgba(255,255,255,.08);border:none;color:var(--mut);width:28px;height:28px;border-radius:50%;font-size:.9rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.drawer-close:hover{background:rgba(255,255,255,.15);color:var(--txt);}
+.drawer-body{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;}
+/* AI BUJO ZONE */
+.ai-zone{border:2px solid rgba(168,85,247,.3);border-radius:var(--r);background:rgba(168,85,247,.04);padding:14px;display:flex;flex-direction:column;gap:10px;}
+.ai-zone-title{font-family:var(--font-display);font-size:.82rem;color:#c084fc;letter-spacing:.8px;display:flex;align-items:center;gap:8px;}
+.ai-zone-title::before{content:'';width:3px;height:14px;background:linear-gradient(180deg,#7C3AED,#EC4899);border-radius:2px;display:block;}
+.upload-zone{border:2px dashed rgba(124,58,237,.35);border-radius:var(--r);background:rgba(124,58,237,.04);padding:18px 14px;text-align:center;cursor:pointer;transition:all .18s;position:relative;overflow:hidden;}
+.upload-zone:hover,.upload-zone.drag{border-color:rgba(168,85,247,.75);background:rgba(124,58,237,.1);}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.upload-icon{font-size:1.8rem;display:block;margin-bottom:5px;}
+.upload-big{font-family:var(--font-display);font-size:.85rem;color:#c084fc;letter-spacing:1px;}
+.upload-sub{font-size:.62rem;color:var(--mut);margin-top:2px;}
+.thumb-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;}
+.thumb{position:relative;border-radius:6px;overflow:hidden;aspect-ratio:4/3;background:var(--s2);}
+.thumb img{width:100%;height:100%;object-fit:cover;}
+.thumb-del{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.7);border:none;color:#fff;border-radius:50%;width:17px;height:17px;font-size:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.ai-key-row{display:flex;gap:6px;align-items:center;}
+.ai-key-input{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--bd);border-radius:7px;padding:6px 10px;color:var(--txt);font-family:var(--font-ui);font-size:.7rem;}
+.ai-key-input:focus{outline:1px solid rgba(168,85,247,.5);}
+.ai-key-status{font-size:.62rem;font-weight:700;padding:3px 8px;border-radius:20px;flex-shrink:0;}
+.ai-key-status.ok{background:rgba(16,185,129,.15);color:#10B981;}
+.ai-key-status.none{background:rgba(100,116,139,.12);color:var(--mut);}
+.ai-analyze-btn{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  width:100%;padding:9px;border-radius:8px;border:none;
+  background:linear-gradient(135deg,#7C3AED,#EC4899);
+  color:#fff;font-family:var(--font-ui);font-weight:800;font-size:.75rem;
+  cursor:pointer;text-transform:uppercase;letter-spacing:.6px;
+  transition:all .2s;position:relative;overflow:hidden;
+}
+.ai-analyze-btn:hover{opacity:.88;transform:translateY(-1px);}
+.ai-analyze-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+.ai-analyze-btn .spin{display:none;width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;}
+.ai-analyze-btn.loading .spin{display:block;}
+.ai-analyze-btn.loading .btn-label{display:none;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.ai-result{background:rgba(255,255,255,.03);border:1px solid var(--bd);border-radius:9px;padding:10px;font-size:.68rem;line-height:1.6;color:#c4b5fd;max-height:160px;overflow-y:auto;}
+.paste-area{width:100%;min-height:72px;resize:vertical;background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:7px;padding:8px;color:var(--txt);font-family:var(--font-ui);font-size:.72rem;}
+.paste-area:focus{outline:1px solid rgba(168,85,247,.5);}
+.ftag-row{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:7px;}
+.ftag{padding:2px 8px;border-radius:20px;font-size:.58rem;font-weight:800;text-transform:uppercase;cursor:pointer;border:1px solid transparent;opacity:.42;transition:opacity .15s;}
+.ftag.on{opacity:1;}
+.bj-list{display:flex;flex-direction:column;gap:4px;}
+.bj-item{display:flex;align-items:center;gap:6px;padding:6px 8px;background:rgba(255,255,255,.04);border-radius:6px;border-left:3px solid var(--cc,#A855F7);font-size:.72rem;}
+.bj-item input[type=checkbox]{accent-color:var(--cc,#A855F7);width:12px;height:12px;cursor:pointer;flex-shrink:0;}
+.bj-item-text{flex:1;font-weight:600;}
+.bj-item-cat{font-size:.52rem;font-weight:800;text-transform:uppercase;padding:1px 5px;border-radius:20px;background:rgba(255,255,255,.07);color:var(--mut);flex-shrink:0;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);backdrop-filter:blur(5px);z-index:300;display:none;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:22px;width:min(420px,90vw);box-shadow:0 24px 64px rgba(0,0,0,.6);display:flex;flex-direction:column;gap:12px;}
+.modal-title{font-family:var(--font-display);font-size:1rem;color:#fff;letter-spacing:1px;}
+.mfield{display:flex;flex-direction:column;gap:4px;}
+.mfield label{font-size:.58rem;font-weight:800;text-transform:uppercase;color:var(--mut);letter-spacing:.5px;}
+.mfield input,.mfield select,.mfield textarea{background:rgba(255,255,255,.05);border:1px solid var(--bd);border-radius:8px;padding:7px 10px;color:var(--txt);font-family:var(--font-ui);font-size:.76rem;}
+.mfield input:focus,.mfield select:focus,.mfield textarea:focus{outline:1px solid rgba(167,139,250,.5);background:rgba(255,255,255,.07);}
+.mfield select option{background:#1A1A35;color:#E2E8F0;}
+.mrow{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.modal-actions{display:flex;gap:7px;justify-content:flex-end;margin-top:2px;}
+.btn{padding:7px 14px;border-radius:8px;border:none;font-family:var(--font-ui);font-weight:800;font-size:.72rem;cursor:pointer;text-transform:uppercase;letter-spacing:.6px;transition:all .18s;display:inline-flex;align-items:center;gap:5px;}
+.btn-p{background:linear-gradient(135deg,#7C3AED,#EC4899);color:#fff;}
+.btn-p:hover{opacity:.82;transform:translateY(-1px);}
+.btn-g{background:rgba(255,255,255,.07);color:var(--mut);border:1px solid var(--bd);}
+.btn-g:hover{background:rgba(255,255,255,.12);color:var(--txt);}
+.btn-row{display:flex;gap:6px;flex-wrap:wrap;}
+.sec-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);color:var(--mut);font-family:var(--font-ui);font-weight:800;font-size:.7rem;cursor:pointer;text-transform:uppercase;letter-spacing:.6px;transition:all .18s;flex-shrink:0;}
+.sec-btn:hover{background:rgba(255,255,255,.11);color:var(--txt);border-color:rgba(255,255,255,.2);}
+.save-btn.saved{color:#10B981!important;border-color:rgba(16,185,129,.4)!important;}
+.sec-title{font-family:var(--font-display);font-size:.8rem;color:#c084fc;letter-spacing:.8px;display:flex;align-items:center;gap:6px;margin-bottom:7px;}
+.sec-title::before{content:'';display:block;width:3px;height:14px;background:linear-gradient(180deg,#7C3AED,#EC4899);border-radius:2px;}
+.admin-modal{width:min(580px,95vw);max-height:88vh;overflow:hidden;display:flex;flex-direction:column;gap:0;padding:0;}
+.admin-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 0;flex-shrink:0;}
+.tab-bar{display:flex;gap:2px;padding:12px 22px 0;flex-shrink:0;border-bottom:1px solid var(--bd);}
+.tab-btn{padding:6px 14px;border-radius:8px 8px 0 0;border:none;border-bottom:2px solid transparent;background:none;color:var(--mut);font-family:var(--font-ui);font-weight:800;font-size:.7rem;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;transition:all .15s;margin-bottom:-1px;}
+.tab-btn:hover{color:var(--txt);background:rgba(255,255,255,.04);}
+.tab-btn.active{color:#a78bfa;border-bottom-color:#a78bfa;background:rgba(124,58,237,.08);}
+.tab-pane{display:none;flex:1;overflow-y:auto;padding:16px 22px 22px;flex-direction:column;gap:11px;}
+.tab-pane.active{display:flex;}
+.src-card{display:flex;align-items:flex-start;gap:10px;padding:10px 11px;background:rgba(255,255,255,.04);border-radius:9px;border-left:3px solid var(--src-c,#7C3AED);margin-bottom:6px;transition:background .15s;}
+.src-card:hover{background:rgba(255,255,255,.07);}
+.src-icon{font-size:1.25rem;flex-shrink:0;margin-top:2px;}
+.src-info{flex:1;min-width:0;}
+.src-name{font-weight:800;font-size:.76rem;color:#e2e8f0;}
+.src-desc{font-size:.59rem;color:var(--mut);margin:2px 0;}
+.src-status{font-size:.61rem;margin-top:2px;}
+.src-actions{display:flex;gap:4px;flex-shrink:0;align-items:center;}
+.perm-badge{font-size:.52rem;font-weight:900;text-transform:uppercase;padding:2px 7px;border-radius:20px;letter-spacing:.5px;flex-shrink:0;}
+.perm-rw{background:rgba(16,185,129,.15);color:#10B981;border:1px solid rgba(16,185,129,.3);}
+.perm-ro{background:rgba(249,115,22,.12);color:#F97316;border:1px solid rgba(249,115,22,.25);}
+.perm-query{background:rgba(59,130,246,.12);color:#60A5FA;border:1px solid rgba(59,130,246,.25);}
+.perm-admin{background:rgba(168,85,247,.15);color:#c084fc;border:1px solid rgba(168,85,247,.3);}
+.oauth-box{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.22);border-radius:9px;padding:11px 13px;margin-bottom:4px;}
+.oauth-box.disconnected{background:rgba(124,58,237,.06);border-color:rgba(124,58,237,.22);}
+.oauth-connected{display:flex;align-items:center;gap:7px;}
+.oauth-dot{width:8px;height:8px;border-radius:50%;background:#10B981;flex-shrink:0;}
+.faq-item{border-radius:9px;overflow:hidden;}
+.faq-q{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:rgba(255,255,255,.05);cursor:pointer;font-size:.72rem;font-weight:700;color:var(--txt);transition:background .15s;border-radius:9px;user-select:none;}
+.faq-q:hover{background:rgba(255,255,255,.09);}
+.faq-q.open{border-radius:9px 9px 0 0;background:rgba(124,58,237,.12);color:#a78bfa;}
+.faq-a{display:none;padding:9px 12px;font-size:.69rem;line-height:1.6;color:var(--mut);background:rgba(255,255,255,.03);border-radius:0 0 9px 9px;border-top:1px solid var(--bd);}
+.faq-a.open{display:block;}
+.faq-a code{background:rgba(0,0,0,.3);padding:2px 6px;border-radius:4px;font-size:.66rem;color:#c084fc;}
+.faq-a a{color:#a78bfa;}
+.faq-chevron{font-size:.58rem;transition:transform .2s;}
+.faq-q.open .faq-chevron{transform:rotate(180deg);}
+.res-card{display:flex;align-items:center;gap:9px;padding:9px 11px;background:rgba(255,255,255,.04);border-radius:8px;border:1px solid var(--bd);transition:background .15s;text-decoration:none;margin-bottom:5px;}
+.res-card:hover{background:rgba(255,255,255,.08);border-color:rgba(168,85,247,.3);}
+.res-icon{font-size:1.1rem;flex-shrink:0;}
+.res-info{flex:1;min-width:0;}
+.res-name{font-size:.72rem;font-weight:800;color:var(--txt);}
+.res-url{font-size:.58rem;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.res-copy{background:none;border:1px solid var(--bd);color:var(--mut);border-radius:5px;padding:2px 7px;font-size:.58rem;cursor:pointer;font-family:var(--font-ui);font-weight:700;transition:all .15s;flex-shrink:0;}
+.res-copy:hover{background:rgba(255,255,255,.08);color:var(--txt);}
+.res-section-title{font-size:.58rem;font-weight:800;text-transform:uppercase;color:var(--mut);letter-spacing:.6px;margin-top:4px;margin-bottom:4px;}
+.adm-danger{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.22);border-radius:9px;padding:11px 13px;}
+.hint{font-size:.65rem;color:var(--mut);background:rgba(255,255,255,.04);border:1px solid var(--bd);border-radius:7px;padding:7px 9px;line-height:1.5;}
+.hint span{color:#a78bfa;font-weight:700;}
+.progress-bar-wrap{width:100%;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;}
+.progress-bar{height:100%;background:linear-gradient(90deg,#7C3AED,#EC4899);width:0%;transition:width .3s;border-radius:2px;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px;}
+.sync-topbtn.syncing{color:#a78bfa;border-color:rgba(167,139,250,.4);}
+.sync-topbtn.synced{color:#10B981;border-color:rgba(16,185,129,.4);}
+.sync-topbtn.error{color:#F87171;border-color:rgba(248,113,113,.4);}
+.cal-config-zone{display:none;margin-top:6px;padding:10px;background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.2);border-radius:9px;flex-direction:column;gap:8px;}
+.cal-config-zone.show{display:flex;}
+@media (max-width: 720px){
+  .mrow{grid-template-columns:1fr;}
+  .legend{margin-left:0;width:100%;}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <h1>MARZO 2026</h1>
+  <div class="topbar-sep"></div>
+  <div class="wnav-group">
+    <button class="wnav" onclick="goWeek(-1)">←</button>
+    <button class="wnav today" onclick="goToday()">Hoy</button>
+    <span class="wtitle" id="wk-label"></span>
+    <button class="wnav" onclick="goWeek(1)">→</button>
+  </div>
+  <div class="legend">
+    <div class="leg" onclick="toggleCat(['personal'],this)"><div class="ldot" style="background:#EC4899"></div>Personal</div>
+    <div class="leg" onclick="toggleCat(['vinculos'],this)"><div class="ldot" style="background:#7C3AED"></div>Vínculos</div>
+    <div class="leg" onclick="toggleCat(['camila'],this)"><div class="ldot" style="background:#10B981"></div>Camila</div>
+    <div class="leg" onclick="toggleCat(['trabajo','fin'],this)"><div class="ldot" style="background:#F97316"></div>Trabajo</div>
+  </div>
+  <button class="sec-btn save-btn" id="save-btn" onclick="saveBoard()">💾 Guardar</button>
+  <button class="sec-btn" onclick="openAddModal()">＋ Añadir</button>
+  <button class="sec-btn sync-topbtn" id="sync-topbtn" onclick="openCalModal()">🔄 Sync</button>
+  <button class="sec-btn" onclick="openAdminModal()" style="padding:6px 10px;">⚙️</button>
+  <button class="bujo-btn" id="bujo-btn" onclick="openDrawer()">
+    📓 Bullet Journal
+    <span class="badge" id="bj-badge">0</span>
+  </button>
+</div>
+
+<!-- QUICK-ADD MODAL -->
+<div class="modal-overlay" id="add-modal" onclick="if(event.target===this)closeAddModal()">
+  <div class="modal-box">
+    <div class="modal-title">＋ Nueva Tarea</div>
+    <div class="mfield"><label>Título</label><input type="text" id="add-title" placeholder="¿Qué tienes que hacer?" autocomplete="off"></div>
+    <div class="mrow">
+      <div class="mfield"><label>Día</label><select id="add-day"></select></div>
+      <div class="mfield"><label>Hora (opcional)</label><input type="time" id="add-time"></div>
+    </div>
+    <div class="mfield">
+      <label>Categoría</label>
+      <select id="add-cat">
+        <option value="personal">Personal</option>
+        <option value="vinculos">Vínculos</option>
+        <option value="camila">Camila</option>
+        <option value="trabajo">Trabajo · Sura</option>
+        <option value="fin">Finanzas</option>
+      </select>
+    </div>
+    <div class="mfield"><label>Detalles (opcional)</label><textarea id="add-detail" rows="2" placeholder="Notas..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-g" onclick="closeAddModal()">Cancelar</button>
+      <button class="btn btn-p" onclick="submitAdd()">＋ Agregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CALENDAR SYNC MODAL -->
+<div class="modal-overlay" id="cal-modal" onclick="if(event.target===this)closeCalModal()">
+  <div class="modal-box" style="max-height:90vh;overflow-y:auto;gap:9px;width:min(500px,94vw);">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <div class="modal-title">🔄 Sincronización de Calendarios</div>
+      <button class="btn btn-g" style="padding:3px 9px;font-size:.62rem;" onclick="closeCalModal()">✕</button>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;padding:6px 0;">
+      <span class="perm-badge perm-rw">R/W Lectura+Escritura</span>
+      <span class="perm-badge perm-ro">Solo lectura</span>
+      <span class="perm-badge perm-query">Consulta compartida</span>
+      <span class="perm-badge perm-admin">Admin requerido</span>
+    </div>
+    <div id="gcal-auth-section">
+      <div class="sec-title" style="font-size:.74rem;margin-bottom:5px;">🔑 Google Calendar — OAuth</div>
+      <div id="gcal-auth-zone" class="oauth-box disconnected"></div>
+    </div>
+    <div style="font-size:.65rem;color:var(--mut);">Fuentes de calendario:</div>
+    <div id="cal-sources"></div>
+    <div class="cal-config-zone" id="cal-config-zone">
+      <div class="mfield">
+        <label id="cfg-label">URL iCal privada</label>
+        <input type="text" id="cfg-url-input" placeholder="https://calendar.google.com/calendar/ical/...">
+        <div style="font-size:.58rem;color:var(--mut);margin-top:3px;">Obtén esta URL en Google Calendar → ⚙️ Configuración → Dirección secreta iCal</div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-g" onclick="cancelConfig()">Cancelar</button>
+        <button class="btn btn-p" onclick="saveConfig()">Guardar y Sync</button>
+      </div>
+    </div>
+    <div class="modal-actions" id="cal-main-actions" style="margin-top:3px;">
+      <button class="btn btn-g" onclick="closeCalModal()">Cerrar</button>
+      <button class="btn btn-p" id="sync-all-btn" onclick="syncAll()">🔄 Sincronizar Todo</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN MODAL -->
+<div class="modal-overlay" id="admin-modal" onclick="if(event.target===this)closeAdminModal()">
+  <div class="modal-box admin-modal">
+    <div class="admin-head">
+      <div class="modal-title">⚙️ Config · Tablero Rö</div>
+      <button class="btn btn-g" style="padding:3px 9px;font-size:.62rem;" onclick="closeAdminModal()">✕</button>
+    </div>
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('admin',this)">🔧 Admin</button>
+      <button class="tab-btn" onclick="switchTab('permisos',this)">🔐 Permisos</button>
+      <button class="tab-btn" onclick="switchTab('faq',this)">❓ FAQ</button>
+      <button class="tab-btn" onclick="switchTab('recursos',this)">🔗 Recursos</button>
+    </div>
+    <div class="tab-pane active" id="tab-admin">
+      <div>
+        <div class="sec-title" style="font-size:.74rem;">🤖 Motor IA — BuJo</div>
+
+        <div class="mfield">
+          <label>Proveedor por defecto</label>
+          <select id="adm-ai-provider" onchange="saveAIAdmin()">
+            <option value="auto">Auto</option>
+            <option value="claude">Claude</option>
+            <option value="openai">GPT</option>
+            <option value="gemini">Gemini</option>
+          </select>
+        </div>
+
+        <div class="mrow">
+          <div class="mfield">
+            <label>Claude API Key</label>
+            <input type="password" id="adm-claude-key" placeholder="sk-ant-..." autocomplete="off">
+          </div>
+          <div class="mfield">
+            <label>Modelo Claude</label>
+            <input type="text" id="adm-claude-model" value="claude-sonnet-4-6">
+          </div>
+        </div>
+
+        <div class="mrow">
+          <div class="mfield">
+            <label>OpenAI API Key</label>
+            <input type="password" id="adm-openai-key" placeholder="sk-..." autocomplete="off">
+          </div>
+          <div class="mfield">
+            <label>Modelo GPT</label>
+            <input type="text" id="adm-openai-model" value="gpt-5.4">
+          </div>
+        </div>
+
+        <div class="mrow">
+          <div class="mfield">
+            <label>Gemini API Key</label>
+            <input type="password" id="adm-gemini-key" placeholder="AIza..." autocomplete="off">
+          </div>
+          <div class="mfield">
+            <label>Modelo Gemini</label>
+            <input type="text" id="adm-gemini-model" value="gemini-3.1-pro-preview">
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-p" onclick="saveAIAdmin()">💾 Guardar IA</button>
+        </div>
+
+        <div class="hint" style="margin-top:5px">
+          <span>⚠️</span> POC local. Para producción, mueve las llamadas IA a backend/proxy.
+        </div>
+      </div>
+      <div>
+        <div class="sec-title" style="font-size:.74rem;">🔑 Google OAuth</div>
+        <div class="mfield">
+          <label>Client ID</label>
+          <div style="display:flex;gap:6px;">
+            <input type="text" id="adm-client-id" value="5033046467-kgd7gl4tekb4fkt90jq32rob4evmgnmn.apps.googleusercontent.com" style="font-size:.61rem;flex:1">
+            <button class="res-copy" onclick="saveClientId()">💾</button>
+          </div>
+        </div>
+        <div class="hint" style="margin-top:5px"><span>⚠️</span> OAuth requiere <code style="background:rgba(0,0,0,.25);padding:1px 5px;border-radius:3px;color:#c084fc">localhost:8080</code> o <code style="background:rgba(0,0,0,.25);padding:1px 5px;border-radius:3px;color:#c084fc">vientonorte.github.io</code></div>
+      </div>
+      <div>
+        <div class="sec-title" style="font-size:.74rem;">📅 URLs de Calendarios</div>
+        <div id="adm-cal-urls"></div>
+      </div>
+      <div>
+        <div class="sec-title" style="font-size:.74rem;">🗂 Estado del Tablero</div>
+        <div class="btn-row">
+          <button class="btn btn-g" onclick="exportBoard()">⬇ Exportar JSON</button>
+          <button class="btn btn-g" onclick="importBoardClick()">⬆ Importar JSON</button>
+          <input type="file" id="import-file" accept=".json" style="display:none" onchange="importBoard(this)">
+        </div>
+      </div>
+      <div class="adm-danger">
+        <div style="font-size:.7rem;font-weight:800;color:#F87171;margin-bottom:5px;">⚠️ Zona de peligro</div>
+        <button class="btn" style="background:rgba(248,113,113,.15);color:#F87171;border:1px solid rgba(248,113,113,.3);font-size:.66rem" onclick="clearSavedState()">🗑 Limpiar estado guardado</button>
+        <div style="font-size:.58rem;color:var(--mut);margin-top:4px;">Elimina cards manuales y estados en localStorage.</div>
+      </div>
+    </div>
+    <div class="tab-pane" id="tab-permisos">
+      <div style="font-size:.68rem;color:var(--mut);line-height:1.6;">Control de acceso por fuente de calendario. Los cambios se aplican en el próximo sync.</div>
+      <div id="perm-list"></div>
+      <div class="hint"><span>🔐</span> <strong style="color:#a78bfa">Sura Investments</strong> requiere permiso de admin para mostrar eventos. Solo lectura — no se pueden empujar eventos a este calendario. <strong style="color:#60A5FA">Camila</strong> es consulta: requiere que ella haya compartido su calendario contigo.</div>
+    </div>
+    <div class="tab-pane" id="tab-faq">
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">¿Cómo funciona la extracción automática de BuJo con IA? <span class="faq-chevron">▼</span></div>
+        <div class="faq-a">1. Ve a <strong>📓 Bullet Journal</strong> → sube una foto de tu BuJo físico.<br>2. Configura tu proveedor y API Key en ⚙️ Admin → Motor IA.<br>3. Haz clic en <strong>🤖 Analizar Bullet</strong>.<br>4. El resultado se parsea en JSON y se transforma en ítems BuJo.<br>5. Selecciona los que quieres y pulsa <strong>＋ Agregar al tablero</strong>.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">¿Por qué sale Error 400 al conectar Google? <span class="faq-chevron">▼</span></div>
+        <div class="faq-a">Google OAuth no permite <code>file://</code> como origen. Debes servir el tablero desde localhost:<br><br>1. Terminal → navega a la carpeta<br>2. Ejecuta: <code>python3 -m http.server 8080</code><br>3. Abre <a href="http://localhost:8080/index.html" target="_blank">http://localhost:8080/index.html</a><br>4. Agrega <code>http://localhost:8080</code> en <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Authorized JS Origins ↗</a></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">¿Cómo sincronizar Sura Investments (Outlook)? <span class="faq-chevron">▼</span></div>
+        <div class="faq-a"><strong style="color:#a78bfa">Opción A:</strong> Suscribe el calendario Outlook dentro de Google Calendar. <br><br><strong style="color:#a78bfa">Opción B:</strong> En 🔄 Sync → ⚙️ junto a Sura → pega la URL ICS directamente. Requiere <span class="perm-badge perm-admin" style="display:inline">admin</span> habilitado.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">¿Los cambios se sincronizan automáticamente? <span class="faq-chevron">▼</span></div>
+        <div class="faq-a">No. El sync es manual: usa 🔄 Sync para traer eventos, y 💾 Guardar para persistir el estado local. Los eventos solo se envían a Google Calendar cuando usas el botón 📅 en una tarjeta específica.</div>
+      </div>
+    </div>
+    <div class="tab-pane" id="tab-recursos">
+      <div class="res-section-title">Tablero</div>
+      <a class="res-card" href="https://vientonorte.github.io/table-ro" target="_blank">
+        <span class="res-icon">🗂</span><div class="res-info"><div class="res-name">Tablero · GitHub Pages</div><div class="res-url">https://vientonorte.github.io/table-ro</div></div>
+      </a>
+      <div class="res-section-title" style="margin-top:4px;">Google</div>
+      <a class="res-card" href="https://calendar.google.com" target="_blank"><span class="res-icon">📅</span><div class="res-info"><div class="res-name">Google Calendar</div><div class="res-url">calendar.google.com</div></div></a>
+      <a class="res-card" href="https://console.cloud.google.com/apis/credentials" target="_blank"><span class="res-icon">🔑</span><div class="res-info"><div class="res-name">Google Cloud Console — Credentials</div><div class="res-url">console.cloud.google.com/apis/credentials</div></div></a>
+      <div class="res-section-title" style="margin-top:4px;">Credenciales</div>
+      <div class="res-card" style="cursor:default"><span class="res-icon">🔐</span><div class="res-info"><div class="res-name">OAuth Client ID</div><div class="res-url" id="res-client-id-txt">5033046467-kgd7gl4tekb4fkt90jq32rob4evmgnmn.apps.googleusercontent.com</div></div><button class="res-copy" onclick="copyText('5033046467-kgd7gl4tekb4fkt90jq32rob4evmgnmn.apps.googleusercontent.com',this)">Copiar</button></div>
+      <div class="res-card" style="cursor:default"><span class="res-icon">📧</span><div class="res-info"><div class="res-name">Cuenta Personal</div><div class="res-url">gaete.gaona@gmail.com</div></div><button class="res-copy" onclick="copyText('gaete.gaona@gmail.com',this)">Copiar</button></div>
+      <div class="res-card" style="cursor:default"><span class="res-icon">💚</span><div class="res-info"><div class="res-name">Calendario Camila</div><div class="res-url">c.camilapalma@gmail.com</div></div><button class="res-copy" onclick="copyText('c.camilapalma@gmail.com',this)">Copiar</button></div>
+      <div class="res-section-title" style="margin-top:4px;">URLs iCal</div>
+      <div id="res-ical-list"></div>
+    </div>
+  </div>
+</div>
+
+<div class="week-wrap"><div class="wboard" id="wboard"></div></div>
+
+<div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-head">
+    <div class="drawer-title">📓 Bullet Journal · IA</div>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-body">
+    <div class="ai-zone">
+      <div class="ai-zone-title">🤖 Extracción Automática · Motor IA</div>
+
+      <div class="mrow">
+        <div class="mfield">
+          <label>Proveedor</label>
+          <select id="ai-provider" onchange="saveAIForm()">
+            <option value="auto">Auto</option>
+            <option value="claude">Claude</option>
+            <option value="openai">GPT</option>
+            <option value="gemini">Gemini</option>
+          </select>
+        </div>
+        <div class="mfield">
+          <label>Perfil</label>
+          <select id="ai-profile" onchange="saveAIForm()">
+            <option value="speed">Rápido</option>
+            <option value="balanced">Balanceado</option>
+            <option value="quality">Máxima calidad</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mrow">
+        <div class="mfield">
+          <label>Salida</label>
+          <select id="ai-json-mode" onchange="saveAIForm()">
+            <option value="strict">JSON estricto</option>
+            <option value="loose">JSON flexible</option>
+          </select>
+        </div>
+        <div class="mfield">
+          <label>Máx. ítems</label>
+          <input type="number" id="ai-max-items" min="10" max="200" value="80" onchange="saveAIForm()">
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-top:2px;">
+        <button class="sec-btn" onclick="toggleAIFlag('normalizeSpelling', this)" data-flag="normalizeSpelling">Ortografía mínima</button>
+        <button class="sec-btn" onclick="toggleAIFlag('markIllegible', this)" data-flag="markIllegible">[ilegible]</button>
+        <button class="sec-btn" onclick="toggleAIFlag('inferDates', this)" data-flag="inferDates">Inferir fechas</button>
+        <button class="sec-btn" onclick="toggleAIFlag('inferCategory', this)" data-flag="inferCategory">Inferir categoría</button>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:.65rem;color:var(--mut);">Estado:</span>
+        <span class="ai-key-status" id="api-key-status">Sin configurar</span>
+        <button class="btn btn-g" style="padding:3px 8px;font-size:.6rem;margin-left:auto;" onclick="openAdminModal()">⚙️ Configurar</button>
+      </div>
+
+      <div class="upload-zone" id="upzone" aria-label="Subir imágenes del bullet journal">
+        <input type="file" id="bj-input" accept="image/*" multiple>
+        <span class="upload-icon">📷</span>
+        <div class="upload-big">Sube foto de tu BuJo</div>
+        <div class="upload-sub">JPG · PNG · HEIC · varias páginas</div>
+      </div>
+
+      <div class="thumb-grid" id="thumbs"></div>
+
+      <button class="ai-analyze-btn" id="ai-analyze-btn" onclick="analyzeBujo()" disabled>
+        <div class="spin"></div>
+        <span class="btn-label">🤖 Analizar Bullet</span>
+      </button>
+
+      <div class="progress-bar-wrap" id="ai-progress-wrap" style="display:none;" aria-live="polite">
+        <div class="progress-bar" id="ai-progress"></div>
+      </div>
+
+      <div id="ai-result-preview" style="display:none;" aria-live="polite"></div>
+    </div>
+
+    <div>
+      <div class="sec-title">✍️ Pegar análisis manual</div>
+      <textarea class="paste-area" id="paste-area" placeholder="● Tarea pendiente&#10;◆ Evento / cita&#10;— Nota / reflexión&#10;○ Personal / salud / hábito&#10;* Trabajo&#10;> Camila&#10;$ Finanzas"></textarea>
+      <div class="btn-row" style="margin-top:7px;">
+        <button class="btn btn-p" onclick="parsePaste()">✨ Procesar texto</button>
+      </div>
+    </div>
+
+    <div id="bj-section" style="display:none;">
+      <div class="sec-title">Tareas extraídas</div>
+      <div class="ftag-row" id="ftags">
+        <div class="ftag on" style="background:rgba(168,85,247,.15);border-color:#A855F7;color:#d8b4fe" onclick="filterBJ('all',this)">Todos</div>
+        <div class="ftag" style="background:rgba(236,72,153,.12);border-color:#EC4899;color:#EC4899" onclick="filterBJ('personal',this)">Personal</div>
+        <div class="ftag" style="background:rgba(124,58,237,.12);border-color:#7C3AED;color:#a78bfa" onclick="filterBJ('vinculos',this)">Vínculos</div>
+        <div class="ftag" style="background:rgba(16,185,129,.12);border-color:#10B981;color:#10B981" onclick="filterBJ('camila',this)">Camila</div>
+        <div class="ftag" style="background:rgba(249,115,22,.12);border-color:#F97316;color:#F97316" onclick="filterBJ('trabajo',this)">Trabajo</div>
+        <div class="ftag" style="background:rgba(251,146,60,.12);border-color:#FB923C;color:#FB923C" onclick="filterBJ('fin',this)">Finanzas</div>
+      </div>
+      <div class="bj-list" id="bj-list"></div>
+      <div class="btn-row" style="margin-top:9px;">
+        <button class="btn btn-p" onclick="addToBoard()">＋ Agregar al tablero</button>
+        <button class="btn btn-g" onclick="clearBJ()">🗑 Limpiar</button>
+      </div>
+    </div>
+    <div class="hint"><span>💡</span> Simbología: <strong style="color:#EC4899">●</strong> Personal &nbsp;<strong style="color:#7C3AED">◆</strong> Vínculos &nbsp;<strong style="color:#EC4899">○</strong> Personal / salud / hábito &nbsp;<strong style="color:#F97316">*</strong> Trabajo &nbsp;<strong style="color:#10B981">></strong> Camila &nbsp;<strong style="color:#FB923C">$</strong> Finanzas</div>
+  </div>
+</div>
+
+<script>
+const CAL={
+  personal:  {c:'#EC4899',bg:'rgba(236,72,153,.16)', l:'Personal'},
+  vinculos:  {c:'#7C3AED',bg:'rgba(124,58,237,.16)',l:'Vínculos'},
+  camila:    {c:'#10B981',bg:'rgba(16,185,129,.16)', l:'Camila'},
+  trabajo:   {c:'#F97316',bg:'rgba(249,115,22,.16)', l:'Sura'},
+  fin:       {c:'#FB923C',bg:'rgba(251,146,60,.16)',  l:'Finanzas'},
+  bujo:      {c:'#C084FC',bg:'rgba(192,132,252,.16)',l:'📓 BuJo'},
+};
+
+const EVENTS=[
+  {iso:'2026-03-05',title:'Agendar eventos mensuales',cal:'personal',allDay:true},
+  {iso:'2026-03-05',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
+  {iso:'2026-03-05',title:'Design Check',cal:'trabajo',time:'08:30'},
+  {iso:'2026-03-05',title:'Exámenes',cal:'camila',time:'07:00'},
+  {iso:'2026-03-05',title:'Laboral',cal:'camila',time:'10:00'},
+  {iso:'2026-03-05',title:'Dental 🦷',cal:'camila',time:'16:00'},
+  {iso:'2026-03-05',title:'Listado tareas Smorg',cal:'personal',time:'18:15'},
+  {iso:'2026-03-05',title:'Juntos Chill 💚',cal:'camila',time:'21:00'},
+  {iso:'2026-03-06',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
+  {iso:'2026-03-06',title:'Kinesiología',cal:'personal',time:'08:30'},
+  {iso:'2026-03-06',title:'Resp. Hogar c/Rö',cal:'camila',time:'10:00'},
+  {iso:'2026-03-06',title:'Hatha Yoga 🧘',cal:'personal',time:'12:45'},
+  {iso:'2026-03-06',title:'Radar pendiente',cal:'personal',time:'15:00'},
+  {iso:'2026-03-06',title:'Check in planes c/Lily',cal:'vinculos',time:'20:30'},
+  {iso:'2026-03-06',title:'Juntos Chill 💚',cal:'camila',time:'21:30'},
+  {iso:'2026-03-07',title:'Cita conmigo 🏝️',cal:'camila',allDay:true},
+  {iso:'2026-03-07',title:'Viajar a Viña 🚂',cal:'personal',time:'07:00'},
+  {iso:'2026-03-07',title:'Día en Viña ☀️',cal:'vinculos',time:'12:45'},
+  {iso:'2026-03-07',title:'Ocio',cal:'camila',time:'14:30'},
+  {iso:'2026-03-08',title:'8M 🌸',cal:'camila',allDay:true},
+  {iso:'2026-03-08',title:'Volver Santiago',cal:'personal',time:'08:00'},
+  {iso:'2026-03-08',title:'Selfradar',cal:'personal',time:'09:00'},
+  {iso:'2026-03-08',title:'8M marcha',cal:'camila',time:'10:00'},
+  {iso:'2026-03-08',title:'Check Financiero 💰',cal:'personal',time:'12:30'},
+  {iso:'2026-03-08',title:'Bici Paseo 🚴',cal:'personal',time:'14:15'},
+  {iso:'2026-03-08',title:'Juntos Chill 💚',cal:'camila',time:'17:00'},
+  {iso:'2026-03-09',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
+  {iso:'2026-03-09',title:'Cursos Domestika 💻',cal:'camila',time:'09:30'},
+  {iso:'2026-03-09',title:'Psicoterapia · Rodrigo',cal:'personal',time:'12:00'},
+  {iso:'2026-03-09',title:'Agendar Masaje 🕯️',cal:'personal',time:'16:00'},
+  {iso:'2026-03-09',title:'Compra Frutas y Verduras 🛒',cal:'personal',time:'17:45'},
+  {iso:'2026-03-10',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
+  {iso:'2026-03-10',title:'Ir al Parque 🌳',cal:'personal',time:'07:15'},
+  {iso:'2026-03-10',title:'Almuerzo',cal:'camila',time:'12:45'},
+  {iso:'2026-03-10',title:'Kine',cal:'personal',time:'15:00'},
+  {iso:'2026-03-10',title:'Juntos Chill 💚',cal:'camila',time:'21:00'},
+  {iso:'2026-03-11',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
+  {iso:'2026-03-11',title:'Psicoterapia FONASA · Camila',cal:'camila',time:'16:00'},
+  {iso:'2026-03-12',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
+  {iso:'2026-03-12',title:'Juntos Chill 💚',cal:'camila',time:'21:00'},
+  {iso:'2026-03-13',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
+  {iso:'2026-03-13',title:'Kinesiología',cal:'personal',time:'08:30'},
+  {iso:'2026-03-13',title:'Cita RedSalud 🏥',cal:'personal',time:'14:15'},
+  {iso:'2026-03-13',title:'Escalada 🧗',cal:'personal',time:'16:00'},
+  {iso:'2026-03-14',title:'Ordenar 🏠',cal:'personal',time:'08:30'},
+  {iso:'2026-03-14',title:'Smorgasboard',cal:'vinculos',time:'10:00'},
+  {iso:'2026-03-15',title:'Check Financiero 💰',cal:'personal',time:'07:15'},
+  {iso:'2026-03-15',title:'Selfradar',cal:'personal',time:'09:00'},
+  {iso:'2026-03-15',title:'Bici Paseo 🚴',cal:'personal',time:'14:15'},
+  {iso:'2026-03-15',title:'Juntos Chill 💚',cal:'camila',time:'17:00'},
+  {iso:'2026-03-16',title:'PAGO GC 💸',cal:'fin',time:'14:00'},
+  {iso:'2026-03-16',title:'Compra Frutas y Verduras 🛒',cal:'personal',time:'17:45'},
+  {iso:'2026-03-16',title:'Psicoterapia · Rodrigo',cal:'personal',time:'12:00'},
+  {iso:'2026-03-17',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
+  {iso:'2026-03-18',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
+  {iso:'2026-03-19',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
+  {iso:'2026-03-20',title:'Kinesiología',cal:'personal',time:'08:30'},
+  {iso:'2026-03-21',title:'Ordenar 🏠',cal:'personal',time:'08:30'},
+  {iso:'2026-03-21',title:'Smorgasboard',cal:'vinculos',time:'10:00'},
+  {iso:'2026-03-22',title:'Check Financiero 💰',cal:'personal',time:'07:15'},
+  {iso:'2026-03-22',title:'Selfradar',cal:'personal',time:'09:00'},
+  {iso:'2026-03-22',title:'Bici Paseo 🚴',cal:'personal',time:'14:15'},
+  {iso:'2026-03-22',title:'Juntos Chill 💚',cal:'camila',time:'17:00'},
+  {iso:'2026-03-23',title:'Compra Frutas y Verduras 🛒',cal:'personal',time:'17:45'},
+  {iso:'2026-03-23',title:'Psicoterapia · Rodrigo',cal:'personal',time:'12:00'},
+  {iso:'2026-03-24',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
+  {iso:'2026-03-25',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
+  {iso:'2026-03-26',title:'DESCONEXIÓN SENSORIAL 🌿',cal:'personal',time:'07:15'},
+  {iso:'2026-03-27',title:'Kinesiología',cal:'personal',time:'08:30'},
+  {iso:'2026-03-28',title:'Ordenar 🏠',cal:'personal',time:'08:30'},
+  {iso:'2026-03-28',title:'Smorgasboard',cal:'vinculos',time:'10:00'},
+  {iso:'2026-03-29',title:'Check Financiero 💰',cal:'personal',time:'07:15'},
+  {iso:'2026-03-29',title:'Selfradar',cal:'personal',time:'09:00'},
+  {iso:'2026-03-29',title:'Bici Paseo 🚴',cal:'personal',time:'14:15'},
+  {iso:'2026-03-30',title:'Compra Frutas y Verduras 🛒',cal:'personal',time:'17:45'},
+  {iso:'2026-03-30',title:'Psicoterapia · Rodrigo',cal:'personal',time:'12:00'},
+];
+
+const BUJO_INIT=[
+  {text:'Enviar cotización Cris (p:36)',          type:'trabajo'},
+  {text:'Enviar Job Description → Cony y Amaya', type:'trabajo'},
+  {text:'Solicitar planificación Cony y Amaya',  type:'trabajo'},
+  {text:'Enviar proyecto Mtz — CASO UX01',        type:'trabajo'},
+  {text:'TERMINAR FAN p34',                       type:'trabajo'},
+  {text:'Seguimiento stancar - RE',               type:'trabajo'},
+  {text:'Checkin financiero',                     type:'personal'},
+  {text:'Mantenimiento PSCI',                     type:'personal'},
+  {text:'DNA cirugía — Mamá (primeros pasos)',    type:'personal'},
+  {text:'Psiquiatría 9:39',                       type:'personal'},
+  {text:'Día con Lily (proponer fecha)',           type:'vinculos'},
+  {text:'Reunión Zuleima — Coliseum 3 noches',    type:'vinculos'},
+  {text:'RADAR con Castillo',                     type:'vinculos'},
+  {text:'Seguimiento NEC Camila',                 type:'camila'},
+  {text:'Seguimiento NEC Lily',                   type:'vinculos'},
+  {text:'Depren general 2×1 — revisar',           type:'personal'},
+];
+
+const PERMS_DEFAULT={
+  personal:  {perm:'rw',   enabled:true,  adminRequired:false},
+  finanzas:  {perm:'ro',   enabled:true,  adminRequired:false},
+  trabajo:   {perm:'admin',enabled:false, adminRequired:true},
+  camila:    {perm:'query',enabled:true,  adminRequired:false},
+};
+
+const SOURCES=[
+  {id:'personal', name:'Personal · Vínculos · Laboral', desc:'gaete.gaona@gmail.com', cal:'personal', color:'#EC4899', icon:'👤',
+   gcalId:'gaete.gaona@gmail.com', readonly:false,
+   icsUrl:'https://calendar.google.com/calendar/ical/gaete.gaona%40gmail.com/public/basic.ics',
+   embedUrl:'https://calendar.google.com/calendar/embed?src=gaete.gaona%40gmail.com&ctz=America%2FSantiago',
+   lsKey:'ics_personal', permKey:'personal'},
+  {id:'finanzas', name:'Finanzas Personales', desc:'grupo finanzas', cal:'fin', color:'#FB923C', icon:'💰',
+   gcalId:'9616f51a807e24559b4df624c70d7fe1d81de62f9aa8baf44c1190db5887b12f@group.calendar.google.com', readonly:true,
+   icsUrl:'https://calendar.google.com/calendar/ical/9616f51a807e24559b4df624c70d7fe1d81de62f9aa8baf44c1190db5887b12f%40group.calendar.google.com/public/basic.ics',
+   embedUrl:'https://calendar.google.com/calendar/embed?src=9616f51a807e24559b4df624c70d7fe1d81de62f9aa8baf44c1190db5887b12f%40group.calendar.google.com&ctz=America%2FSantiago',
+   lsKey:'ics_finanzas', permKey:'finanzas'},
+  {id:'trabajo', name:'Sura Investments', desc:'Outlook Office 365 · Solo Lectura Admin', cal:'trabajo', color:'#F97316', icon:'🏢',
+   gcalId:null, readonly:true,
+   icsUrl:'https://outlook.office365.com/owa/calendar/1ec82b2e6c504125abafa8cd1db794b7@surainvestments.com/80353e1836164569848df1cc2404366c17529804927850062492/calendar.ics',
+   embedUrl:null, lsKey:'ics_trabajo', permKey:'trabajo'},
+  {id:'camila', name:'Camila', desc:'c.camilapalma@gmail.com · Consulta', cal:'camila', color:'#10B981', icon:'💚',
+   gcalId:'c.camilapalma@gmail.com', readonly:true,
+   icsUrl:'https://calendar.google.com/calendar/ical/c.camilapalma%40gmail.com/public/basic.ics',
+   embedUrl:'https://calendar.google.com/calendar/embed?src=c.camilapalma%40gmail.com&ctz=America%2FSantiago',
+   lsKey:'ics_camila', permKey:'camila'},
+];
+
+const DAYS=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const MONTHS=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+const FDAYS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+function isoOf(d){const y=d.getFullYear(),m=d.getMonth()+1,dd=d.getDate();return `${y}-${String(m).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;}
+function addDays(d,n){const r=new Date(d);r.setDate(r.getDate()+n);return r;}
+function mondayOf(d){const r=new Date(d);r.setHours(12,0,0,0);const day=r.getDay();r.setDate(r.getDate()-(day===0?6:day-1));return r;}
+
+const DRAG={card:null};
+function removePH(){document.querySelectorAll('.drop-placeholder').forEach(p=>p.remove());}
+function setupDrop(zone){
+  zone.addEventListener('dragover',e=>{
+    if(!DRAG.card)return;e.preventDefault();
+    zone.closest('.wday')?.classList.add('drag-over-col');removePH();
+    const ph=document.createElement('div');ph.className='drop-placeholder';
+    const cards=[...zone.querySelectorAll('.card:not(.dragging)')];
+    const after=cards.reduce((cl,ch)=>{const b=ch.getBoundingClientRect();const off=e.clientY-b.top-b.height/2;return(off<0&&off>cl.off)?{off,el:ch}:cl;},{off:-Infinity}).el;
+    after?zone.insertBefore(ph,after):zone.appendChild(ph);
+  });
+  zone.addEventListener('dragleave',e=>{if(!zone.contains(e.relatedTarget)){zone.closest('.wday')?.classList.remove('drag-over-col');removePH();}});
+  zone.addEventListener('drop',e=>{
+    e.preventDefault();if(!DRAG.card)return;
+    zone.closest('.wday')?.classList.remove('drag-over-col');
+    const ph=zone.querySelector('.drop-placeholder');
+    ph?zone.insertBefore(DRAG.card,ph):zone.appendChild(DRAG.card);
+    removePH();zone.querySelector('.day-empty')?.remove();updateDayCount(zone.closest('.wday'));
+  });
+}
+function updateDayCount(wday){if(!wday)return;const n=wday.querySelectorAll('.card').length;const el=wday.querySelector('.day-count');if(el)el.textContent=n+' evento'+(n!==1?'s':'');}
+
+function makeCard(ev){
+  const ci=CAL[ev.cal]||CAL.bujo;
+  const el=document.createElement('div');
+  el.className='card';el.style.setProperty('--cc',ci.c);el.draggable=true;el.dataset.cal=ev.cal||'bujo';
+  const tStr=ev.allDay?'Todo el día':(ev.time||'');
+  const perm=getPermForCal(ev.cal);
+  const syncBtn=(perm==='rw'&&!ev.fromCal)?`<button class="sync-btn" title="Agregar a Google Calendar" onclick="syncToGCal(event,this)">📅</button>`:'';
+  const detailContent=ev.detail
+    ?`<div class="card-detail show"><textarea class="det-area" rows="2" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${ev.detail}</textarea></div>`
+    :`<div class="card-detail"><textarea class="det-area" rows="2" placeholder="Notas..." onclick="event.stopPropagation()" onmousedown="event.stopPropagation()"></textarea></div>`;
+  el.innerHTML=`<div class="card-row"><div class="chk"></div><div style="flex:1;min-width:0"><div class="ct">${ev.title}</div>${tStr?`<div class="ctime">⏰ ${tStr}</div>`:''}<span class="ctag" style="color:${ci.c}">${ci.l}</span></div><div class="card-actions">${syncBtn}<button class="det-btn${ev.detail?' open':''}" title="Detalles" onclick="toggleDetail(event,this)">···</button></div></div>${detailContent}`;
+  el.querySelector('.chk').addEventListener('click',e=>{e.stopPropagation();el.classList.toggle('done');});
+  el.addEventListener('dragstart',e=>{DRAG.card=el;setTimeout(()=>el.classList.add('dragging'),0);e.dataTransfer.effectAllowed='move';});
+  el.addEventListener('dragend',()=>{el.classList.remove('dragging');removePH();document.querySelectorAll('.drag-over-col').forEach(z=>z.classList.remove('drag-over-col'));DRAG.card=null;});
+  if(ev.detail)el.querySelector('.card-detail').classList.add('show');
+  return el;
+}
+
+let PERMS={};
+function loadPerms(){try{PERMS=JSON.parse(localStorage.getItem('tablero_perms_ro')||'{}');}catch(e){PERMS={};}}
+function savePerms(){localStorage.setItem('tablero_perms_ro',JSON.stringify(PERMS));}
+function getPermForCal(calKey){
+  const src=SOURCES.find(s=>s.cal===calKey);
+  if(!src)return 'rw';
+  const def=PERMS_DEFAULT[src.permKey]||{perm:'ro',enabled:true,adminRequired:false};
+  const saved=PERMS[src.permKey]||{};
+  return saved.perm||def.perm;
+}
+function isSourceEnabled(srcId){
+  const src=SOURCES.find(s=>s.id===srcId);if(!src)return false;
+  const def=PERMS_DEFAULT[src.permKey]||{enabled:true,adminRequired:false};
+  if(def.adminRequired){
+    const saved=PERMS[src.permKey]||{};
+    return saved.enabled===true;
+  }
+  return true;
+}
+function renderPermList(){
+  const cont=document.getElementById('perm-list');if(!cont)return;
+  cont.innerHTML='';
+  const permLabels={rw:'Lectura + Escritura',ro:'Solo lectura',admin:'Admin requerido',query:'Consulta compartida'};
+  const permClass={rw:'perm-rw',ro:'perm-ro',admin:'perm-admin',query:'perm-query'};
+  SOURCES.forEach(src=>{
+    const def=PERMS_DEFAULT[src.permKey]||{};
+    const saved=PERMS[src.permKey]||{};
+    const currentPerm=saved.perm||def.perm;
+    const isEnabled=saved.enabled!==undefined?saved.enabled:def.enabled;
+    const div=document.createElement('div');
+    div.className='src-card';div.style.setProperty('--src-c',src.color);
+    div.innerHTML=`
+      <div class="src-icon">${src.icon}</div>
+      <div class="src-info">
+        <div class="src-name">${src.name}</div>
+        <div class="src-desc">${src.desc}</div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:5px;flex-wrap:wrap;">
+          <span class="perm-badge ${permClass[currentPerm]||'perm-ro'}">${permLabels[currentPerm]||currentPerm}</span>
+          ${def.adminRequired?`<label style="display:flex;align-items:center;gap:4px;font-size:.62rem;color:var(--mut);cursor:pointer;">
+            <input type="checkbox" ${isEnabled?'checked':''} onchange="toggleSourceEnabled('${src.permKey}',this.checked)" style="accent-color:#a855f7;width:12px;height:12px;">
+            Habilitar sync
+          </label>`:''}
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
+        ${src.readonly?`<span style="font-size:.55rem;color:var(--mut);">🔒 solo lectura</span>`:`<span style="font-size:.55rem;color:#10B981;">✏️ escritura OK</span>`}
+      </div>`;
+    cont.appendChild(div);
+  });
+}
+function toggleSourceEnabled(permKey,val){
+  if(!PERMS[permKey])PERMS[permKey]={};
+  PERMS[permKey].enabled=val;
+  savePerms();
+}
+
+let weekStart=mondayOf(new Date());
+function goWeek(dir){weekStart=addDays(weekStart,dir*7);renderWeek();}
+function goToday(){const n=new Date();n.setHours(12,0,0,0);weekStart=mondayOf(n);renderWeek();}
+function renderWeek(){
+  const wb=document.getElementById('wboard');wb.innerHTML='';
+  const today=isoOf(new Date());
+  const days=Array.from({length:7},(_,i)=>addDays(weekStart,i));
+  const s=days[0],e=days[6];
+  document.getElementById('wk-label').textContent=`${FDAYS[s.getDay()]} ${s.getDate()} — ${FDAYS[e.getDay()]} ${e.getDate()} ${MONTHS[e.getMonth()]} ${e.getFullYear()}`;
+  days.forEach(d=>{
+    const iso=isoOf(d);const isT=iso===today;
+    const evs=EVENTS.filter(e=>e.iso===iso).sort((a,b)=>{if(a.allDay&&!b.allDay)return -1;if(!a.allDay&&b.allDay)return 1;return(a.time||'').localeCompare(b.time||'');});
+    const col=document.createElement('div');col.className='wday'+(isT?' is-today':'');
+    col.innerHTML=`<div class="wday-head"><div><div class="day-name">${DAYS[d.getDay()]}</div><div class="day-count">${evs.length} evento${evs.length!==1?'s':''}</div></div><div class="day-num">${d.getDate()}</div></div><div class="wday-body" id="wb-${iso}"></div>`;
+    wb.appendChild(col);
+    const body=col.querySelector(`#wb-${iso}`);setupDrop(body);
+    if(!evs.length){body.innerHTML='<div class="day-empty">Sin eventos</div>';return;}
+    evs.forEach(ev=>{
+      if(ev.allDay){
+        const pill=document.createElement('div');pill.className='aday-pill';pill.dataset.cal=ev.cal||'bujo';
+        const ci=CAL[ev.cal];pill.style.setProperty('--cc',ci.c);pill.style.setProperty('--ccbg',ci.bg);pill.textContent=ev.title;body.appendChild(pill);
+      }else{body.appendChild(makeCard({...ev,fromCal:true}));}
+    });
+    applyFilter();
+  });
+  applyCardStates();
+}
+
+function openDrawer(){document.getElementById('drawer').classList.add('open');document.getElementById('overlay').classList.add('open');}
+function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('overlay').classList.remove('open');}
+
+let bjImages=[];
+const SYM_MAP={'●':'personal','○':'personal','◆':'vinculos','—':'personal','-':'personal','*':'trabajo','>':'camila','$':'fin','•':'personal','✦':'vinculos','⬡':'camila'};
+const BJ_CAL={personal:{c:'#EC4899',l:'Personal'},vinculos:{c:'#7C3AED',l:'Vínculos'},camila:{c:'#10B981',l:'Camila'},trabajo:{c:'#F97316',l:'Trabajo'},fin:{c:'#FB923C',l:'Finanzas'},bujo:{c:'#C084FC',l:'📓 BuJo'}};
+
+const AI_CFG_KEY = 'tablero_ai_cfg_ro';
+const AI_DEFAULTS = {
+  provider: 'auto',
+  profile: 'balanced',
+  jsonMode: 'strict',
+  maxItems: 80,
+  flags: {
+    normalizeSpelling: true,
+    markIllegible: true,
+    inferDates: true,
+    inferCategory: true
+  },
+  providers: {
+    claude: { key: '', model: 'claude-sonnet-4-6' },
+    openai: { key: '', model: 'gpt-5.4' },
+    gemini: { key: '', model: 'gemini-3.1-pro-preview' }
+  }
+};
+
+function deepMerge(base, patch){
+  const out = structuredClone(base);
+  for (const k in patch || {}) {
+    if (typeof patch[k] === 'object' && patch[k] !== null && !Array.isArray(patch[k]) && typeof out[k] === 'object' && out[k] !== null && !Array.isArray(out[k])) {
+      out[k] = deepMerge(out[k], patch[k]);
+    } else {
+      out[k] = patch[k];
+    }
+  }
+  return out;
+}
+let AI_CFG = loadAICfg();
+function loadAICfg(){
+  try{ return deepMerge(AI_DEFAULTS, JSON.parse(localStorage.getItem(AI_CFG_KEY) || '{}')); }
+  catch{ return structuredClone(AI_DEFAULTS); }
+}
+function saveAICfg(){ localStorage.setItem(AI_CFG_KEY, JSON.stringify(AI_CFG)); updateAIStatus(); }
+function saveAIForm(){
+  AI_CFG.provider = document.getElementById('ai-provider')?.value || 'auto';
+  AI_CFG.profile = document.getElementById('ai-profile')?.value || 'balanced';
+  AI_CFG.jsonMode = document.getElementById('ai-json-mode')?.value || 'strict';
+  AI_CFG.maxItems = Math.max(10, Math.min(200, Number(document.getElementById('ai-max-items')?.value || 80)));
+  saveAICfg();
+}
+function saveAIAdmin(){
+  AI_CFG.provider = document.getElementById('adm-ai-provider')?.value || AI_CFG.provider;
+  AI_CFG.providers.claude.key = (document.getElementById('adm-claude-key')?.value || '').trim();
+  AI_CFG.providers.claude.model = (document.getElementById('adm-claude-model')?.value || 'claude-sonnet-4-6').trim();
+  AI_CFG.providers.openai.key = (document.getElementById('adm-openai-key')?.value || '').trim();
+  AI_CFG.providers.openai.model = (document.getElementById('adm-openai-model')?.value || 'gpt-5.4').trim();
+  AI_CFG.providers.gemini.key = (document.getElementById('adm-gemini-key')?.value || '').trim();
+  AI_CFG.providers.gemini.model = (document.getElementById('adm-gemini-model')?.value || 'gemini-3.1-pro-preview').trim();
+  saveAICfg();
+  const btn = event?.target;
+  if(btn){ btn.textContent = '✓ Guardado'; setTimeout(() => btn.textContent = '💾 Guardar IA', 1800); }
+}
+function hydrateAIAdmin(){
+  const ids = {
+    'adm-ai-provider': AI_CFG.provider,
+    'adm-claude-key': AI_CFG.providers.claude.key,
+    'adm-claude-model': AI_CFG.providers.claude.model,
+    'adm-openai-key': AI_CFG.providers.openai.key,
+    'adm-openai-model': AI_CFG.providers.openai.model,
+    'adm-gemini-key': AI_CFG.providers.gemini.key,
+    'adm-gemini-model': AI_CFG.providers.gemini.model
+  };
+  Object.entries(ids).forEach(([id, value]) => { const el = document.getElementById(id); if(el) el.value = value; });
+}
+function hydrateAIForm(){
+  const ids = {
+    'ai-provider': AI_CFG.provider,
+    'ai-profile': AI_CFG.profile,
+    'ai-json-mode': AI_CFG.jsonMode,
+    'ai-max-items': AI_CFG.maxItems
+  };
+  Object.entries(ids).forEach(([id, value]) => { const el = document.getElementById(id); if(el) el.value = value; });
+  document.querySelectorAll('[data-flag]').forEach(btn => {
+    const flag = btn.dataset.flag;
+    btn.classList.toggle('saved', !!AI_CFG.flags[flag]);
+  });
+}
+function toggleAIFlag(flag, btn){ AI_CFG.flags[flag] = !AI_CFG.flags[flag]; btn.classList.toggle('saved', AI_CFG.flags[flag]); saveAICfg(); }
+function providerLabel(p){ return p === 'claude' ? 'Claude' : p === 'openai' ? 'GPT' : p === 'gemini' ? 'Gemini' : 'Auto'; }
+function resolveProvider(){
+  if(AI_CFG.provider !== 'auto') return AI_CFG.provider;
+  if (AI_CFG.jsonMode === 'strict' && AI_CFG.profile === 'quality') return 'openai';
+  if (bjImages.length >= 3 || AI_CFG.profile === 'speed') return 'gemini';
+  return 'claude';
+}
+function getActiveKey(provider){ return AI_CFG.providers?.[provider]?.key || ''; }
+function getActiveModel(provider){ return AI_CFG.providers?.[provider]?.model || ''; }
+function updateAIStatus(){
+  const st = document.getElementById('api-key-status'); if(!st) return;
+  const p = resolveProvider(); const hasKey = !!getActiveKey(p);
+  if(hasKey){ st.className='ai-key-status ok'; st.textContent=`✓ ${providerLabel(p)} listo`; }
+  else{ st.className='ai-key-status none'; st.textContent=`Sin key (${providerLabel(p)})`; }
+}
+
+const inp=document.getElementById('bj-input');
+const upz=document.getElementById('upzone');
+const ths=document.getElementById('thumbs');
+inp.addEventListener('change',e=>handleFiles(e.target.files));
+upz.addEventListener('dragover',e=>{e.preventDefault();upz.classList.add('drag');});
+upz.addEventListener('dragleave',()=>upz.classList.remove('drag'));
+upz.addEventListener('drop',e=>{e.preventDefault();upz.classList.remove('drag');handleFiles(e.dataTransfer.files);});
+function handleFiles(files){
+  [...files].forEach(f=>{
+    if(!f.type.startsWith('image/'))return;
+    const r=new FileReader();
+    r.onload=ev=>{
+      const base64=ev.target.result.split(',')[1];
+      bjImages.push({base64,mimeType:f.type,name:f.name});
+      const w=document.createElement('div');w.className='thumb';
+      w.innerHTML=`<img src="${ev.target.result}"><button class="thumb-del" onclick="removeImage(${bjImages.length-1},this)">✕</button>`;
+      ths.appendChild(w);
+      document.getElementById('ai-analyze-btn').disabled=false;
+      updateAIStatus();
+    };
+    r.readAsDataURL(f);
+  });
+}
+function removeImage(idx,btn){ bjImages.splice(idx,1); btn.closest('.thumb').remove(); if(bjImages.length===0)document.getElementById('ai-analyze-btn').disabled=true; updateAIStatus(); }
+
+function buildBujoPrompt(){
+  const flags = AI_CFG.flags;
+  return `Eres un extractor multimodal de Bullet Journal de Rö. Analiza imágenes de Bullet Journal y devuelve SOLO JSON válido. No uses markdown. No expliques nada. No agregues texto fuera del JSON.\n\nOBJETIVO\n- Extraer tareas, eventos, notas y hábitos.\n- Respetar la lógica de Bullet Journal.\n- Aplicar corrección mínima.\n- Mantener contenido incompleto o dudoso como [ilegible] si corresponde.\n\nREGLAS\n- Idioma esperado: español.\n- No inventes datos.\n- Si un texto es ambiguo, baja confidence.\n- Si hay un símbolo o contexto laboral, clasifica "trabajo".\n- Si menciona Camila, clasifica "camila".\n- Si es terapia, salud, ejercicio, descanso o regulación, clasifica "personal".\n- Si es relación, amistad, familia elegida o coordinación con otras personas, clasifica "vinculos".\n- Si es dinero, pagos, transferencias, compras o presupuesto, clasifica "fin".\n- Lo demás: "personal".\n\nPARÁMETROS\n- normalizeSpelling: ${flags.normalizeSpelling}\n- markIllegible: ${flags.markIllegible}\n- inferDates: ${flags.inferDates}\n- inferCategory: ${flags.inferCategory}\n- maxItems: ${AI_CFG.maxItems}\n\nSCHEMA EXACTO\n{\n  "items": [\n    {\n      "text": "string",\n      "type": "personal|vinculos|camila|trabajo|fin",\n      "kind": "task|event|note|habit",\n      "symbol": "●|○|◆|>|*|$|—",\n      "date_text": "string",\n      "time_text": "string",\n      "details": "string",\n      "confidence": 0.0\n    }\n  ],\n  "summary": {\n    "warnings": ["string"]\n  }\n}\n\nRESTRICCIONES\n- Máximo ${AI_CFG.maxItems} items.\n- confidence entre 0 y 1.\n- Si no hay valor para date_text, time_text o details, usa \"\".\n- Devuelve SOLO JSON.`;
+}
+function extractJsonString(raw){
+  const txt = String(raw || '').trim();
+  const noFence = txt.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```$/i, '').trim();
+  const first = noFence.indexOf('{'); const last = noFence.lastIndexOf('}');
+  if(first === -1 || last === -1 || last <= first) throw new Error('No vino JSON usable');
+  return noFence.slice(first, last + 1);
+}
+function parseExtractionJson(raw){ const json = JSON.parse(extractJsonString(raw)); if(!json || !Array.isArray(json.items)) throw new Error('JSON sin items'); return json; }
+function getOpenAIText(data){
+  if(data?.output_text) return data.output_text;
+  const texts=[]; (data?.output||[]).forEach(item => (item?.content||[]).forEach(part => { if(part?.type==='output_text' && part?.text) texts.push(part.text); }));
+  return texts.join('\n').trim();
+}
+function getClaudeText(data){ return (data?.content||[]).filter(x=>x?.type==='text').map(x=>x.text).join('\n').trim(); }
+function getGeminiText(data){ return (data?.candidates?.[0]?.content?.parts||[]).map(p=>p?.text||'').join('\n').trim(); }
+function renderAIResult(provider, parsed){
+  const target=document.getElementById('ai-result-preview'); if(!target) return;
+  const warnings=parsed?.summary?.warnings||[];
+  target.style.display='block';
+  target.innerHTML=`<div class="ai-result"><strong>${providerLabel(provider)}</strong> · ${parsed.items.length} ítems${warnings.length ? `<br><br><strong>Warnings:</strong><br>${warnings.map(w => `• ${w}`).join('<br>')}` : ''}</div>`;
+}
+async function callClaude(prompt){
+  const apiKey=getActiveKey('claude'); const model=getActiveModel('claude'); if(!apiKey) throw new Error('Falta Claude API Key');
+  const content=[...bjImages.map(img=>({type:'image',source:{type:'base64',media_type:img.mimeType,data:img.base64}})),{type:'text',text:prompt}];
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST', headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model,max_tokens:2200,temperature:0,messages:[{role:'user',content}]})
+  });
+  if(!res.ok){ const err=await res.json().catch(()=>({})); throw new Error(err?.error?.message || `Claude HTTP ${res.status}`); }
+  return getClaudeText(await res.json());
+}
+async function callOpenAI(prompt){
+  const apiKey=getActiveKey('openai'); const model=getActiveModel('openai'); if(!apiKey) throw new Error('Falta OpenAI API Key');
+  const content=[...bjImages.map(img=>({type:'input_image',image_url:`data:${img.mimeType};base64,${img.base64}`,detail:AI_CFG.profile==='quality'?'high':'auto'})),{type:'input_text',text:prompt}];
+  const res=await fetch('https://api.openai.com/v1/responses',{
+    method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},
+    body:JSON.stringify({model,max_output_tokens:2200,input:[{role:'developer',content:[{type:'input_text',text:'Devuelve únicamente JSON válido y sin markdown.'}]},{role:'user',content}]})
+  });
+  if(!res.ok){ const err=await res.json().catch(()=>({})); throw new Error(err?.error?.message || `OpenAI HTTP ${res.status}`); }
+  return getOpenAIText(await res.json());
+}
+async function callGemini(prompt){
+  const apiKey=getActiveKey('gemini'); const model=getActiveModel('gemini'); if(!apiKey) throw new Error('Falta Gemini API Key');
+  const parts=[...bjImages.map(img=>({inlineData:{mimeType:img.mimeType,data:img.base64}})),{text:prompt}];
+  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`,{
+    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts}],generationConfig:{temperature:0,topP:0.95}})
+  });
+  if(!res.ok){ const err=await res.json().catch(()=>({})); throw new Error(err?.error?.message || `Gemini HTTP ${res.status}`); }
+  return getGeminiText(await res.json());
+}
+async function analyzeBujo(){
+  if(!bjImages.length){ alert('Sube al menos una foto de tu BuJo.'); return; }
+  saveAIForm();
+  const provider=resolveProvider(); const apiKey=getActiveKey(provider);
+  if(!apiKey){ alert(`Configura la API Key de ${providerLabel(provider)} en ⚙️ Admin.`); return; }
+  const btn=document.getElementById('ai-analyze-btn');
+  const progressWrap=document.getElementById('ai-progress-wrap');
+  const progressBar=document.getElementById('ai-progress');
+  const resultPreview=document.getElementById('ai-result-preview');
+  btn.classList.add('loading'); btn.disabled=true; progressWrap.style.display='block'; resultPreview.style.display='none'; progressBar.style.width='16%';
+  try{
+    const prompt=buildBujoPrompt(); progressBar.style.width='40%';
+    let raw;
+    if(provider==='claude') raw=await callClaude(prompt);
+    else if(provider==='openai') raw=await callOpenAI(prompt);
+    else if(provider==='gemini') raw=await callGemini(prompt);
+    else throw new Error('Proveedor no soportado');
+    progressBar.style.width='78%';
+    const parsed=parseExtractionJson(raw);
+    renderAIResult(provider, parsed);
+    let added=0;
+    parsed.items.forEach(item=>{
+      if(!item?.text?.trim()) return;
+      bjList.appendChild(makeBJItem({text:item.text.trim(),type:item.type||'personal',kind:item.kind||'task',details:item.details||'',timeText:item.time_text||'',dateText:item.date_text||'',confidence:item.confidence ?? 0}));
+      added++;
+    });
+    progressBar.style.width='100%'; showBJItems(); updateBadge();
+    btn.classList.remove('loading'); btn.innerHTML=`<span class="btn-label" style="color:#86efac;">✓ ${added} ítems · ${providerLabel(provider)}</span>`;
+    setTimeout(()=>{ btn.innerHTML='<div class="spin"></div><span class="btn-label">🤖 Analizar Bullet</span>'; btn.disabled=false; },2200);
+  }catch(err){
+    console.error(err);
+    btn.classList.remove('loading'); btn.innerHTML=`<span class="btn-label" style="color:#fca5a5;">⚠️ ${String(err.message).slice(0,60)}</span>`;
+    setTimeout(()=>{ btn.innerHTML='<div class="spin"></div><span class="btn-label">🤖 Analizar Bullet</span>'; btn.disabled=false; },3000);
+  }finally{
+    setTimeout(()=>{ progressWrap.style.display='none'; progressBar.style.width='0%'; },1200);
+  }
+}
+
+const bjList=document.getElementById('bj-list');
+const bjSec=document.getElementById('bj-section');
+function makeBJItem(obj){
+  const ci = BJ_CAL[obj.type] || BJ_CAL.bujo;
+  const el = document.createElement('div');
+  el.className='bj-item'; el.dataset.type=obj.type; el.dataset.kind=obj.kind||'task'; el.dataset.detail=obj.details||''; el.dataset.time=obj.timeText||''; el.dataset.date=obj.dateText||''; el.dataset.confidence=String(obj.confidence ?? '');
+  el.style.setProperty('--cc',ci.c);
+  const meta=[obj.kind ? obj.kind.toUpperCase() : '', obj.timeText || '', obj.dateText || ''].filter(Boolean).join(' · ');
+  el.innerHTML=`<input type="checkbox"><span class="bj-item-text">${obj.text}</span>${meta ? `<span class="bj-item-cat">${meta}</span>` : ''}<span class="bj-item-cat" style="color:${ci.c}">${ci.l}</span>`;
+  return el;
+}
+function updateBadge(){ const n=document.querySelectorAll('#bj-list .bj-item').length; const b=document.getElementById('bj-badge');const btn=document.getElementById('bujo-btn'); b.textContent=n;b.style.display=n>0?'flex':'none';btn.classList.toggle('has-items',n>0); }
+function showBJItems(){ bjSec.style.display=bjList.children.length?'block':'none'; updateBadge(); }
+BUJO_INIT.forEach(o=>bjList.appendChild(makeBJItem(o))); showBJItems();
+function parsePaste(){
+  const txt=document.getElementById('paste-area').value.trim(); if(!txt) return;
+  let added=0;
+  txt.split('\n').forEach(ln=>{
+    const m=ln.trim().match(/^([●◆—○\-\*\>\$•])\s+(.+)$/);
+    if(!m) return;
+    bjList.appendChild(makeBJItem({text:m[2].trim(),type:SYM_MAP[m[1]]||'personal'})); added++;
+  });
+  document.getElementById('paste-area').value=''; if(added) showBJItems();
+}
+function filterBJ(type,btn){ document.querySelectorAll('#ftags .ftag').forEach(t=>t.classList.remove('on'));btn.classList.add('on'); document.querySelectorAll('#bj-list .bj-item').forEach(el=>{el.style.display=(type==='all'||el.dataset.type===type)?'flex':'none';}); }
+function normalizeHHMM(txt){ const m=String(txt||'').trim().match(/^([01]?\d|2[0-3])[:.]([0-5]\d)$/); if(!m) return ''; return `${String(m[1]).padStart(2,'0')}:${m[2]}`; }
+function addToBoard(){
+  const checked=[...document.querySelectorAll('#bj-list .bj-item')].filter(el=>el.querySelector('input').checked);
+  if(!checked.length){alert('Marca los ítems que quieres agregar.');return;}
+  const firstBody=document.querySelector('.wday-body');
+  checked.forEach(el=>{
+    const txt=el.querySelector('.bj-item-text').textContent;
+    const calKey=el.dataset.type||'bujo';
+    const kind=el.dataset.kind||'task';
+    const detail=[el.dataset.detail, el.dataset.date ? `Fecha detectada: ${el.dataset.date}` : ''].filter(Boolean).join('\n');
+    const time=normalizeHHMM(el.dataset.time);
+    const prefix=kind==='event'?'📅':kind==='note'?'📝':kind==='habit'?'🔁':'📓';
+    const card=makeCard({title:`${prefix} ${txt}`,cal:calKey,time,detail,fromCal:false});
+    firstBody?.appendChild(card); firstBody?.querySelector('.day-empty')?.remove(); el.remove();
+  });
+  showBJItems(); closeDrawer();
+}
+function clearBJ(){ bjList.innerHTML=''; document.getElementById('paste-area').value=''; ths.innerHTML=''; bjImages=[]; document.getElementById('ai-analyze-btn').disabled=true; document.getElementById('ai-result-preview').style.display='none'; showBJItems(); updateAIStatus(); }
+
+const HIDDEN=new Set();
+function toggleCat(keys,el){ const cats=typeof keys==='string'?[keys]:keys; const wasOff=el.classList.contains('off'); if(wasOff){cats.forEach(k=>HIDDEN.delete(k));el.classList.remove('off');} else{cats.forEach(k=>HIDDEN.add(k));el.classList.add('off');} applyFilter(); }
+function applyFilter(){ document.querySelectorAll('.card').forEach(c=>{c.style.display=HIDDEN.has(c.dataset.cal)?'none':'';}); document.querySelectorAll('.aday-pill').forEach(p=>{p.style.display=HIDDEN.has(p.dataset.cal)?'none':'';}); }
+
+const SYNC_STATUS={}; let _cfgSrcId=null;
+function unfoldICS(t){return t.replace(/\r\n[ \t]/g,'').replace(/\r\n/g,'\n').replace(/\r/g,'\n');}
+function parseICS(text,calKey){
+  const evs=[];const lines=unfoldICS(text);const blocks=lines.split('BEGIN:VEVENT').slice(1);
+  const now=new Date();const from=new Date(now);from.setMonth(from.getMonth()-1);const to=new Date(now);to.setMonth(to.getMonth()+4);
+  blocks.forEach(blk=>{
+    const end=blk.indexOf('END:VEVENT');if(end>-1)blk=blk.slice(0,end);
+    const get=key=>{const m=blk.match(new RegExp(`^${key}[^:\\r\\n]*:(.+)$`,'m'));return m?m[1].trim().replace(/\\n/gi,'').replace(/\\,/g,',').replace(/\\\\/g,'\\'):null;};
+    if((get('STATUS')||'').toUpperCase()==='CANCELLED')return;
+    const dtRaw=get('DTSTART')||'';const summary=(get('SUMMARY')||'(sin título)').slice(0,80);const uid=get('UID')||'';
+    let iso=null,time=null,allDay=false;
+    const dt=dtRaw.replace(/\s/g,'');
+    if(/^\d{8}T\d{6}/.test(dt)){
+      const y=dt.slice(0,4),mo=dt.slice(4,6),d=dt.slice(6,8),h=dt.slice(9,11),mi=dt.slice(11,13);
+      if(dt.endsWith('Z')){
+        const d2=new Date(`${y}-${mo}-${d}T${h}:${mi}:00Z`);
+        const fmt=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(d2);
+        const[datePart,timePart]=(fmt+', 00:00').split(', ');iso=datePart;time=timePart.replace(/^24:/,'00:').slice(0,5);
+      }else{iso=`${y}-${mo}-${d}`;time=`${h}:${mi}`;}
+    }else if(/^\d{8}$/.test(dt)){iso=`${dt.slice(0,4)}-${dt.slice(4,6)}-${dt.slice(6,8)}`;allDay=true;}
+    if(!iso)return;
+    const evDate=new Date(iso);if(evDate<from||evDate>to)return;
+    evs.push({iso,title:summary,cal:calKey,time,allDay,uid,fromCal:true});
+  });
+  return evs;
+}
+async function syncSource(srcId,btn){
+  const src=SOURCES.find(s=>s.id===srcId);if(!src)return;
+  if(!isSourceEnabled(srcId)){ setSourceStatus(srcId,'error',0,'Deshabilitado en Permisos. Actívalo en ⚙️ → Permisos.'); if(btn){btn.textContent='🔒';setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},2500);} return; }
+  if(btn){btn.textContent='⏳';btn.disabled=true;}
+  updateSyncTopBtn('syncing');setSourceStatus(srcId,'loading');
+  try{
+    let newEvs;let icsVia='ICS';
+    if(gToken&&src.gcalId){ newEvs=await fetchGCalEvents(src.gcalId,src.cal,src.readonly); if(!newEvs)throw new Error('Token expirado — vuelve a conectar'); }
+    else{
+      const customUrl=src.lsKey?localStorage.getItem(src.lsKey):null;
+      const url=customUrl||src.icsUrl;if(!url)throw new Error('Sin URL configurada');
+      let icsText=null;
+      try{const r=await fetch(url,{mode:'cors',cache:'no-cache'});if(!r.ok)throw new Error(`HTTP ${r.status}`);icsText=await r.text();}
+      catch(corsErr){
+        try{const r2=await fetch('https://corsproxy.io/?url='+encodeURIComponent(url),{cache:'no-cache'});if(!r2.ok)throw new Error(`Proxy ${r2.status}`);icsText=await r2.text();icsVia='ICS·proxy';}
+        catch(proxyErr){throw new Error('CORS bloqueado y proxy falló. Conecta OAuth o revisa la URL.');}
+      }
+      if(!icsText||!icsText.includes('BEGIN:VCALENDAR'))throw new Error('No es ICS válido');
+      newEvs=parseICS(icsText,src.cal);
+    }
+    for(let i=EVENTS.length-1;i>=0;i--){if(EVENTS[i].cal===src.cal&&EVENTS[i].uid)EVENTS.splice(i,1);}
+    EVENTS.push(...newEvs);
+    SYNC_STATUS[srcId]={ok:true,count:newEvs.length,time:new Date(),via:gToken&&src.gcalId?'API':icsVia};
+    setSourceStatus(srcId,'ok',newEvs.length);
+    if(btn){btn.textContent='✓';setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},1800);} renderWeek(); updateSyncTopBtn('synced');
+  }catch(err){
+    SYNC_STATUS[srcId]={ok:false,error:err.message,time:new Date()}; setSourceStatus(srcId,'error',0,err.message);
+    if(btn){btn.textContent='⚠️';setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},2500);} updateSyncTopBtn('error');
+  }
+}
+async function syncAll(){ const btn=document.getElementById('sync-all-btn'); if(btn){btn.textContent='⏳ Sincronizando...';btn.disabled=true;} await Promise.allSettled(SOURCES.map(s=>syncSource(s.id,null))); if(btn){btn.textContent='🔄 Sincronizar Todo';btn.disabled=false;} }
+function updateSyncTopBtn(state){ const b=document.getElementById('sync-topbtn');if(!b)return; b.classList.remove('syncing','synced','error'); if(state!=='idle')b.classList.add(state); b.textContent=state==='syncing'?'⏳ Sync...':state==='synced'?'✓ Synced':state==='error'?'⚠️ Sync':'🔄 Sync'; if(state!=='syncing')setTimeout(()=>{b.classList.remove('syncing','synced','error');b.textContent='🔄 Sync';},3500); }
+function setSourceStatus(id,state,count=0,err=''){
+  const card=document.getElementById('src-'+id);if(!card)return; const el=card.querySelector('.src-status');if(!el)return;
+  const t=new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}); const st2=SYNC_STATUS[id]||{}; const viaBadge=st2.via?` <span style="font-size:.48rem;background:rgba(16,185,129,.18);color:#10B981;padding:1px 4px;border-radius:3px;">${st2.via}</span>`:'';
+  if(state==='loading')el.innerHTML=`<span style="color:#a78bfa">⏳ Conectando...</span>`;
+  else if(state==='ok')el.innerHTML=`<span style="color:#10B981">✓ ${count} evento${count!==1?'s':''} · ${t}</span>${viaBadge}`;
+  else if(state==='error'){ const src=SOURCES.find(s=>s.id===id);const hasCfg=src&&src.lsKey; el.innerHTML=`<span style="color:#F87171">⚠️ ${err.slice(0,44)}</span>${hasCfg?` <a href="#" style="color:#FB923C;font-size:.58rem" onclick="startConfig('${id}',event)">Configurar →</a>`:''}`; }
+}
+function startConfig(srcId,e){ if(e)e.preventDefault(); const src=SOURCES.find(s=>s.id===srcId);if(!src||!src.lsKey)return; _cfgSrcId=srcId; document.getElementById('cfg-label').textContent=`URL iCal — ${src.name}`; document.getElementById('cfg-url-input').value=localStorage.getItem(src.lsKey)||''; document.getElementById('cal-config-zone').classList.add('show'); document.getElementById('cal-main-actions').style.display='none'; setTimeout(()=>document.getElementById('cfg-url-input').focus(),80); }
+function cancelConfig(){ _cfgSrcId=null; document.getElementById('cal-config-zone').classList.remove('show'); document.getElementById('cal-main-actions').style.display='flex'; }
+function saveConfig(){ const url=document.getElementById('cfg-url-input').value.trim();if(!url||!_cfgSrcId)return; const src=SOURCES.find(s=>s.id===_cfgSrcId);if(src&&src.lsKey)localStorage.setItem(src.lsKey,url); cancelConfig(); syncSource(_cfgSrcId,null); }
+function renderCalSources(){
+  const cont=document.getElementById('cal-sources');if(!cont)return;cont.innerHTML='';
+  const permLabels={rw:'R/W',ro:'Solo lectura',admin:'Admin',query:'Consulta'}; const permClass={rw:'perm-rw',ro:'perm-ro',admin:'perm-admin',query:'perm-query'};
+  SOURCES.forEach(src=>{
+    const st=SYNC_STATUS[src.id]; const customUrl=src.lsKey?localStorage.getItem(src.lsKey):null; const perm=getPermForCal(src.cal); const enabled=isSourceEnabled(src.id);
+    let statusHtml;
+    if(!enabled)statusHtml=`<span style="color:var(--mut)">🔒 Deshabilitado en permisos</span>`;
+    else if(!st)statusHtml=`<span style="color:var(--mut)">Sin sincronizar</span>`;
+    else if(st.ok){const t=st.time.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'});statusHtml=`<span style="color:#10B981">✓ ${st.count} eventos · ${t}</span>`;}
+    else{statusHtml=`<span style="color:#F87171">⚠️ ${st.error.slice(0,38)}</span>`+(src.lsKey?` <a href="#" style="color:#FB923C;font-size:.58rem" onclick="startConfig('${src.id}',event)">Config →</a>`:'');}
+    const card=document.createElement('div');card.className='src-card';card.id='src-'+src.id;card.style.setProperty('--src-c',src.color);
+    card.innerHTML=`<div class="src-icon">${src.icon}</div>
+    <div class="src-info">
+      <div class="src-name" style="display:flex;align-items:center;gap:6px;">${src.name} <span class="perm-badge ${permClass[perm]||'perm-ro'}">${permLabels[perm]||perm}</span></div>
+      <div class="src-desc">${src.desc}${customUrl?' · <span style="color:#a78bfa;font-size:.56rem">URL privada ✓</span>':''}</div>
+      <div class="src-status">${statusHtml}</div>
+    </div>
+    <div class="src-actions">
+      ${src.embedUrl?`<button class="btn btn-g" style="padding:4px 8px;font-size:.62rem" onclick="window.open('${src.embedUrl}','_blank')">↗</button>`:''}
+      ${src.lsKey?`<button class="btn btn-g" style="padding:4px 8px;font-size:.62rem" onclick="startConfig('${src.id}',event)">⚙️</button>`:''}
+      <button class="btn btn-p" style="padding:4px 10px;font-size:.64rem" onclick="syncSource('${src.id}',this)" ${enabled?'':'disabled title="Habilitar en ⚙️ Permisos"'}>🔄</button>
+    </div>`;
+    cont.appendChild(card);
+  });
+}
+function openCalModal(){renderCalSources();document.getElementById('cal-modal').classList.add('open');}
+function closeCalModal(){document.getElementById('cal-modal').classList.remove('open');cancelConfig();}
+
+const GCAL_API='https://www.googleapis.com/calendar/v3';
+const GCAL_SCOPES='https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly';
+const GCAL_CLIENT_ID='5033046467-kgd7gl4tekb4fkt90jq32rob4evmgnmn.apps.googleusercontent.com';
+let gToken=null;let tokenClient=null;
+function initGAuthUI(){
+  const savedId=localStorage.getItem('gcal_client_id')||GCAL_CLIENT_ID;
+  const zone=document.getElementById('gcal-auth-zone');if(!zone)return;
+  zone.className='oauth-box disconnected';
+  const isLocalhost=location.hostname==='localhost'||location.hostname==='127.0.0.1'||location.hostname==='vientonorte.github.io';
+  const originWarning=!isLocalhost?`<div style="margin-top:6px;padding:5px 7px;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.3);border-radius:6px;font-size:.6rem;color:#fb923c;line-height:1.5">⚠️ Requiere <strong>http://localhost</strong>. Ejecuta:<br><code style="background:rgba(0,0,0,.25);padding:1px 5px;border-radius:3px;">python3 -m http.server 8080</code></div>`:`<div style="font-size:.58rem;color:#10B981;margin-top:3px">✓ Origen correcto</div>`;
+  zone.innerHTML=`<div style="font-size:.65rem;color:var(--mut);margin-bottom:5px;line-height:1.5">Sync bidireccional con Google Calendar. Client ID configurado ✓</div><div class="mfield" style="margin-bottom:7px"><label>Google OAuth Client ID</label><input type="text" id="gcal-client-id" value="${savedId}" style="font-size:.6rem;opacity:.75"></div>${originWarning}<button class="btn btn-p" onclick="gSignIn()" style="width:100%;justify-content:center;margin-top:8px">🔑 Conectar con Google</button>`;
+}
+function gSignIn(){
+  const clientId=((document.getElementById('gcal-client-id')?.value||'').trim())||GCAL_CLIENT_ID;
+  if(!window.google?.accounts?.oauth2){alert('La librería GIS aún no cargó. Espera un momento.');return;}
+  localStorage.setItem('gcal_client_id',clientId);
+  tokenClient=google.accounts.oauth2.initTokenClient({
+    client_id:clientId,scope:GCAL_SCOPES,
+    callback:resp=>{if(resp.error){console.error('GIS error:',resp);return;}gToken=resp.access_token;updateAuthConnected();syncAll();}
+  });
+  tokenClient.requestAccessToken({prompt:'consent'});
+}
+function gSignOut(){ if(gToken&&window.google?.accounts?.oauth2)google.accounts.oauth2.revoke(gToken,()=>{}); gToken=null; initGAuthUI(); renderCalSources(); }
+function updateAuthConnected(){ const zone=document.getElementById('gcal-auth-zone');if(!zone)return; zone.className='oauth-box'; zone.innerHTML=`<div class="oauth-connected"><div class="oauth-dot"></div><span style="font-size:.71rem;color:#10B981;font-weight:700;flex:1">Google Calendar conectado ✓</span><button class="btn btn-g" style="padding:3px 8px;font-size:.58rem" onclick="listCals()">🔍 Detectar</button><button class="btn btn-g" style="padding:3px 8px;font-size:.58rem;margin-left:3px" onclick="gSignOut()">Salir</button></div><div style="font-size:.58rem;color:var(--mut);margin-top:4px;">Sync bidireccional activo · Personal R/W · Finanzas/Camila solo lectura · Sura requiere admin</div>`; renderCalSources(); }
+async function listCals(){
+  if(!gToken){alert('Conecta Google Calendar primero');return;}
+  try{
+    const resp=await fetch(`${GCAL_API}/users/me/calendarList?maxResults=50`,{headers:{'Authorization':`Bearer ${gToken}`}});
+    if(!resp.ok)throw new Error(`Error ${resp.status}`);
+    const data=await resp.json(); const items=(data.items||[]); const sura=items.find(c=>/(sura|investments)/i.test(c.summary)||/(sura|investments)/i.test(c.id));
+    if(sura){ const src=SOURCES.find(s=>s.id==='trabajo'); if(src&&!src.gcalId){ src.gcalId=sura.id;src.desc=sura.summary; localStorage.setItem('gcal_sura_id',sura.id); alert(`🏢 Sura detectado: "${sura.summary}"\nSe habilitará en el próximo sync (requiere permiso Admin en ⚙️ Permisos).`); renderCalSources(); } }
+    const zone=document.getElementById('gcal-auth-zone');
+    if(!document.getElementById('gcal-cal-list')&&zone){ const div=document.createElement('div');div.id='gcal-cal-list';div.style='margin-top:7px;font-size:.6rem;color:var(--mut)'; const names=items.map(c=>`· ${c.summary}`).join('<br>'); div.innerHTML=`<strong style="color:#a78bfa">${items.length} calendarios:</strong><br>${names}${sura?'<br><span style="color:#F97316">🏢 Sura encontrado ✓</span>':''}`; zone.appendChild(div); }
+  }catch(err){alert('Error al listar calendarios: '+err.message);}
+}
+async function fetchGCalEvents(calId,calKey,readonly=true){
+  if(!gToken)return null;
+  const now=new Date();const from=new Date(now);from.setMonth(from.getMonth()-1);const to=new Date(now);to.setMonth(to.getMonth()+4);
+  const p=new URLSearchParams({timeMin:from.toISOString(),timeMax:to.toISOString(),singleEvents:'true',orderBy:'startTime',maxResults:'500'});
+  const resp=await fetch(`${GCAL_API}/calendars/${encodeURIComponent(calId)}/events?${p}`,{headers:{'Authorization':`Bearer ${gToken}`}});
+  if(resp.status===401){gToken=null;gSignOut();return null;}
+  if(!resp.ok)throw new Error(`GCal API ${resp.status}`);
+  const data=await resp.json();
+  return(data.items||[]).map(item=>{
+    const start=item.start;let iso,time,allDay=false;
+    if(start.date){iso=start.date;allDay=true;}
+    else if(start.dateTime){ const d=new Date(start.dateTime); const fmt=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(d); const[dp,tp]=(fmt+', 00:00').split(', ');iso=dp;time=tp.replace(/^24:/,'00:').slice(0,5); }
+    if(!iso)return null;
+    return{iso,title:(item.summary||'(sin título)').slice(0,80),cal:calKey,time,allDay,uid:item.id,fromCal:true,readonly};
+  }).filter(Boolean);
+}
+async function syncToGCal(e,btn){
+  e.stopPropagation();
+  const card=btn.closest('.card'); const title=card.querySelector('.ct').textContent; const detail=card.querySelector('.det-area')?.value||''; const timeStr=(card.querySelector('.ctime')?.textContent||'').replace('⏰ ','').trim(); const parentId=card.closest('[id^="wb-"]')?.id||''; const iso=parentId.replace('wb-','')||isoOf(new Date());
+  if(gToken){ btn.textContent='⏳';btn.disabled=true; try{ await pushEventToGCalAPI({title,iso,time:timeStr,detail,cal:card.dataset.cal}); btn.textContent='✓';btn.style.color='#10B981'; setTimeout(()=>btn.remove(),1600); }catch(err){ btn.textContent='⚠️';btn.disabled=false;setTimeout(()=>{btn.textContent='📅';btn.style.color='';},2000);} }
+  else{ const url='https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(title)+(detail?'&details='+encodeURIComponent(detail):''); window.open(url,'_blank'); }
+}
+async function pushEventToGCalAPI(ev,calId='gaete.gaona@gmail.com'){
+  if(!gToken)return false;
+  let start,end;
+  if(ev.allDay||!ev.time){const nd=new Date(ev.iso);nd.setDate(nd.getDate()+1);start={date:ev.iso};end={date:isoOf(nd)};}
+  else{const[h,mi]=ev.time.split(':');const endH=String(parseInt(h)+1).padStart(2,'0');start={dateTime:`${ev.iso}T${h.padStart(2,'0')}:${mi||'00'}:00`,timeZone:'America/Santiago'};end={dateTime:`${ev.iso}T${endH}:${mi||'00'}:00`,timeZone:'America/Santiago'};}
+  const body={summary:ev.title,start,end,description:ev.detail||''};
+  const resp=await fetch(`${GCAL_API}/calendars/${encodeURIComponent(calId)}/events`,{method:'POST',headers:{'Authorization':`Bearer ${gToken}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!resp.ok)throw new Error(`Push ${resp.status}`);
+  return await resp.json();
+}
+
+function toggleDetail(e,btn){e.stopPropagation();const card=btn.closest('.card');const panel=card.querySelector('.card-detail');const open=panel.classList.toggle('show');btn.classList.toggle('open',open);if(open)panel.querySelector('.det-area').focus();}
+function openAddModal(){
+  const sel=document.getElementById('add-day');sel.innerHTML='';
+  Array.from({length:7},(_,i)=>addDays(weekStart,i)).forEach(d=>{const iso=isoOf(d);const opt=document.createElement('option');opt.value=iso;opt.textContent=FDAYS[d.getDay()]+' '+d.getDate();sel.appendChild(opt);});
+  document.getElementById('add-title').value='';document.getElementById('add-time').value='';document.getElementById('add-detail').value='';
+  document.getElementById('add-modal').classList.add('open');setTimeout(()=>document.getElementById('add-title').focus(),120);
+}
+function closeAddModal(){document.getElementById('add-modal').classList.remove('open');}
+function submitAdd(){
+  const title=document.getElementById('add-title').value.trim();if(!title){document.getElementById('add-title').focus();return;}
+  const iso=document.getElementById('add-day').value;const time=document.getElementById('add-time').value; const cat=document.getElementById('add-cat').value;const detail=document.getElementById('add-detail').value.trim();
+  const body=document.getElementById('wb-'+iso);
+  if(body){const card=makeCard({title,cal:cat,time,detail,fromCal:false});body.appendChild(card);body.querySelector('.day-empty')?.remove();updateDayCount(body.closest('.wday'));applyFilter();}
+  closeAddModal();
+}
+function openAdminModal(){ renderAdmCalUrls(); renderResIcal(); renderPermList(); hydrateAIAdmin(); document.getElementById('admin-modal').classList.add('open'); }
+function closeAdminModal(){document.getElementById('admin-modal').classList.remove('open');}
+function switchTab(id,btn){ document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active')); btn.classList.add('active');document.getElementById('tab-'+id).classList.add('active'); if(id==='permisos')renderPermList(); }
+function toggleFaq(q){const a=q.nextElementSibling;const isOpen=q.classList.contains('open');document.querySelectorAll('.faq-q.open').forEach(x=>{x.classList.remove('open');x.nextElementSibling.classList.remove('open');});if(!isOpen){q.classList.add('open');a.classList.add('open');}}
+function saveClientId(){const val=document.getElementById('adm-client-id')?.value?.trim();if(!val)return;localStorage.setItem('gcal_client_id',val);const btn=event.target;btn.textContent='✓';btn.style.color='#10B981';setTimeout(()=>{btn.textContent='💾';btn.style.color='';},1800);}
+function renderAdmCalUrls(){
+  const cont=document.getElementById('adm-cal-urls');if(!cont)return;cont.innerHTML='';
+  SOURCES.forEach(src=>{ const custom=src.lsKey?localStorage.getItem(src.lsKey)||'':'';const url=custom||src.icsUrl||'';const div=document.createElement('div');div.className='mfield';div.style='margin-bottom:5px'; div.innerHTML=`<label style="display:flex;gap:5px;align-items:center"><span style="background:${src.color};width:6px;height:6px;border-radius:50%;display:inline-block"></span>${src.name}${src.gcalId?' <span style="font-size:.48rem;background:rgba(16,185,129,.18);color:#10B981;padding:1px 4px;border-radius:3px">API ✓</span>':''}</label><div style="display:flex;gap:5px;align-items:center"><input type="text" value="${url}" placeholder="URL iCal..." style="font-size:.59rem;flex:1" data-src="${src.id}">${src.lsKey?`<button class="res-copy" onclick="saveCalUrl('${src.id}',this)">💾</button>`:'<span style="font-size:.58rem;color:var(--mut)">no config</span>'}</div>`; cont.appendChild(div); });
+}
+function saveCalUrl(srcId,btn){const src=SOURCES.find(s=>s.id===srcId);if(!src||!src.lsKey)return;const input=btn.previousElementSibling;const url=input?.value?.trim();if(!url)return;localStorage.setItem(src.lsKey,url);btn.textContent='✓';btn.style.color='#10B981';setTimeout(()=>{btn.textContent='💾';btn.style.color='';},1800);}
+function exportBoard(){const data={states:JSON.parse(localStorage.getItem('tablero_states_ro')||'{}'),extra:JSON.parse(localStorage.getItem('tablero_extra_ro')||'[]'),perms:PERMS,ai:AI_CFG,exported:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`tablero-ro-${isoOf(new Date())}.json`;a.click();URL.revokeObjectURL(a.href);}
+function importBoardClick(){document.getElementById('import-file').click();}
+function importBoard(input){const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const data=JSON.parse(ev.target.result);if(data.states)localStorage.setItem('tablero_states_ro',JSON.stringify(data.states));if(data.extra)localStorage.setItem('tablero_extra_ro',JSON.stringify(data.extra));if(data.perms){PERMS=data.perms;savePerms();} if(data.ai){AI_CFG=deepMerge(AI_DEFAULTS,data.ai); saveAICfg(); hydrateAIForm(); hydrateAIAdmin();} loadBoard();renderWeek();closeAdminModal();alert('✓ Estado importado correctamente.');}catch(e){alert('Error al importar: '+e.message);}};r.readAsText(f);}
+function clearSavedState(){if(!confirm('¿Eliminar todos los estados guardados?'))return;localStorage.removeItem('tablero_states_ro');localStorage.removeItem('tablero_extra_ro');CARD_STATES={};EXTRA_EVENTS=[];renderWeek();closeAdminModal();}
+function renderResIcal(){const cont=document.getElementById('res-ical-list');if(!cont)return;cont.innerHTML='';SOURCES.forEach(src=>{const url=src.icsUrl||'';if(!url)return;const div=document.createElement('div');div.className='res-card';div.style='margin-bottom:4px;cursor:default';div.innerHTML=`<span class="res-icon" style="font-size:.9rem">${src.icon}</span><div class="res-info"><div class="res-name">${src.name}</div><div class="res-url">${url.slice(0,52)}…</div></div><button class="res-copy" onclick="copyText('${url}',this)">Copiar</button>`;cont.appendChild(div);});}
+function copyText(text,btn){navigator.clipboard.writeText(text).then(()=>{const orig=btn.textContent;btn.textContent='✓';btn.style.color='#10B981';setTimeout(()=>{btn.textContent=orig;btn.style.color='';},1800);}).catch(()=>{alert('Copia manual:\n'+text);});}
+
+let EXTRA_EVENTS=[];let CARD_STATES={};
+function cardKey(iso,title,cal){return `${iso}|${title}|${cal}`;}
+function saveBoard(){
+  const states={};const extra=[];
+  document.querySelectorAll('[id^="wb-"]').forEach(body=>{
+    const iso=body.id.replace('wb-','');
+    body.querySelectorAll('.card').forEach(card=>{
+      const title=card.querySelector('.ct')?.textContent||'';const cal=card.dataset.cal||'bujo';
+      const done=card.classList.contains('done');const detail=card.querySelector('.det-area')?.value||''; const time=(card.querySelector('.ctime')?.textContent||'').replace('⏰ ','').trim(); const hasSync=!!card.querySelector('.sync-btn'); const key=cardKey(iso,title,cal); states[key]={done,detail}; if(hasSync)extra.push({iso,title,cal,time,detail,fromCal:false});
+    });
+  });
+  CARD_STATES=states;EXTRA_EVENTS=extra; localStorage.setItem('tablero_states_ro',JSON.stringify(states)); localStorage.setItem('tablero_extra_ro',JSON.stringify(extra));
+  const btn=document.getElementById('save-btn'); if(btn){btn.textContent='✓ Guardado';btn.classList.add('saved');setTimeout(()=>{btn.textContent='💾 Guardar';btn.classList.remove('saved');},2200);}
+}
+function loadBoard(){
+  try{ CARD_STATES=JSON.parse(localStorage.getItem('tablero_states_ro')||'{}'); EXTRA_EVENTS=JSON.parse(localStorage.getItem('tablero_extra_ro')||'[]'); EXTRA_EVENTS.forEach(ev=>{if(!EVENTS.find(e=>e.iso===ev.iso&&e.title===ev.title))EVENTS.push(ev);}); }
+  catch(e){console.warn('loadBoard:',e);} 
+}
+function applyCardStates(){ document.querySelectorAll('[id^="wb-"]').forEach(body=>{ const iso=body.id.replace('wb-',''); body.querySelectorAll('.card').forEach(card=>{ const title=card.querySelector('.ct')?.textContent||'';const cal=card.dataset.cal||'bujo'; const st=CARD_STATES[cardKey(iso,title,cal)];if(!st)return; if(st.done)card.classList.add('done'); if(st.detail){const area=card.querySelector('.det-area');if(area){area.value=st.detail;card.querySelector('.card-detail')?.classList.add('show');}} }); }); }
+
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeDrawer();closeAddModal();closeCalModal();closeAdminModal();} if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();saveBoard();} });
+(function restoreSura(){const sid=localStorage.getItem('gcal_sura_id');if(sid){const s=SOURCES.find(x=>x.id==='trabajo');if(s&&!s.gcalId)s.gcalId=sid;}})();
+loadPerms(); loadBoard(); renderWeek(); initGAuthUI(); hydrateAIForm(); hydrateAIAdmin(); updateAIStatus();
+</script>
+</body>
+</html>
