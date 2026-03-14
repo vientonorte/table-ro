@@ -1943,21 +1943,21 @@
         <div class="modal-box">
             <div class="modal-title">＋ Nueva Tarea</div>
             <div class="mfield">
-                <label>Título</label>
+                <label for="add-title">Título</label>
                 <input type="text" id="add-title" placeholder="¿Qué tienes que hacer?" autocomplete="off">
             </div>
             <div class="mrow">
                 <div class="mfield">
-                    <label>Día</label>
+                    <label for="add-day">Día</label>
                     <select id="add-day"></select>
                 </div>
                 <div class="mfield">
-                    <label>Hora (opcional)</label>
+                    <label for="add-time">Hora (opcional)</label>
                     <input type="time" id="add-time">
                 </div>
             </div>
             <div class="mfield">
-                <label>Categoría</label>
+                <label for="add-cat">Categoría</label>
                 <select id="add-cat">
         <option value="personal">Personal</option>
         <option value="vinculos">Vínculos</option>
@@ -1968,7 +1968,7 @@
       </select>
             </div>
             <div class="mfield">
-                <label>Detalles (opcional)</label>
+                <label for="add-detail">Detalles (opcional)</label>
                 <textarea id="add-detail" rows="2" placeholder="Notas o contexto..."></textarea>
             </div>
             <div class="modal-actions">
@@ -1995,7 +1995,7 @@
             <div id="cal-sources"></div>
             <div id="cal-config-zone" style="display:none;margin-top:4px;">
                 <div class="mfield">
-                    <label id="cfg-label">URL iCal privada</label>
+                    <label id="cfg-label" for="cfg-url-input">URL iCal privada</label>
                     <input type="text" id="cfg-url-input" placeholder="https://calendar.google.com/calendar/ical/...">
                     <div style="font-size:.6rem;color:var(--mut);margin-top:4px;">Obtén esta URL en Google Calendar → ⚙️ Configuración → Dirección secreta en formato iCal</div>
                 </div>
@@ -2026,7 +2026,7 @@
                 <div>
                     <div class="sec-title" style="font-size:.75rem;margin-bottom:8px">🔑 Google OAuth</div>
                     <div class="mfield">
-                        <label>Client ID</label>
+                        <label for="adm-client-id">Client ID</label>
                         <div class="adm-row">
                             <input type="text" id="adm-client-id" value="5033046467-kgd7gl4tekb4fkt90jq32rob4evmgnmn.apps.googleusercontent.com" style="font-size:.63rem;flex:1">
                             <button class="res-copy" onclick="saveClientId()">💾 Guardar</button>
@@ -2192,7 +2192,7 @@
                 <div class="ai-prov-tabs">
                     <button class="ai-prov-btn active" data-p="ollama" onclick="setAIProv(this)">🦙 Ollama</button>
                     <button class="ai-prov-btn" data-p="claude" onclick="setAIProv(this)">🐾 OpenClaw</button>
-                    <button class="ai-prov-btn" data-p="deepseek" onclick="setAIProv(this)">🔷 DeepSeek</button>
+                    <button class="ai-prov-btn" data-p="deepseek" onclick="setAIProv(this)">🔷🐾 Dual QA</button>
                 </div>
 
                 <!-- Cabecera con dot de estado -->
@@ -2335,7 +2335,7 @@
                     <span class="fallback-arrow">▼</span>
                 </div>
                 <div class="fallback-body" id="fallback-body">
-                    <textarea class="paste-area" id="paste-area" placeholder="● Tarea pendiente&#10;◆ Evento / cita&#10;— Nota / reflexión&#10;○ Hábito a trackear"></textarea>
+                    <textarea class="paste-area" id="paste-area" aria-label="Texto BuJo para procesamiento manual" placeholder="● Tarea pendiente&#10;◆ Evento / cita&#10;— Nota / reflexión&#10;○ Hábito a trackear"></textarea>
                     <div class="btn-row" style="margin-top:8px;">
                         <button class="btn btn-p" onclick="parsePaste()">✨ Procesar</button>
                     </div>
@@ -2354,7 +2354,7 @@
                 <div class="bj-list" id="bj-list"></div>
                 <div class="mfield" style="margin-top:10px;display:flex;align-items:center;gap:8px;">
                     <label style="font-size:.68rem;color:var(--mut);white-space:nowrap">📅 Día destino</label>
-                    <select id="bj-day-sel" style="flex:1;font-size:.68rem"></select>
+                    <select id="bj-day-sel" aria-label="Día destino para tareas BuJo" style="flex:1;font-size:.68rem"></select>
                 </div>
                 <div class="btn-row" style="margin-top:8px;">
                     <button class="btn btn-p" style="flex:1;justify-content:center" onclick="addAllToBoard()">＋ Agregar todo</button>
@@ -2976,7 +2976,7 @@ BUJO_INIT.forEach(o=>bjList.appendChild(makeBJItem(o))); showBJItems();
 function parsePaste(){ const txt=document.getElementById('paste-area').value.trim(); if(!txt) return; let added=0; txt.split('\n').forEach(ln=>{ const m=ln.trim().match(/^([●◆—○\-\*])\s+(.+)$/); if(!m) return; bjList.appendChild(makeBJItem({text:m[2].trim(),type:SYM_MAP[m[1]]||'personal'})); added++; }); document.getElementById('paste-area').value=''; if(added) showBJItems(); }
 function filterBJ(type,btn){ document.querySelectorAll('#ftags .ftag').forEach(t=>t.classList.remove('on')); btn.classList.add('on'); document.querySelectorAll('#bj-list .bj-item').forEach(el=>{ el.style.display=(type==='all'||el.dataset.type===type)?'flex':'none'; }); }
 function getBJTargetDay(){ return document.getElementById('bj-day-sel')?.value || isoOf(new Date()); }
-function addToBoard(all=false){ const items=[...document.querySelectorAll('#bj-list .bj-item')].filter(el=>all||el.querySelector('input').checked); if(!items.length){ if(!all) alert('Marca las tareas que quieres agregar ☝️'); return; } const iso=getBJTargetDay(); const body=document.getElementById('wb-'+iso)||document.querySelector('.wday-body'); items.forEach(el=>{ const txt=el.querySelector('.bj-item-text').textContent; const calKey=el.dataset.type||'bujo'; const card=makeCard({title:'📓 '+txt,cal:calKey}); if(body){body.appendChild(card); const emp=body.querySelector('.day-empty'); if(emp) emp.remove();} el.remove(); }); if(body) updateDayCount(body.closest('.wday')); showBJItems(); scheduleAutoSave(); renderWeek(); closeDrawer(); }
+function addToBoard(all=false){ const items=[...document.querySelectorAll('#bj-list .bj-item')].filter(el=>all||el.querySelector('input').checked); if(!items.length){ if(!all) alert('Marca las tareas que quieres agregar ☝️'); return; } const iso=getBJTargetDay(); items.forEach(el=>{ const txt=el.querySelector('.bj-item-text').textContent; const calKey=el.dataset.type||'bujo'; EVENTS.push({iso,title:'📓 '+txt,cal:calKey,fromCal:false}); el.remove(); }); showBJItems(); saveBoard(); renderWeek(); closeDrawer(); }
 function addAllToBoard(){ addToBoard(true); }
 function clearBJ(){ bjList.innerHTML=''; document.getElementById('paste-area').value=''; document.getElementById('thumbs').innerHTML=''; showBJItems(); }
 const inp=document.getElementById('bj-input'); const upz=document.getElementById('upzone'); const ths=document.getElementById('thumbs');
@@ -3019,7 +3019,7 @@ async function syncSource(srcId,btn){
         const r=await fetch(url,{mode:'cors',cache:'no-cache'}); if(!r.ok) throw new Error(`HTTP ${r.status}`); icsText=await r.text();
       }catch(corsErr){
         let proxyOk=false;
-        for(const px of ['https://corsproxy.io/?url=','https://api.allorigins.win/raw?url=','https://corsproxy.io/raw?url=']){
+        for(const px of ['https://api.allorigins.win/raw?url=','https://corsproxy.io/?url=','https://api.codetabs.com/v1/proxy?quest=','https://cors-anywhere.herokuapp.com/','https://thingproxy.freeboard.io/fetch/']){
           try{
             const r2=await fetch(px+encodeURIComponent(url),{cache:'no-cache'});
             if(!r2.ok) throw new Error(`Proxy ${r2.status}`);
@@ -3078,7 +3078,7 @@ const GCAL_API='https://www.googleapis.com/calendar/v3';
 const GCAL_SCOPES='https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly';
 const GCAL_CLIENT_ID='5033046467-kgd7gl4tekb4fkt90jq32rob4evmgnmn.apps.googleusercontent.com';
 let gToken=null; let tokenClient=null;
-function initGAuthUI(){ const savedId=localStorage.getItem('gcal_client_id')||GCAL_CLIENT_ID; const zone=document.getElementById('gcal-auth-zone'); if(!zone) return; zone.className='oauth-box disconnected'; const isLocalhost=location.hostname==='localhost'||location.hostname==='127.0.0.1'||location.hostname==='vientonorte.github.io'; const originWarning=!isLocalhost?`<div style="margin-top:7px;padding:6px 8px;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.3);border-radius:6px;font-size:.62rem;color:#fb923c;line-height:1.5">⚠️ Google OAuth requiere <strong>http://localhost</strong> como origen. Desde <code>file://</code> puede no funcionar.<br>Abre una terminal en la carpeta del archivo y ejecuta:<br><code style="background:rgba(0,0,0,.25);padding:2px 6px;border-radius:3px;display:inline-block;margin-top:3px">python3 -m http.server 8080</code><br>Luego abre <a href="http://localhost:8080/index.html" target="_blank" style="color:#fb923c">http://localhost:8080/index.html</a><br>Y agrega <code>http://localhost:8080</code> en <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:#fb923c">Authorized JS origins ↗</a></div>`:`<div style="font-size:.6rem;color:#10B981;margin-top:4px">✓ Origen correcto</div>`; zone.innerHTML=`<div style="font-size:.67rem;color:var(--mut);margin-bottom:6px;line-height:1.5">Sync bidireccional con Google Calendar.<br>Client ID ya configurado ✓</div><div class="mfield" style="margin-bottom:8px"><label>Google OAuth Client ID</label><input type="text" id="gcal-client-id" value="${savedId}" style="font-size:.62rem;opacity:.75"></div>${originWarning}<button class="btn btn-p" onclick="gSignIn()" style="width:100%;justify-content:center;margin-top:9px">🔑 Conectar con Google</button>`; }
+function initGAuthUI(){ const savedId=localStorage.getItem('gcal_client_id')||GCAL_CLIENT_ID; const zone=document.getElementById('gcal-auth-zone'); if(!zone) return; zone.className='oauth-box disconnected'; const isLocalhost=location.hostname==='localhost'||location.hostname==='127.0.0.1'||location.hostname==='vientonorte.github.io'; const originWarning=!isLocalhost?`<div style="margin-top:7px;padding:6px 8px;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.3);border-radius:6px;font-size:.62rem;color:#fb923c;line-height:1.5">⚠️ Google OAuth requiere <strong>http://localhost</strong> como origen. Desde <code>file://</code> puede no funcionar.<br>Abre una terminal en la carpeta del archivo y ejecuta:<br><code style="background:rgba(0,0,0,.25);padding:2px 6px;border-radius:3px;display:inline-block;margin-top:3px">python3 -m http.server 8080</code><br>Luego abre <a href="http://localhost:8080/index.html" target="_blank" style="color:#fb923c">http://localhost:8080/index.html</a><br>Y agrega <code>http://localhost:8080</code> en <a href="https://console.cloud.google.com/apis/credentials" target="_blank" style="color:#fb923c">Authorized JS origins ↗</a></div>`:`<div style="font-size:.6rem;color:#10B981;margin-top:4px">✓ Origen correcto</div>`; zone.innerHTML=`<div style="font-size:.67rem;color:var(--mut);margin-bottom:6px;line-height:1.5">Sync bidireccional con Google Calendar.<br>Client ID ya configurado ✓</div><div class="mfield" style="margin-bottom:8px"><label for="gcal-client-id">Google OAuth Client ID</label><input type="text" id="gcal-client-id" value="${savedId}" style="font-size:.62rem;opacity:.75"></div>${originWarning}<button class="btn btn-p" onclick="gSignIn()" style="width:100%;justify-content:center;margin-top:9px">🔑 Conectar con Google</button>`; }
 function gSignIn(){ const clientId=((document.getElementById('gcal-client-id')?.value||'').trim())||GCAL_CLIENT_ID; if(!window.google?.accounts?.oauth2){alert('La librería GIS aún no cargó. Espera un segundo e intenta de nuevo.');return;} localStorage.setItem('gcal_client_id',clientId); tokenClient=google.accounts.oauth2.initTokenClient({client_id:clientId,scope:GCAL_SCOPES,callback:resp=>{if(resp.error){console.error('GIS error:',resp);return;} gToken=resp.access_token; updateAuthConnected(); syncAll();}}); tokenClient.requestAccessToken({prompt:'consent'}); }
 function gSignOut(){ if(gToken&&window.google?.accounts?.oauth2) google.accounts.oauth2.revoke(gToken,()=>{}); gToken=null; initGAuthUI(); renderCalSources(); }
 function updateAuthConnected(){ const zone=document.getElementById('gcal-auth-zone'); if(!zone) return; zone.className='oauth-box'; zone.innerHTML=`<div class="oauth-connected"><div class="oauth-dot"></div><span style="font-size:.73rem;color:#10B981;font-weight:700;flex:1">Google Calendar conectado ✓</span><button class="btn btn-g" style="padding:4px 10px;font-size:.6rem" onclick="listCals()">🔍 Detectar cals</button><button class="btn btn-g" style="padding:4px 10px;font-size:.6rem;margin-left:4px" onclick="gSignOut()">Salir</button></div><div style="font-size:.6rem;color:var(--mut);margin-top:5px">Sync bidireccional activo · Personal lectura+escritura · Finanzas/Camila/Sura solo lectura</div>`; renderCalSources(); }
@@ -3596,7 +3596,14 @@ function initOllamaUI() {
   const dk = localStorage.getItem('bj_deepseek_key');
   if (ck) { const el = document.getElementById('bj-claude-key'); if (el) el.value = ck; }
   if (dk) { const el = document.getElementById('bj-deepseek-key'); if (el) el.value = dk; }
-  setAIProv('ollama');
+  // En HTTPS auto-seleccionar el mejor provider disponible
+  if (isHttpsContext()) {
+    if (ck && dk) setAIProv('deepseek');
+    else if (ck) setAIProv('claude');
+    else setAIProv('deepseek');
+  } else {
+    setAIProv('ollama');
+  }
 
   // Detectar Mixed Content: HTTPS → HTTP localhost = bloqueado por el browser
   if (isHttpsContext()) {
@@ -3627,7 +3634,7 @@ function initOllamaUI() {
           El browser bloquea esa mezcla por seguridad (Mixed Content).
         </div>
         <div style="font-weight:700;margin-bottom:4px;color:#fcd34d;">Sugerencia:</div>
-        <div style="font-size:.63rem;color:rgba(252,211,77,.75);">Usa <strong>Proxy seguro</strong> para producción (GitHub Pages) y Ollama solo en localhost.</div>`;
+        <div style="font-size:.63rem;color:rgba(252,211,77,.75);">Usa <strong>🐾 OpenClaw</strong> o <strong>🔷🐾 Dual QA</strong> en producción (GitHub Pages). Ollama solo funciona en localhost.</div>`;
 
       const actions = panel.querySelector('.ollama-actions');
       if (actions) panel.insertBefore(warn, actions);
@@ -3852,13 +3859,81 @@ function initCMSSync() {
 let _autoSaveT=null;
 function scheduleAutoSave(){ clearTimeout(_autoSaveT); _autoSaveT=setTimeout(()=>{ saveBoard(); },3000); }
 (function patchAutoSave(){
-  const orig=makeCard;
-  // patch click en .done-toggle via delegación
-  document.addEventListener('change',e=>{ if(e.target.matches('.bj-item input[type=checkbox]')||e.target.matches('.det-area')) scheduleAutoSave(); });
-  document.addEventListener('click',e=>{ if(e.target.matches('.done-toggle')||e.target.closest('.done-toggle')) scheduleAutoSave(); });
+  // Auto-save en TODA interacción relevante via delegación
+  document.addEventListener('change',e=>{
+    if(e.target.matches('.bj-item input[type=checkbox]')||e.target.matches('.det-area')) scheduleAutoSave();
+  });
+  document.addEventListener('click',e=>{
+    // Checkbox done en cards
+    if(e.target.matches('.chk')||e.target.closest('.chk')) scheduleAutoSave();
+  });
+  // Auto-save después de drag & drop
+  document.addEventListener('drop',()=>setTimeout(scheduleAutoSave,200));
+  // Auto-save cuando se edita un detalle (blur)
+  document.addEventListener('focusout',e=>{
+    if(e.target.matches('.det-area')) scheduleAutoSave();
+  });
 })();
 
+// ═══ KEYBOARD SHORTCUTS ═══
+document.addEventListener('keydown',e=>{
+  const ctrl=e.ctrlKey||e.metaKey;
+  // Ctrl+S → Guardar
+  if(ctrl&&e.key==='s'){ e.preventDefault(); saveBoard(); return; }
+  // Ctrl+N → Añadir tarea
+  if(ctrl&&e.key==='n'){ e.preventDefault(); openAddModal(); return; }
+  // Ctrl+B → Bullet Journal
+  if(ctrl&&e.key==='b'){ e.preventDefault(); const d=document.getElementById('drawer'); d.classList.contains('open')?closeDrawer():openDrawer(); return; }
+  // Ctrl+R → Sync (sin recargar página)
+  if(ctrl&&e.key==='r'&&!e.shiftKey){ e.preventDefault(); syncAll(); return; }
+  // ← → navegación semana
+  if(!ctrl&&!e.shiftKey&&!e.altKey&&document.activeElement===document.body){
+    if(e.key==='ArrowLeft'){ goWeek(-1); return; }
+    if(e.key==='ArrowRight'){ goWeek(1); return; }
+  }
+});
+
+// ═══ AUTO-RETRY SYNC CON BACKOFF ═══
+let _syncRetries={};
+const _origSyncSource=syncSource;
+syncSource=async function(srcId,btn){
+  await _origSyncSource(srcId,btn);
+  const st=SYNC_STATUS[srcId];
+  if(st&&!st.ok){
+    const retries=(_syncRetries[srcId]||0);
+    if(retries<2){
+      _syncRetries[srcId]=retries+1;
+      const delay=(retries+1)*10000; // 10s, 20s
+      console.log(`[sync] Retry ${retries+1}/2 para ${srcId} en ${delay/1000}s`);
+      setTimeout(()=>_origSyncSource(srcId,null),delay);
+    }
+  } else { _syncRetries[srcId]=0; }
+};
+
 loadBoard(); renderWeek(); initGAuthUI(); initOllamaUI(); initCMSSync();
+
+// ═══ HEALTH CHECK (post-render) ═══
+setTimeout(function healthCheck(){
+  const checks=[];
+  const fns=['renderWeek','saveBoard','loadBoard','openDrawer','closeDrawer','syncAll','makeCard','addToBoard','analyzeBujoWithAI','setAIProv','saveBJKey','callClaudeAPIBujo','callDeepSeekAPIBujo','pushToSupabase','pullFromSupabase'];
+  const missing=fns.filter(f=>typeof window[f]!=='function');
+  if(missing.length) checks.push('FAIL: funciones faltantes: '+missing.join(', '));
+  if(typeof bujoState==='undefined') checks.push('FAIL: bujoState no definido');
+  if(typeof EVENTS==='undefined') checks.push('FAIL: EVENTS no definido');
+  if(document.querySelectorAll('.wday').length!==7) checks.push('WARN: columnas !== 7');
+  if(!document.querySelector('.wday.is-today')) checks.push('WARN: sin columna is-today');
+  const cards=document.querySelectorAll('.card').length;
+  const events=EVENTS.length;
+  const ck=!!localStorage.getItem('bj_claude_key');
+  const dk=!!localStorage.getItem('bj_deepseek_key');
+  const https=location.protocol==='https:';
+  console.log(`%c[TABLERO·RÖ] Health Check`,'color:#a855f7;font-weight:bold;font-size:12px');
+  console.log(`  Cards: ${cards} | Events: ${events} | HTTPS: ${https}`);
+  console.log(`  Claude key: ${ck?'✓':'✗'} | DeepSeek key: ${dk?'✓':'✗'} | AI: ${activeAIProv}`);
+  console.log(`  Shortcuts: ⌘S guardar · ⌘N añadir · ⌘B bujo · ⌘R sync · ←→ semana`);
+  if(checks.length) checks.forEach(c=>console.warn('  '+c));
+  else console.log(`%c  ✓ Todo OK`,'color:#10B981;font-weight:bold');
+},100);
 
 // ─── Auto-sync al cargar y cada 15 min ───
 setTimeout(()=>syncAllCached(), 1500);
