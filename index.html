@@ -2870,8 +2870,12 @@
             zone.addEventListener('dragover', e => {
                 if (!DRAG.card) return;
                 e.preventDefault();
+<<<<<<< Updated upstream
                 const wd1 = zone.closest('.wday');
                 if (wd1) wd1.classList.add('drag-over-col');
+=======
+                zone.closest('.wday') ?.classList.add('drag-over-col');
+>>>>>>> Stashed changes
                 removePH();
                 const ph = document.createElement('div');
                 ph.className = 'drop-placeholder';
@@ -2890,14 +2894,19 @@
             });
             zone.addEventListener('dragleave', e => {
                 if (!zone.contains(e.relatedTarget)) {
+<<<<<<< Updated upstream
                     const wd2 = zone.closest('.wday');
                     if (wd2) wd2.classList.remove('drag-over-col');
+=======
+                    zone.closest('.wday') ?.classList.remove('drag-over-col');
+>>>>>>> Stashed changes
                     removePH();
                 }
             });
             zone.addEventListener('drop', e => {
                 e.preventDefault();
                 if (!DRAG.card) return;
+<<<<<<< Updated upstream
                 const wd3 = zone.closest('.wday');
                 if (wd3) wd3.classList.remove('drag-over-col');
                 const ph = zone.querySelector('.drop-placeholder');
@@ -2905,6 +2914,13 @@
                 removePH();
                 const emp = zone.querySelector('.day-empty');
                 if (emp) emp.remove();
+=======
+                zone.closest('.wday') ?.classList.remove('drag-over-col');
+                const ph = zone.querySelector('.drop-placeholder');
+                ph ? zone.insertBefore(DRAG.card, ph) : zone.appendChild(DRAG.card);
+                removePH();
+                zone.querySelector('.day-empty')?.remove();
+>>>>>>> Stashed changes
                 updateDayCount(zone.closest('.wday'));
             });
         }
@@ -2960,10 +2976,16 @@ function renderWeek(){
   });
   applyCardStates();
 }
+<<<<<<< Updated upstream
 function populateBJDaySel(){ const sel=document.getElementById('bj-day-sel'); if(!sel) return; sel.innerHTML=''; const today=isoOf(new Date()); Array.from({length:7},(_,i)=>addDays(weekStart,i)).forEach(d=>{ const iso=isoOf(d); const opt=document.createElement('option'); opt.value=iso; opt.textContent=FDAYS[d.getDay()]+' '+d.getDate(); if(iso===today) opt.selected=true; sel.appendChild(opt); }); }
 const bujoState = { lastModalFocus: null, images: [], items: [], batchId: null };
 const reviewState = { setBatch(data){ bujoState.items = data.items || []; bujoState.batchId = data.batch_id || null; } };
 function openDrawer(){ populateBJDaySel(); bujoState.lastModalFocus=document.activeElement; document.getElementById('drawer').classList.add('open'); document.getElementById('overlay').classList.add('open'); if(typeof accessibilityHelpers!=='undefined') accessibilityHelpers?.focusDrawer?.(); }
+=======
+// ─── Estado global BuJo ───
+const bujoState = { lastModalFocus: null, images: [], items: [], batchId: null };
+function openDrawer(){ bujoState.lastModalFocus=document.activeElement; document.getElementById('drawer').classList.add('open'); document.getElementById('overlay').classList.add('open'); }
+>>>>>>> Stashed changes
 function closeDrawer(){ document.getElementById('drawer').classList.remove('open'); document.getElementById('overlay').classList.remove('open'); if(bujoState.lastModalFocus&&bujoState.lastModalFocus.focus) bujoState.lastModalFocus.focus(); }
 const BJ_CAL={
   personal:{c:'#EC4899',l:'Personal'}, vinculos:{c:'#7C3AED',l:'Vínculos'},
@@ -3377,6 +3399,7 @@ async function analyzeBujoWithOllama() {
       }
       return;
     }
+<<<<<<< Updated upstream
     reviewState.setBatch({batch_id:uid('batch'),items});
     // Auto-seleccionar todos los ítems extraídos
     items.forEach(item=>{ if(item.text||item.title){ bjList.appendChild(makeBJItem({text:item.text||item.title,type:item.type||'uncertain'})); } });
@@ -3387,6 +3410,22 @@ async function analyzeBujoWithOllama() {
     setOllamaDot('ok');
     const reviewPending = bujoState.items.filter(i=>i.needs_review).length;
     setOllamaStatus(`✓ ${items.length} ítem${items.length > 1 ? 's' : ''} extraído${items.length > 1 ? 's' : ''} · todos seleccionados · elige día y presiona "+ Agregar todo"`, 'ok');
+=======
+    // Agregar ítems extraídos al BuJo list
+    items.forEach(item => {
+      if (item.title || item.text) {
+        bjList.appendChild(makeBJItem({ text: item.title || item.text, type: item.type || 'uncertain' }));
+      }
+    });
+    document.querySelectorAll('#bj-list .bj-item input[type=checkbox]').forEach(cb => cb.checked = true);
+    showBJItems();
+
+    bujoState.items = items;
+    bujoState.batchId = 'batch-' + Date.now();
+    setOllamaDot('ok');
+    const reviewPending = items.filter(i => i.needs_review).length;
+    setOllamaStatus(`✓ ${items.length} ítem${items.length > 1 ? 's' : ''} extraído${items.length > 1 ? 's' : ''} · todos seleccionados · elige día y presiona "+ Agregar"`, 'ok');
+>>>>>>> Stashed changes
 
     // Auto-push a Supabase si está configurado
     const cmsCfg = getCMSConfig();
@@ -3420,11 +3459,12 @@ async function analyzeBujoWithOllama() {
    AI MULTI-PROVIDER (OpenClaw · Ollama · DeepSeek)
 ══════════════════════════════════════════════ */
 
-let activeAIProv = 'proxy';
+let activeAIProv = 'ollama';
 
 const AI_PROV_LABELS = {
-  proxy:'🛡️ Proxy seguro · Recomendado',
-  ollama:'🦙 Ollama · Análisis local'
+  ollama:'🦙 Ollama · Análisis local',
+  claude:'🐾 OpenClaw · Claude',
+  deepseek:'🔷 DeepSeek Cloud'
 };
 
 function setAIProv(btn) {
@@ -3442,39 +3482,94 @@ function setAIProv(btn) {
   const pingBtn = document.getElementById('ollama-ping-btn');
   if (pingBtn) pingBtn.style.display = activeAIProv === 'ollama' ? '' : 'none';
   const label = document.getElementById('ollama-btn-label');
-  if (label) label.textContent = activeAIProv === 'ollama' ? 'Analizar con Ollama' : 'Analizar con proxy';
+  if (label) label.textContent = activeAIProv === 'ollama' ? 'Analizar con Ollama' : activeAIProv === 'claude' ? 'Analizar con Claude' : 'Analizar con DeepSeek';
+}
+
+function saveBJKey(provider) {
+  const input = document.getElementById('bj-' + provider + '-key');
+  if (!input) return;
+  const val = input.value.trim();
+  if (!val) return;
+  localStorage.setItem('bj_' + provider + '_key', val);
+  const btn = input.nextElementSibling;
+  if (btn) { btn.textContent = '✓'; btn.style.color = '#10B981'; setTimeout(() => { btn.textContent = '💾'; btn.style.color = ''; }, 1800); }
+}
+
+async function callClaudeAPIBujo(imagesB64) {
+  const key = localStorage.getItem('bj_claude_key') || '';
+  const model = document.getElementById('bj-claude-model')?.value || 'claude-haiku-4-5-20251001';
+  if (!key) throw new Error('Configura tu Anthropic API Key en ⚙️ Config');
+  const content = [
+    ...imagesB64.map(b64 => ({ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: b64 } })),
+    { type: 'text', text: buildBujoPrompt('(imagen adjunta — transcribe y extrae ítems)') }
+  ];
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model, max_tokens: 2048, messages: [{ role: 'user', content }] })
+  });
+  if (!resp.ok) throw new Error(`Claude API ${resp.status}`);
+  const data = await resp.json();
+  return (data.content || []).map(b => b.text || '').join('');
+}
+
+async function callDeepSeekAPIBujo(imagesB64) {
+  const key = localStorage.getItem('bj_deepseek_key') || '';
+  if (!key) throw new Error('Configura tu DeepSeek API Key en ⚙️ Config');
+  const content = [
+    ...imagesB64.map(b64 => ({ type: 'image_url', image_url: { url: 'data:image/jpeg;base64,' + b64 } })),
+    { type: 'text', text: buildBujoPrompt('(imagen adjunta — transcribe y extrae ítems)') }
+  ];
+  const resp = await fetch('https://api.deepseek.com/chat/completions', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'deepseek-chat', messages: [{ role: 'user', content }], max_tokens: 2048 })
+  });
+  if (!resp.ok) throw new Error(`DeepSeek API ${resp.status}`);
+  const data = await resp.json();
+  return data.choices?.[0]?.message?.content || '';
 }
 
 async function analyzeBujoWithAI() {
   if (activeAIProv === 'ollama') return analyzeBujoWithOllama();
-  if (!bujoState.images.length) {
+  const imagesB64 = getBJImagesBase64();
+  if (!imagesB64.length) {
     setOllamaStatus('📷 Sube al menos una foto del BuJo primero', 'warn');
     return;
   }
   setOllamaBtn(true);
   setOllamaDot('checking');
-
   try {
     let rawResult = '';
-    if (activeAIProv === 'claude')   rawResult = await callClaudeAPIBujo(images);
-    if (activeAIProv === 'deepseek') rawResult = await callDeepSeekAPIBujo(images);
-
+    if (activeAIProv === 'claude')   rawResult = await callClaudeAPIBujo(imagesB64);
+    if (activeAIProv === 'deepseek') rawResult = await callDeepSeekAPIBujo(imagesB64);
     const items = parseOllamaItems(rawResult);
     if (!items.length) {
       setOllamaDot('err');
       setOllamaStatus('⚠ No se encontraron ítems. Respuesta pegada abajo para revisión.', 'warn');
       const pa = document.getElementById('paste-area');
-      if (pa) pa.value = rawResult;
+      if (pa) pa.value = stripThinkTags(rawResult);
       return;
     }
+<<<<<<< Updated upstream
     items.forEach(item => bjList.appendChild(makeBJItem(item)));
     document.querySelectorAll('#bj-list .bj-item input[type=checkbox]').forEach(cb=>cb.checked=true);
     showBJItems();
     populateBJDaySel();
     setOllamaDot('ok');
     setOllamaStatus(`✓ ${items.length} ítem${items.length>1?'s':''} detectado${items.length>1?'s':''} · todos seleccionados · elige día y presiona "+ Agregar todo"`, 'ok');
+=======
+    items.forEach(item => bjList.appendChild(makeBJItem({ text: item.title || item.text, type: item.type || 'uncertain' })));
+    document.querySelectorAll('#bj-list .bj-item input[type=checkbox]').forEach(cb => cb.checked = true);
+    showBJItems();
+
+    bujoState.items = items;
+    setOllamaDot('ok');
+    setOllamaStatus(`✓ ${items.length} ítem${items.length > 1 ? 's' : ''} detectado${items.length > 1 ? 's' : ''} · todos seleccionados`, 'ok');
+>>>>>>> Stashed changes
   } catch (err) {
     setOllamaDot('err');
+    setOllamaStatus(`✗ ${err.message}`, 'err');
   } finally {
     setOllamaBtn(false);
   }
@@ -3494,12 +3589,13 @@ function initOllamaUI() {
   if (vm) vm.value = cfg.visionModel;
   if (am) am.value = cfg.analysisModel;
   if (mo) mo.value = cfg.mode;
-  aiAnalysisService.loadEndpoints();
-  const ep=document.getElementById('bj-proxy-endpoint'); if(ep) ep.value=aiAnalysisService.analyzeEndpoint;
-  const ce=document.getElementById('bj-calendar-endpoint'); if(ce) ce.value=aiAnalysisService.calendarEndpoint;
   setOllamaDot('');
-  restoreBujoDraft();
-  setAIProv('proxy');
+  // Restaurar API keys guardadas
+  const ck = localStorage.getItem('bj_claude_key');
+  const dk = localStorage.getItem('bj_deepseek_key');
+  if (ck) { const el = document.getElementById('bj-claude-key'); if (el) el.value = ck; }
+  if (dk) { const el = document.getElementById('bj-deepseek-key'); if (el) el.value = dk; }
+  setAIProv('ollama');
 
   // Detectar Mixed Content: HTTPS → HTTP localhost = bloqueado por el browser
   if (isHttpsContext()) {
@@ -3543,7 +3639,6 @@ function initOllamaUI() {
         pingBtn.title = 'No disponible en HTTPS';
       }
       setOllamaDot('err');
-      setAIProv('proxy');
     }
   }
 }
@@ -3638,16 +3733,17 @@ async function pushToSupabase(itemsOverride) {
   const { url, key } = getCMSConfig();
   if (!url || !key) { setCMSStatus('Configura Supabase primero.', 'warn'); return; }
 
-  // Usa ítems pasados directamente (post-análisis) o los del DOM
+  // Usa ítems pasados directamente (post-análisis) o los del estado BuJo
   let items = itemsOverride;
   if (!items) {
-    items = (bujoState.items || []).map(r => ({
-      titulo: r.title || '',
+    const bjItems = bujoState?.items || [];
+    items = bjItems.map(r => ({
+      titulo: r.title || r.text || '',
       tipo: r.type || 'uncertain',
       fecha: r.date || null,
-      hora: r.start_time || null,
+      hora: r.start_time || r.time || null,
       notas: r.notes || null,
-      fuente: `table-ro·${bujoState.batchId || 'sin-batch'}`
+      fuente: `table-ro·${bujoState?.batchId || 'manual'}`
     })).filter(i => i.titulo);
   }
 
@@ -3722,7 +3818,10 @@ async function pullFromSupabase() {
       notes: t.notas || '',
       done: t.completado || false
     }));
-    renderBJ(window._bjItems);
+    window._bjItems.forEach(item => {
+      bjList.appendChild(makeBJItem({ text: item.text, type: item.type || 'personal' }));
+    });
+    showBJItems();
     document.getElementById('bj-section').style.display = '';
     setCMSDot('ok');
     setCMSStatus(`✓ ${data.length} tarea(s) traídas del CMS`, 'ok');
