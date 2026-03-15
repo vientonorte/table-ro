@@ -5,11 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Tablero Rö — Planificador semanal personal con Google Calendar, Bullet Journal y sync bidireccional.">
-    <meta name="version" content="1.0.4">
-    <title>TABLERO — Rö · v1.0.4</title>
+    <meta name="version" content="1.0.5">
+    <title>TABLERO — Rö · v1.0.5</title>
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
     <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=chillax@300,400,500,600,700&display=swap">
-    <link rel="stylesheet" href="css/styles.css?v=1.0.4">
+    <link rel="stylesheet" href="css/styles.css?v=1.0.5">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
@@ -328,45 +328,8 @@
             <div class="step-panel" id="step-panel-2">
                 <div class="ai-zone">
                     <div class="ai-zone-title">🤖 Paso 2 · Analizar con IA</div>
-                    <div class="mrow">
-                        <div class="mfield">
-                            <label>Proveedor</label>
-                            <select id="ai-provider" onchange="saveAIForm()">
-            <option value="auto">Auto</option>
-            <option value="claude">Claude</option>
-            <option value="openai">GPT</option>
-            <option value="gemini">Gemini</option>
-          </select>
-                        </div>
-                        <div class="mfield">
-                            <label>Perfil</label>
-                            <select id="ai-profile" onchange="saveAIForm()">
-            <option value="speed">Rápido</option>
-            <option value="balanced">Balanceado</option>
-            <option value="quality">Máxima calidad</option>
-          </select>
-                        </div>
-                    </div>
-
-                    <div class="mrow">
-                        <div class="mfield">
-                            <label>Salida</label>
-                            <select id="ai-json-mode" onchange="saveAIForm()">
-            <option value="strict">JSON estricto</option>
-            <option value="loose">JSON flexible</option>
-          </select>
-                        </div>
-                        <div class="mfield">
-                            <label>Máx. ítems</label>
-                            <input type="number" id="ai-max-items" min="10" max="200" value="80" onchange="saveAIForm()">
-                        </div>
-                    </div>
-
-                    <div class="btn-row" style="margin-top:2px;">
-                        <button class="sec-btn" onclick="toggleAIFlag('normalizeSpelling', this)" data-flag="normalizeSpelling">Ortografía mínima</button>
-                        <button class="sec-btn" onclick="toggleAIFlag('markIllegible', this)" data-flag="markIllegible">[ilegible]</button>
-                        <button class="sec-btn" onclick="toggleAIFlag('inferDates', this)" data-flag="inferDates">Inferir fechas</button>
-                        <button class="sec-btn" onclick="toggleAIFlag('inferCategory', this)" data-flag="inferCategory">Inferir categoría</button>
+                    <div class="hint" style="margin-bottom:8px;">
+                        <span>🤖</span> Modo automático: si un proveedor queda sin cuota, se intenta con otro proveedor configurado antes de pasar a modo manual.
                     </div>
 
                     <div style="display:flex;align-items:center;gap:8px;">
@@ -438,7 +401,7 @@
     </div>
     </div>
 
-    <script src="js/app.js?v=1.0.4" defer></script>
+    <script src="js/app.js?v=1.0.5" defer></script>
 </body>
 
 </html>

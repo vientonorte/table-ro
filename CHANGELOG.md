@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.0.5] — 2026-03-14
+
+### 🤖 Flujo IA anti-cuota
+
+- El análisis BuJo ahora reintenta automáticamente con otros proveedores configurados cuando detecta error de cuota/límite.
+- Si no hay API keys disponibles, el flujo pasa directo a modo manual (Paso 4) sin bloquear al usuario.
+
+### ✨ Simplificación UX/UI
+
+- Simplificado el Paso 2 de BuJo eliminando controles de configuración no esenciales del flujo diario.
+- Mantenido un estado claro de disponibilidad IA y botón de continuación manual.
+
+### 🔁 Cache busting
+
+- Actualizado versionado de assets en [index.html](/Users/ro/Documents/GitHub/table-ro/index.html) a `1.0.5`.
+
 ## [1.0.4] — 2026-03-14
 
 ### 🚑 Hotfix runtime + cache busting

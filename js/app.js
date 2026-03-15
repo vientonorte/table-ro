@@ -308,7 +308,7 @@ function toggleLegend() {
 }
 
 function toggleToolsMenu(event) {
-  event?.stopPropagation();
+    event ? .stopPropagation();
     const menu = document.getElementById('tool-menu');
     const btn = document.getElementById('tools-btn');
     if (!menu || !btn) return;
@@ -330,8 +330,8 @@ function closeToolsMenu() {
 function setSyncView(advanced) {
     SYNC_ADVANCED = !!advanced;
     document.body.classList.toggle('sync-simple', !SYNC_ADVANCED);
-  document.getElementById('sync-simple-btn')?.classList.toggle('selected', !SYNC_ADVANCED);
-  document.getElementById('sync-advanced-btn')?.classList.toggle('selected', SYNC_ADVANCED);
+    document.getElementById('sync-simple-btn') ? .classList.toggle('selected', !SYNC_ADVANCED);
+    document.getElementById('sync-advanced-btn') ? .classList.toggle('selected', SYNC_ADVANCED);
     renderCalSources();
 }
 const KIND_LABELS = { task: 'Tarea', event: 'Evento', note: 'Nota', habit: 'Hábito' };
@@ -348,7 +348,7 @@ function setupDrop(zone) {
     zone.addEventListener('dragover', e => {
         if (!DRAG.card) return;
         e.preventDefault();
-    zone.closest('.wday')?.classList.add('drag-over-col');
+        zone.closest('.wday') ? .classList.add('drag-over-col');
         removePH();
         const ph = document.createElement('div');
         ph.className = 'drop-placeholder';
@@ -358,18 +358,18 @@ function setupDrop(zone) {
     });
     zone.addEventListener('dragleave', e => {
         if (!zone.contains(e.relatedTarget)) {
-        zone.closest('.wday')?.classList.remove('drag-over-col');
+            zone.closest('.wday') ? .classList.remove('drag-over-col');
             removePH();
         }
     });
     zone.addEventListener('drop', e => {
         e.preventDefault();
         if (!DRAG.card) return;
-      zone.closest('.wday')?.classList.remove('drag-over-col');
+        zone.closest('.wday') ? .classList.remove('drag-over-col');
         const ph = zone.querySelector('.drop-placeholder');
         ph ? zone.insertBefore(DRAG.card, ph) : zone.appendChild(DRAG.card);
         removePH();
-      zone.querySelector('.day-empty')?.remove();
+        zone.querySelector('.day-empty') ? .remove();
         updateDayCount(zone.closest('.wday'));
     });
 }
@@ -595,11 +595,29 @@ function resolveProvider(){
 }
 function getActiveKey(provider){ return AI_CFG.providers?.[provider]?.key || ''; }
 function getActiveModel(provider){ return AI_CFG.providers?.[provider]?.model || ''; }
+function getAvailableAIProviders(){ return ['claude', 'openai', 'gemini'].filter(p => !!getActiveKey(p)); }
+function getProviderCandidates(){
+  const available = getAvailableAIProviders();
+  if(!available.length) return [];
+  const preferred = resolveProvider();
+  return [preferred, ...available.filter(p => p !== preferred)];
+}
 function updateAIStatus(){
   const st = document.getElementById('api-key-status'); if(!st) return;
-  const p = resolveProvider(); const hasKey = !!getActiveKey(p);
-  if(hasKey){ st.className='ai-key-status ok'; st.textContent=`✓ ${providerLabel(p)} listo`; }
-  else{ st.className='ai-key-status none'; st.textContent=`Sin key (${providerLabel(p)})`; }
+  const p = resolveProvider();
+  const available = getAvailableAIProviders();
+  if(!available.length){
+    st.className='ai-key-status none';
+    st.textContent='Sin key IA';
+    return;
+  }
+  if(available.includes(p)){
+    st.className='ai-key-status ok';
+    st.textContent=`✓ Listo (${providerLabel(p)})`;
+    return;
+  }
+  st.className='ai-key-status ok';
+  st.textContent=`✓ Listo (fallback: ${providerLabel(available[0])})`;
 }
 
 const inp=document.getElementById('bj-input');
@@ -716,8 +734,13 @@ async function analyzeBujo(){
   if(!bjImages.length){ alert('Sube al menos una foto de tu BuJo.'); return; }
   saveAIForm();
   hideAIFallbackNote();
-  const provider=resolveProvider(); const apiKey=getActiveKey(provider);
-  if(!apiKey){ alert(`Configura la API Key de ${providerLabel(provider)} en ⚙️ Admin.`); return; }
+  const candidates=getProviderCandidates();
+  if(!candidates.length){
+    showAIFallbackNote('No hay API Key disponible. Continúa en modo manual desde el Paso 4.');
+    setBujoStep(4);
+    announce('Sin API key, continuaste en modo manual');
+    return;
+  }
   const btn=document.getElementById('ai-analyze-btn');
   const progressWrap=document.getElementById('ai-progress-wrap');
   const progressBar=document.getElementById('ai-progress');
@@ -726,13 +749,31 @@ async function analyzeBujo(){
   try{
     const prompt=buildBujoPrompt(); progressBar.style.width='40%';
     let raw;
-    if(provider==='claude') raw=await callClaude(prompt);
-    else if(provider==='openai') raw=await callOpenAI(prompt);
-    else if(provider==='gemini') raw=await callGemini(prompt);
-    else throw new Error('Proveedor no soportado');
+    let providerUsed='';
+    let lastError='';
+    for(let i=0;i<candidates.length;i++){
+      const provider=candidates[i];
+      try{
+        if(provider==='claude') raw=await callClaude(prompt);
+        else if(provider==='openai') raw=await callOpenAI(prompt);
+        else if(provider==='gemini') raw=await callGemini(prompt);
+        else throw new Error('Proveedor no soportado');
+        providerUsed=provider;
+        break;
+      }catch(err){
+        lastError = String(err?.message || err || 'Error desconocido');
+        const nextProvider = candidates[i + 1];
+        if(isQuotaErrorMessage(lastError) && nextProvider){
+          showAIFallbackNote(`Cuota en ${providerLabel(provider)}. Reintentando con ${providerLabel(nextProvider)}...`);
+          continue;
+        }
+        throw err;
+      }
+    }
+    if(!raw) throw new Error(lastError || 'No fue posible analizar con IA');
     progressBar.style.width='78%';
     const parsed=parseExtractionJson(raw);
-    renderAIResult(provider, parsed);
+    renderAIResult(providerUsed, parsed);
     bjList.innerHTML='';
     let added=0;
     parsed.items.forEach(item=>{
@@ -741,17 +782,17 @@ async function analyzeBujo(){
       added++;
     });
     progressBar.style.width='100%'; showBJItems(); updateBadge(); updateBujoSummary(); setBujoStep(3); announce(`Análisis completado con ${added} ítems`);
-    if(!added){ alert('La IA no devolvió ítems utilizables para esta imagen. Revisa la foto o ajusta el proveedor/perfil.'); }
-    btn.classList.remove('loading'); btn.innerHTML=`<span class="btn-label" style="color:#86efac;">✓ ${added} ítems · ${providerLabel(provider)}</span>`;
+    if(!added){ showAIFallbackNote('La IA no devolvió ítems utilizables. Puedes continuar en modo manual en el Paso 4.'); }
+    btn.classList.remove('loading'); btn.innerHTML=`<span class="btn-label" style="color:#86efac;">✓ ${added} ítems · ${providerLabel(providerUsed)}</span>`;
     setTimeout(()=>{ btn.innerHTML='<div class="spin"></div><span class="btn-label">🤖 Analizar Bullet</span>'; btn.disabled=false; },2200);
   }catch(err){
     console.error(err);
     const msg = String(err?.message || err || 'Error desconocido al analizar');
     btn.classList.remove('loading'); btn.innerHTML=`<span class="btn-label" style="color:#fca5a5;">⚠️ ${String(err.message).slice(0,60)}</span>`;
     if(isQuotaErrorMessage(msg)){
-      showAIFallbackNote('Se detectó límite de cuota del proveedor. Continúa en modo manual desde el Paso 4.');
+      showAIFallbackNote('Se agotó la cuota disponible en los proveedores configurados. Continúa en modo manual desde el Paso 4.');
       setBujoStep(4);
-      alert('La IA devolvió error de cuota/límite. Te movimos al Paso 4 para continuar en modo manual.');
+      announce('Cuota agotada, continuaste en modo manual');
     }else{
       showAIFallbackNote('No se pudo analizar con IA en este intento. Puedes continuar manualmente en el Paso 4.');
     }
