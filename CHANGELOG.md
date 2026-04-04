@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.0.6] — 2026-04-04
+
+### 🚑 Hotfix runtime — optional chaining corrupto
+
+- Corregido `?.` malformado en 7 líneas de `js/app.js` (`? .` → `?.`) que impedía el parseo completo del script.
+- El tablero solo mostraba la topbar, sin columnas ni eventos.
+- Causa: VS Code auto-formatter reescribe `?.` como `? .` al guardar.
+- Bump de assets a `1.0.6` para invalidar caché en producción.
+
+### 🔍 QA intensivo
+
+- Verificada sintaxis con `node --check` post-fix.
+- Todos los flujos core validados: renderWeek, drag & drop, BuJo drawer, filtros, modales.
+
 ## [1.0.5] — 2026-03-14
 
 ### 🤖 Flujo IA anti-cuota
