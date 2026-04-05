@@ -410,11 +410,18 @@ h1 {
     cursor: grab;
     user-select: none;
     transition: transform .13s, background .13s, opacity .13s, box-shadow .13s;
+    touch-action: manipulation;
 }
 
 .card:hover {
     background: rgba(255, 255, 255, .085);
     transform: translateX(2px);
+}
+
+.card.press-hold {
+    background: rgba(124, 58, 237, .12);
+    transform: scale(.985);
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, .18), 0 8px 24px rgba(0, 0, 0, .28);
 }
 
 .card:active {

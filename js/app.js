@@ -375,8 +375,39 @@ function undo(){
   _lastAction=null;
 }
 const DRAG = { card: null };
+const LONG_PRESS_MS = 520;
+const LONG_PRESS_TOLERANCE = 10;
+let LAST_LONG_PRESS_AT = 0;
+const PRESS_STATE = { timer: null, card: null, x: 0, y: 0, active: false, opened: false };
 
 function removePH() { document.querySelectorAll('.drop-placeholder').forEach(p => p.remove()); }
+function isPressInteractiveTarget(target){ return !!target.closest('button,textarea,input,select,a,.ctag,.det-area,.sync-btn,.det-btn,.chk,.ctx-menu'); }
+function clearCardPress(){ if(PRESS_STATE.card) PRESS_STATE.card.classList.remove('press-hold'); clearTimeout(PRESS_STATE.timer); PRESS_STATE.timer=null; PRESS_STATE.card=null; PRESS_STATE.active=false; PRESS_STATE.opened=false; }
+function startCardPress(card,e){
+  if(!e.touches||e.touches.length!==1||isPressInteractiveTarget(e.target)) return;
+  const touch=e.touches[0];
+  clearCardPress();
+  PRESS_STATE.card=card;
+  PRESS_STATE.x=touch.clientX;
+  PRESS_STATE.y=touch.clientY;
+  PRESS_STATE.active=true;
+  card.classList.add('press-hold');
+  PRESS_STATE.timer=setTimeout(()=>{
+    if(!PRESS_STATE.active||!PRESS_STATE.card) return;
+    LAST_LONG_PRESS_AT=Date.now();
+    PRESS_STATE.opened=true;
+    showCtxMenu({clientX:PRESS_STATE.x,clientY:PRESS_STATE.y}, PRESS_STATE.card);
+    if(navigator.vibrate) navigator.vibrate(16);
+  }, LONG_PRESS_MS);
+}
+function moveCardPress(e){
+  if(!PRESS_STATE.active||!e.touches||!e.touches.length) return;
+  const touch=e.touches[0];
+  const dx=Math.abs(touch.clientX-PRESS_STATE.x);
+  const dy=Math.abs(touch.clientY-PRESS_STATE.y);
+  if(dx>LONG_PRESS_TOLERANCE||dy>LONG_PRESS_TOLERANCE) clearCardPress();
+}
+function endCardPress(){ clearCardPress(); }
 
 function setupDrop(zone) {
     zone.addEventListener('dragover', e => {
@@ -436,6 +467,10 @@ function makeCard(ev) {
   el.addEventListener('dragstart',e=>{DRAG.card=el;setTimeout(()=>el.classList.add('dragging'),0);e.dataTransfer.effectAllowed='move';});
   el.addEventListener('dragend',()=>{el.classList.remove('dragging');removePH();document.querySelectorAll('.drag-over-col').forEach(z=>z.classList.remove('drag-over-col'));DRAG.card=null;});
   el.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();showCtxMenu(e,el);});
+  el.addEventListener('touchstart',e=>startCardPress(el,e),{passive:true});
+  el.addEventListener('touchmove',moveCardPress,{passive:true});
+  el.addEventListener('touchend',endCardPress,{passive:true});
+  el.addEventListener('touchcancel',endCardPress,{passive:true});
   if(ev.detail)el.querySelector('.card-detail').classList.add('show');
   return el;
 }
@@ -1281,7 +1316,7 @@ function loadBoard(){
 }
 function applyCardStates(){ document.querySelectorAll('[id^="wb-"]').forEach(body=>{ const iso=body.id.replace('wb-',''); body.querySelectorAll('.card').forEach(card=>{ const title=card.querySelector('.ct')?.textContent||'';const cal=card.dataset.cal||'bujo'; const st=CARD_STATES[cardKey(iso,title,cal)];if(!st)return; if(st.done)card.classList.add('done');if(st.cancelled)card.classList.add('cancelled'); if(st.detail){const area=card.querySelector('.det-area');if(area){area.value=st.detail;card.querySelector('.card-detail')?.classList.add('show');}} }); }); }
 
-document.addEventListener('click',e=>{ if(!e.target.closest('.tool-menu-wrap')) closeToolsMenu(); if(!e.target.closest('.ctx-menu')) closeCtxMenu(); });
+document.addEventListener('click',e=>{ if(Date.now()-LAST_LONG_PRESS_AT<450){e.preventDefault();e.stopPropagation();return;} if(!e.target.closest('.tool-menu-wrap')) closeToolsMenu(); if(!e.target.closest('.ctx-menu')) closeCtxMenu(); },true);
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeCtxMenu();closeEditModal();closeDrawer();closeAddModal();closeCalModal();closeAdminModal();closeToolsMenu();} if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();saveBoard();} if((e.metaKey||e.ctrlKey)&&e.key==='z'){e.preventDefault();undo();} });
 /* ===== CONTEXT MENU + EDIT / DELETE / CANCEL ===== */
 let CTX_CARD=null;
