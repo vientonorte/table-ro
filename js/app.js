@@ -523,7 +523,7 @@ function renderWeek(){
   applyCardStates();
 }
 
-function openDrawer(){document.getElementById('drawer').classList.add('open');document.getElementById('overlay').classList.add('open');setBujoStep(1);announce('Captura de Bullet Journal abierta');}
+function openDrawer(){document.getElementById('drawer').classList.add('open');document.getElementById('overlay').classList.add('open');setBujoStep(1);updateAIStatus();if(!getAvailableAIProviders().length){showAIFallbackNote('Configura una API key en ⚙️ Ajustes para activar análisis IA.');}else{hideAIFallbackNote();}announce('Captura de Bullet Journal abierta');}
 function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('overlay').classList.remove('open');announce('Captura de Bullet Journal cerrada');}
 
 let bjImages=[];
