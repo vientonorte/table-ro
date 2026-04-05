@@ -184,7 +184,11 @@
                     <div class="btn-row" style="margin-top:6px;">
                         <button class="btn btn-p" style="flex:1;justify-content:center;" onclick="saveAIAdmin()">💾 Guardar IA</button>
                     </div>
-                    <div style="font-size:.65rem;color:#f59e0b;background:rgba(245,158,11,.1);border-radius:6px;padding:6px 8px;margin-top:4px;">⚠️ Las API keys se guardan en localStorage (solo este navegador). Para producción, usa un backend proxy.</div>
+                    <div class="mfield" style="margin-top:6px;">
+                        <label>Proxy URL <small style="opacity:.6">(opcional — Cloudflare Worker)</small></label>
+                        <input type="url" id="adm-proxy-url" placeholder="https://table-ro-ai-proxy.tu-cuenta.workers.dev" autocomplete="off" style="font-size:.65rem">
+                    </div>
+                    <div style="font-size:.65rem;color:#f59e0b;background:rgba(245,158,11,.1);border-radius:6px;padding:6px 8px;margin-top:4px;">⚠️ Las API keys se guardan en localStorage (solo este navegador). Configura el proxy para no exponer keys.</div>
                 </div>
                 <div class="adm-sep"></div>
                 <div>

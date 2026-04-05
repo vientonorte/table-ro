@@ -546,7 +546,8 @@ const AI_DEFAULTS = {
     claude: { key: '', model: 'claude-sonnet-4-6' },
     openai: { key: '', model: 'gpt-5.4' },
     gemini: { key: '', model: 'gemini-3.1-pro-preview' }
-  }
+  },
+  proxyUrl: ''
 };
 
 function deepMerge(base, patch){
@@ -582,6 +583,7 @@ function saveAIAdmin(){
   AI_CFG.providers.openai.model = (document.getElementById('adm-openai-model')?.value || 'gpt-5.4').trim();
   AI_CFG.providers.gemini.key = (document.getElementById('adm-gemini-key')?.value || '').trim();
   AI_CFG.providers.gemini.model = (document.getElementById('adm-gemini-model')?.value || 'gemini-3.1-pro-preview').trim();
+  AI_CFG.proxyUrl = (document.getElementById('adm-proxy-url')?.value || '').trim().replace(/\/+$/,'');
   saveAICfg();
   const btn = event?.target;
   if(btn){ btn.textContent = '✓ Guardado'; setTimeout(() => btn.textContent = '💾 Guardar IA', 1800); }
@@ -601,7 +603,8 @@ function hydrateAIAdmin(){
     'adm-openai-key': AI_CFG.providers.openai.key,
     'adm-openai-model': AI_CFG.providers.openai.model,
     'adm-gemini-key': AI_CFG.providers.gemini.key,
-    'adm-gemini-model': AI_CFG.providers.gemini.model
+    'adm-gemini-model': AI_CFG.providers.gemini.model,
+    'adm-proxy-url': AI_CFG.proxyUrl || ''
   };
   Object.entries(ids).forEach(([id, value]) => { const el = document.getElementById(id); if(el) el.value = value; });
   const pv = AI_CFG.provider || 'auto';
@@ -630,7 +633,7 @@ function resolveProvider(){
 }
 function getActiveKey(provider){ return AI_CFG.providers?.[provider]?.key || ''; }
 function getActiveModel(provider){ return AI_CFG.providers?.[provider]?.model || ''; }
-function getAvailableAIProviders(){ return ['claude', 'openai', 'gemini'].filter(p => !!getActiveKey(p)); }
+function getAvailableAIProviders(){ if(AI_CFG.proxyUrl) return ['claude','openai','gemini']; return ['claude', 'openai', 'gemini'].filter(p => !!getActiveKey(p)); }
 function getProviderCandidates(){
   const available = getAvailableAIProviders();
   if(!available.length) return [];
@@ -744,33 +747,52 @@ function continueWithoutAI(){
   announce('Continuaste en modo manual sin análisis IA');
 }
 async function callClaude(prompt){
-  // TODO SECURITY: llamada directa desde frontend expone metadata y uso de key en cliente.
-  const apiKey=getActiveKey('claude'); const model=getActiveModel('claude'); if(!apiKey) throw new Error('Falta Claude API Key');
+  const model=getActiveModel('claude');
   const content=[...bjImages.map(img=>({type:'image',source:{type:'base64',media_type:img.mimeType,data:img.base64}})),{type:'text',text:prompt}];
+  const payload={model,max_tokens:2200,temperature:0,messages:[{role:'user',content}]};
+  if(AI_CFG.proxyUrl){
+    const res=await fetch(AI_CFG.proxyUrl+'/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(!res.ok){ const err=await res.json().catch(()=>({})); throw new Error(err?.error?.message || `Claude proxy ${res.status}`); }
+    return getClaudeText(await res.json());
+  }
+  const apiKey=getActiveKey('claude'); if(!apiKey) throw new Error('Falta Claude API Key');
   const res=await fetch('https://api.anthropic.com/v1/messages',{
     method:'POST', headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-    body:JSON.stringify({model,max_tokens:2200,temperature:0,messages:[{role:'user',content}]})
+    body:JSON.stringify(payload)
   });
   if(!res.ok){ const err=await res.json().catch(()=>({})); throw new Error(err?.error?.message || `Claude HTTP ${res.status}`); }
   return getClaudeText(await res.json());
 }
 async function callOpenAI(prompt){
-  // TODO SECURITY: llamada directa desde frontend con bearer token; preferir proxy backend.
-  const apiKey=getActiveKey('openai'); const model=getActiveModel('openai'); if(!apiKey) throw new Error('Falta OpenAI API Key');
+  const model=getActiveModel('openai');
   const content=[...bjImages.map(img=>({type:'input_image',image_url:`data:${img.mimeType};base64,${img.base64}`,detail:AI_CFG.profile==='quality'?'high':'auto'})),{type:'input_text',text:prompt}];
+  const payload={model,max_output_tokens:2200,input:[{role:'developer',content:[{type:'input_text',text:'Devuelve únicamente JSON válido y sin markdown.'}]},{role:'user',content}]};
+  if(AI_CFG.proxyUrl){
+    const res=await fetch(AI_CFG.proxyUrl+'/api/openai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(!res.ok){ const err=await res.json().catch(()=>({})); throw new Error(err?.error?.message || `OpenAI proxy ${res.status}`); }
+    return getOpenAIText(await res.json());
+  }
+  const apiKey=getActiveKey('openai'); if(!apiKey) throw new Error('Falta OpenAI API Key');
   const res=await fetch('https://api.openai.com/v1/responses',{
     method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},
-    body:JSON.stringify({model,max_output_tokens:2200,input:[{role:'developer',content:[{type:'input_text',text:'Devuelve únicamente JSON válido y sin markdown.'}]},{role:'user',content}]})
+    body:JSON.stringify(payload)
   });
   if(!res.ok){ const err=await res.json().catch(()=>({})); throw new Error(err?.error?.message || `OpenAI HTTP ${res.status}`); }
   return getOpenAIText(await res.json());
 }
 async function callGemini(prompt){
-  // TODO SECURITY: API key visible en red del cliente; migrar a backend para producción.
-  const apiKey=getActiveKey('gemini'); const model=getActiveModel('gemini'); if(!apiKey) throw new Error('Falta Gemini API Key');
+  const model=getActiveModel('gemini');
   const parts=[...bjImages.map(img=>({inlineData:{mimeType:img.mimeType,data:img.base64}})),{text:prompt}];
+  const payload={contents:[{parts}],generationConfig:{temperature:0,topP:0.95}};
+  if(AI_CFG.proxyUrl){
+    payload._model=model;
+    const res=await fetch(AI_CFG.proxyUrl+'/api/gemini',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(!res.ok){ const err=await res.json().catch(()=>({})); throw new Error(err?.error?.message || `Gemini proxy ${res.status}`); }
+    return getGeminiText(await res.json());
+  }
+  const apiKey=getActiveKey('gemini'); if(!apiKey) throw new Error('Falta Gemini API Key');
   const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`,{
-    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts}],generationConfig:{temperature:0,topP:0.95}})
+    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
   });
   if(!res.ok){ const err=await res.json().catch(()=>({})); throw new Error(err?.error?.message || `Gemini HTTP ${res.status}`); }
   return getGeminiText(await res.json());
