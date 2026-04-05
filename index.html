@@ -7,6 +7,10 @@
     <meta name="description" content="Tablero Rö — Planificador semanal personal con Google Calendar, Bullet Journal y sync bidireccional.">
     <meta name="version" content="1.2.0">
     <title>TABLERO — Rö · v1.2.0</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#7c3aed">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
     <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=chillax@300,400,500,600,700&display=swap">
     <link rel="stylesheet" href="css/styles.css?v=1.2.0">
@@ -408,6 +412,7 @@
     </div>
 
     <script src="js/app.js?v=1.2.0" defer></script>
+    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
 </body>
 
 </html>
