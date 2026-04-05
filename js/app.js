@@ -435,6 +435,7 @@ function makeCard(ev) {
   el.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();el.querySelector('.chk')?.click();}});
   el.addEventListener('dragstart',e=>{DRAG.card=el;setTimeout(()=>el.classList.add('dragging'),0);e.dataTransfer.effectAllowed='move';});
   el.addEventListener('dragend',()=>{el.classList.remove('dragging');removePH();document.querySelectorAll('.drag-over-col').forEach(z=>z.classList.remove('drag-over-col'));DRAG.card=null;});
+  el.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();showCtxMenu(e,el);});
   if(ev.detail)el.querySelector('.card-detail').classList.add('show');
   return el;
 }
@@ -1266,7 +1267,7 @@ function saveBoard(){
     const iso=body.id.replace('wb-','');
     body.querySelectorAll('.card').forEach(card=>{
       const title=card.querySelector('.ct')?.textContent||'';const cal=card.dataset.cal||'bujo';
-      const done=card.classList.contains('done');const detail=card.querySelector('.det-area')?.value||''; const time=(card.querySelector('.ctime')?.textContent||'').replace('⏰ ','').trim(); const hasSync=!!card.querySelector('.sync-btn'); const key=cardKey(iso,title,cal); const source=card.dataset.source||'manual'; const kind=card.dataset.kind||'task'; states[key]={done,detail}; if(source==="manual"||source==="bujo")extra.push({iso,title,cal,time,detail,fromCal:false,source,kind});
+      const done=card.classList.contains('done');const detail=card.querySelector('.det-area')?.value||''; const time=(card.querySelector('.ctime')?.textContent||'').replace('⏰ ','').trim(); const hasSync=!!card.querySelector('.sync-btn'); const key=cardKey(iso,title,cal); const source=card.dataset.source||'manual'; const kind=card.dataset.kind||'task'; const cancelled=card.classList.contains('cancelled');states[key]={done,detail,cancelled}; if(source==="manual"||source==="bujo")extra.push({iso,title,cal,time,detail,fromCal:false,source,kind});
     });
   });
   CARD_STATES=states;EXTRA_EVENTS=extra; try{localStorage.setItem('tablero_states_ro',JSON.stringify(states)); localStorage.setItem('tablero_extra_ro',JSON.stringify(extra));}catch(e){if(e.name==='QuotaExceededError'){showToast('⚠️ Almacenamiento lleno. Exporta y limpia datos antiguos.','error',5000);}else{throw e;}}
@@ -1278,9 +1279,82 @@ function loadBoard(){
   try{ CARD_STATES=JSON.parse(localStorage.getItem('tablero_states_ro')||'{}'); EXTRA_EVENTS=JSON.parse(localStorage.getItem('tablero_extra_ro')||'[]'); EXTRA_EVENTS.forEach(ev=>{if(!EVENTS.find(e=>e.iso===ev.iso&&e.title===ev.title))EVENTS.push(ev);}); }
   catch(e){console.warn('loadBoard:',e);} 
 }
-function applyCardStates(){ document.querySelectorAll('[id^="wb-"]').forEach(body=>{ const iso=body.id.replace('wb-',''); body.querySelectorAll('.card').forEach(card=>{ const title=card.querySelector('.ct')?.textContent||'';const cal=card.dataset.cal||'bujo'; const st=CARD_STATES[cardKey(iso,title,cal)];if(!st)return; if(st.done)card.classList.add('done'); if(st.detail){const area=card.querySelector('.det-area');if(area){area.value=st.detail;card.querySelector('.card-detail')?.classList.add('show');}} }); }); }
+function applyCardStates(){ document.querySelectorAll('[id^="wb-"]').forEach(body=>{ const iso=body.id.replace('wb-',''); body.querySelectorAll('.card').forEach(card=>{ const title=card.querySelector('.ct')?.textContent||'';const cal=card.dataset.cal||'bujo'; const st=CARD_STATES[cardKey(iso,title,cal)];if(!st)return; if(st.done)card.classList.add('done');if(st.cancelled)card.classList.add('cancelled'); if(st.detail){const area=card.querySelector('.det-area');if(area){area.value=st.detail;card.querySelector('.card-detail')?.classList.add('show');}} }); }); }
 
-document.addEventListener('click',e=>{ if(!e.target.closest('.tool-menu-wrap')) closeToolsMenu(); });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeDrawer();closeAddModal();closeCalModal();closeAdminModal();closeToolsMenu();} if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();saveBoard();} if((e.metaKey||e.ctrlKey)&&e.key==='z'){e.preventDefault();undo();} });
+document.addEventListener('click',e=>{ if(!e.target.closest('.tool-menu-wrap')) closeToolsMenu(); if(!e.target.closest('.ctx-menu')) closeCtxMenu(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeCtxMenu();closeEditModal();closeDrawer();closeAddModal();closeCalModal();closeAdminModal();closeToolsMenu();} if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();saveBoard();} if((e.metaKey||e.ctrlKey)&&e.key==='z'){e.preventDefault();undo();} });
+/* ===== CONTEXT MENU + EDIT / DELETE / CANCEL ===== */
+let CTX_CARD=null;
+function showCtxMenu(e,card){
+  closeCtxMenu();CTX_CARD=card;
+  const menu=document.createElement('div');menu.className='ctx-menu';
+  const isCan=card.classList.contains('cancelled');
+  menu.innerHTML='<button class="ctx-opt" onclick="editFromCtx()">✏️ Editar</button>'
+    +'<button class="ctx-opt" onclick="cancelFromCtx()">'+(isCan?'✅ Reactivar':'🚫 Cancelar')+'</button>'
+    +'<button class="ctx-opt ctx-danger" onclick="deleteFromCtx()">🗑️ Eliminar</button>';
+  menu.style.left=e.clientX+'px';menu.style.top=e.clientY+'px';
+  document.body.appendChild(menu);
+  requestAnimationFrame(()=>{const r=menu.getBoundingClientRect();if(r.right>window.innerWidth)menu.style.left=(window.innerWidth-r.width-8)+'px';if(r.bottom>window.innerHeight)menu.style.top=(window.innerHeight-r.height-8)+'px';});
+}
+function closeCtxMenu(){const m=document.querySelector('.ctx-menu');if(m)m.remove();CTX_CARD=null;}
+function editFromCtx(){const card=CTX_CARD;closeCtxMenu();if(card)openEditModal(card);}
+function cancelFromCtx(){const card=CTX_CARD;closeCtxMenu();if(!card)return;card.classList.toggle('cancelled');announce(card.classList.contains('cancelled')?'Evento cancelado':'Evento reactivado');autoSave();}
+function deleteFromCtx(){const card=CTX_CARD;closeCtxMenu();if(!card)return;const title=card.querySelector('.ct')?.textContent||'evento';if(!confirm('¿Eliminar "'+title+'"?'))return;const wday=card.closest('.wday');card.remove();if(wday){updateDayCount(wday);const body=wday.querySelector('[id^="wb-"]');if(body&&!body.querySelector('.card')){body.innerHTML='<div class="day-empty">Sin eventos</div>';}}autoSave();announce('Evento eliminado');}
+
+function openEditModal(card){
+  const iso=card.closest('[id^="wb-"]')?.id.replace('wb-','')||'';
+  const title=card.querySelector('.ct')?.textContent||'';
+  const timeEl=card.querySelector('.ctime');
+  const rawT=timeEl?(timeEl.textContent||'').replace('⏰ ','').trim():'';
+  const time=(rawT==='Todo el día')?'':(rawT||'');
+  const cal=card.dataset.cal||'personal';
+  const detail=card.querySelector('.det-area')?.value||'';
+  const sel=document.getElementById('edit-day');sel.innerHTML='';
+  Array.from({length:7},(_,i)=>addDays(weekStart,i)).forEach(d=>{const diso=isoOf(d);const opt=document.createElement('option');opt.value=diso;opt.textContent=FDAYS[d.getDay()]+' '+d.getDate();if(diso===iso)opt.selected=true;sel.appendChild(opt);});
+  document.getElementById('edit-title').value=title;
+  document.getElementById('edit-time').value=time;
+  document.getElementById('edit-cat').value=cal;
+  document.getElementById('edit-detail').value=detail;
+  const modal=document.getElementById('edit-modal');
+  modal.dataset.cardIso=iso;modal.dataset.cardTitle=title;modal.dataset.cardCal=cal;
+  modal.classList.add('open');
+  setTimeout(()=>document.getElementById('edit-title').focus(),120);
+}
+function closeEditModal(){document.getElementById('edit-modal').classList.remove('open');}
+function submitEdit(){
+  const modal=document.getElementById('edit-modal');
+  const oldIso=modal.dataset.cardIso,oldTitle=modal.dataset.cardTitle,oldCal=modal.dataset.cardCal;
+  const newTitle=document.getElementById('edit-title').value.trim();
+  if(!newTitle){document.getElementById('edit-title').focus();return;}
+  const newIso=document.getElementById('edit-day').value;
+  const newTime=document.getElementById('edit-time').value;
+  const newCat=document.getElementById('edit-cat').value;
+  const newDetail=document.getElementById('edit-detail').value.trim();
+  const oldBody=document.getElementById('wb-'+oldIso);
+  if(!oldBody){closeEditModal();return;}
+  let targetCard=null;
+  oldBody.querySelectorAll('.card').forEach(c=>{if(c.querySelector('.ct')?.textContent===oldTitle&&c.dataset.cal===oldCal)targetCard=c;});
+  if(!targetCard){closeEditModal();return;}
+  const ci=CAL[newCat]||CAL.bujo;
+  targetCard.querySelector('.ct').textContent=newTitle;
+  targetCard.dataset.cal=newCat;
+  targetCard.style.setProperty('--cc',ci.c);
+  const ctag=targetCard.querySelector('.ctag');if(ctag){ctag.textContent=ci.l;ctag.style.color=ci.c;}
+  const ctime=targetCard.querySelector('.ctime');
+  if(newTime){if(ctime){ctime.textContent='⏰ '+newTime;}else{const ct=targetCard.querySelector('.ct');const td=document.createElement('div');td.className='ctime';td.textContent='⏰ '+newTime;ct.after(td);}}
+  else if(ctime){ctime.textContent='⏰ Todo el día';}
+  const area=targetCard.querySelector('.det-area');if(area)area.value=newDetail;
+  if(newDetail)targetCard.querySelector('.card-detail')?.classList.add('show');
+  if(newIso!==oldIso){
+    const newBody=document.getElementById('wb-'+newIso);
+    if(newBody){newBody.appendChild(targetCard);newBody.querySelector('.day-empty')?.remove();updateDayCount(newBody.closest('.wday'));}
+    updateDayCount(oldBody.closest('.wday'));
+    if(!oldBody.querySelector('.card'))oldBody.innerHTML='<div class="day-empty">Sin eventos</div>';
+  }
+  const oldKey=cardKey(oldIso,oldTitle,oldCal);
+  if(CARD_STATES[oldKey]){const nk=cardKey(newIso,newTitle,newCat);CARD_STATES[nk]=CARD_STATES[oldKey];if(nk!==oldKey)delete CARD_STATES[oldKey];}
+  closeEditModal();autoSave();announce('Evento actualizado');
+}
+
 (function restoreSura(){const sid=localStorage.getItem('gcal_sura_id');if(sid){const s=SOURCES.find(x=>x.id==='trabajo');if(s&&!s.gcalId)s.gcalId=sid;}})();
 loadPerms(); loadBoard(); renderWeek(); initGAuthUI(); hydrateAIForm(); hydrateAIAdmin(); updateAIStatus(); updateBujoSummary(); setSyncView(false);

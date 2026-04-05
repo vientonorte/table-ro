@@ -91,6 +91,33 @@
         </div>
     </div>
 
+    <!-- EDIT MODAL -->
+    <div class="modal-overlay" id="edit-modal" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title" onclick="if(event.target===this)closeEditModal()">
+        <div class="modal-box">
+            <div class="modal-title" id="edit-modal-title">✏️ Editar Evento</div>
+            <div class="mfield"><label>Título</label><input type="text" id="edit-title" autocomplete="off"></div>
+            <div class="mrow">
+                <div class="mfield"><label>Día</label><select id="edit-day"></select></div>
+                <div class="mfield"><label>Hora (opcional)</label><input type="time" id="edit-time"></div>
+            </div>
+            <div class="mfield">
+                <label>Categoría</label>
+                <select id="edit-cat">
+                    <option value="personal">Personal</option>
+                    <option value="vinculos">Vínculos</option>
+                    <option value="camila">Camila</option>
+                    <option value="trabajo">Trabajo · Sura</option>
+                    <option value="fin">Finanzas</option>
+                </select>
+            </div>
+            <div class="mfield"><label>Detalles (opcional)</label><textarea id="edit-detail" rows="2" placeholder="Notas..."></textarea></div>
+            <div class="modal-actions">
+                <button class="btn btn-g" onclick="closeEditModal()">Cancelar</button>
+                <button class="btn btn-p" onclick="submitEdit()">💾 Guardar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- CALENDAR SYNC MODAL -->
     <div class="modal-overlay" id="cal-modal" role="dialog" aria-modal="true" aria-labelledby="cal-modal-title" onclick="if(event.target===this)closeCalModal()">
         <div class="modal-box" style="max-height:90vh;overflow-y:auto;gap:9px;width:min(500px,94vw);">
@@ -412,7 +439,9 @@
     </div>
 
     <script src="js/app.js?v=1.2.0" defer></script>
-    <script>if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');</script>
+    <script>
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+    </script>
 </body>
 
 </html>

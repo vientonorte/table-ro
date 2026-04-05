@@ -1,19 +1,17 @@
 {
-  "name": "table-ro · Planificador Semanal",
-  "short_name": "table-ro",
-  "start_url": "/table-ro/",
-  "scope": "/table-ro/",
-  "display": "standalone",
-  "background_color": "#0f0f0f",
-  "theme_color": "#7c3aed",
-  "description": "Planificador semanal con Google Calendar sync y análisis BuJo con IA multimodal.",
-  "lang": "es",
-  "icons": [
-    {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📓</text></svg>",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    }
-  ]
+    "name": "table-ro · Planificador Semanal",
+    "short_name": "table-ro",
+    "start_url": "/table-ro/",
+    "scope": "/table-ro/",
+    "display": "standalone",
+    "background_color": "#0f0f0f",
+    "theme_color": "#7c3aed",
+    "description": "Planificador semanal con Google Calendar sync y análisis BuJo con IA multimodal.",
+    "lang": "es",
+    "icons": [{
+        "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📓</text></svg>",
+        "sizes": "any",
+        "type": "image/svg+xml",
+        "purpose": "any"
+    }]
 }
