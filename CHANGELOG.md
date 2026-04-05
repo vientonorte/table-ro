@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.2.1] — 2026-04-04
+
+### 📱 Mobile long-press para menú contextual
+
+- **Long-press (520 ms)**: activar el menú de acciones (editar / cancelar / eliminar) con presión sostenida en dispositivos táctiles.
+- **Supresión de click fantasma**: `LAST_LONG_PRESS_AT` evita que el `click` disparado tras soltar el dedo cierre el menú.
+- **Feedback visual** `.card.press-hold`: fondo violeta semitransparente + leve escala durante la presión.
+- **`touch-action: manipulation`**: evita doble-tap zoom en iOS durante la interacción.
+- Listeners pasivos: `touchstart`, `touchmove`, `touchend`, `touchcancel` con `{ passive: true }`.
+
+### 🖱 CRUD via menú contextual (click derecho / long-press)
+
+- `showCtxMenu(e, card)` — crea menú posicionado en coordenadas del puntero.
+- `editFromCtx()` — abre modal de edición con campos pre-rellenados.
+- `cancelFromCtx()` — alterna estado cancelado (tachado + emoji 🚫).
+- `deleteFromCtx()` — elimina con confirmación de texto.
+- `submitEdit()` — guarda cambios incluyendo migración de día (remapeo de `cardKey`).
+- Estado `cancelled` persistido en `localStorage` junto a `done` y `detail`.
+
+---
+
 ## [1.2.0] — 2026-04-04
 
 ### 🔄 Auto-guardado inteligente (Human-Centered Design)
