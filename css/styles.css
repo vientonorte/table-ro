@@ -1839,15 +1839,40 @@ body.sync-simple .src-actions .btn.btn-g {
 
 
 /* ===== ACCESSIBILITY CONTRAST FIXES ===== */
-.day-count { color: #94a3b8; }
-.sum-label { color: #94a3b8; }
-.upload-sub { color: #94a3b8; }
-.src-desc { color: #94a3b8; }
-.src-status { color: #94a3b8; }
-.ftag { min-height: 36px; display: inline-flex; align-items: center; }
+
+.day-count {
+    color: #94a3b8;
+}
+
+.sum-label {
+    color: #94a3b8;
+}
+
+.upload-sub {
+    color: #94a3b8;
+}
+
+.src-desc {
+    color: #94a3b8;
+}
+
+.src-status {
+    color: #94a3b8;
+}
+
+.ftag {
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+}
+
 
 /* Snap indicator for mobile board scroll */
-.wboard::-webkit-scrollbar { display: none; }
+
+.wboard::-webkit-scrollbar {
+    display: none;
+}
+
 
 /* ===== MOBILE-FIRST RESPONSIVE ===== */
 

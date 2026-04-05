@@ -391,11 +391,11 @@ function makeCard(ev) {
     const tStr = ev.allDay ? 'Todo el día' : (ev.time || '');
     const perm = getPermForCal(ev.cal);
     const readonly = !!ev.readonly || ev.fromCal;
-    const syncBtn = (perm === 'rw' && !ev.fromCal) ? `<button class="sync-btn" title="Agregar a Google Calendar" aria-label="Sincronizar esta tarjeta con Google Calendar" onclick="syncToGCal(event,this)">📅</button>` : '';
+    const syncBtn = (!ev.fromCal) ? `<button class="sync-btn" title="Agregar a Google Calendar" aria-label="Sincronizar esta tarjeta con Google Calendar" onclick="syncToGCal(event,this)">📅</button>` : '';
     const detailContent = ev.detail ?
         `<div class="card-detail show"><textarea class="det-area" rows="2" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${ev.detail}</textarea></div>` :
         `<div class="card-detail"><textarea class="det-area" rows="2" placeholder="Notas..." onclick="event.stopPropagation()" onmousedown="event.stopPropagation()"></textarea></div>`;
-    el.innerHTML = `<div class="card-row"><div class="chk" aria-hidden="true"></div><div style="flex:1;min-width:0"><div class="ct">${ev.title}</div>${tStr?`<div class="ctime">⏰ ${tStr}</div>`:''}<div class="card-meta"><span class="ctag" style="color:;cursor:pointer" onclick="changeCat(event,this)" title="Cambiar categoría"></span><span class="kind-badge">${KIND_LABELS[kind]||'Tarea'}</span><span class="src-badge ${src}${readonly?' readonly':''}">${sourceLabel(src)}</span></div></div><div class="card-actions">${syncBtn}<button class="det-btn${ev.detail?' open':''}" title="Detalles" aria-label="Editar detalles" onclick="toggleDetail(event,this)">···</button></div></div>${detailContent}`;
+    el.innerHTML = `<div class="card-row"><div class="chk" aria-hidden="true"></div><div style="flex:1;min-width:0"><div class="ct">${ev.title}</div>${tStr?`<div class="ctime">⏰ ${tStr}</div>`:''}<div class="card-meta"><span class="ctag" style="color:${ci.c};cursor:pointer" onclick="changeCat(event,this)" title="Cambiar categoría">${ci.l}</span><span class="kind-badge">${KIND_LABELS[kind]||'Tarea'}</span><span class="src-badge ${src}${readonly?' readonly':''}">${sourceLabel(src)}</span></div></div><div class="card-actions">${syncBtn}<button class="det-btn${ev.detail?' open':''}" title="Detalles" aria-label="Editar detalles" onclick="toggleDetail(event,this)">···</button></div></div>${detailContent}`;
   el.classList.toggle('is-readonly',readonly);el.setAttribute('tabindex','0');el.setAttribute('role','group');el.setAttribute('aria-label',`${KIND_LABELS[kind]||'Tarea'}: ${ev.title}`);
   el.querySelector('.chk').addEventListener('click',e=>{e.stopPropagation();el.classList.toggle('done');announce(el.classList.contains('done')?'Tarjeta marcada como completada':'Tarjeta marcada como pendiente');});
   el.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();el.querySelector('.chk')?.click();}});
@@ -835,9 +835,11 @@ function parsePaste(){
   const txt=document.getElementById('paste-area').value.trim(); if(!txt) return;
   let added=0;
   txt.split('\n').forEach(ln=>{
-    const m=ln.trim().match(/^([●◆—○\-\*\>\$•])\s+(.+)$/);
-    if(!m) return;
-    bjList.appendChild(makeBJItem({text:m[2].trim(),type:SYM_MAP[m[1]]||'personal'})); added++;
+    const t=ln.trim(); if(!t) return;
+    const m=t.match(/^([●◆—○\-\*\>\$•\x{2726}\x{2B21}])\s+(.+)$/);
+    const text=m?m[2].trim():t;
+    const type=m?(SYM_MAP[m[1]]||'personal'):'personal';
+    bjList.appendChild(makeBJItem({text,type,kind:'task'})); added++;
   });
   document.getElementById('paste-area').value=''; if(added){ showBJItems(); setBujoStep(2); }
 }
@@ -1121,11 +1123,39 @@ async function fetchGCalEvents(calId,calKey,readonly=true){
     return{iso,title:(item.summary||'(sin título)').slice(0,80),cal:calKey,time,allDay,uid:item.id,fromCal:true,readonly,source:'gcal',kind:'event'};
   }).filter(Boolean);
 }
+function getGCalIdForCal(calKey){
+  const src=SOURCES.find(s=>s.cal===calKey);
+  return (src&&src.gcalId)?src.gcalId:'gaete.gaona@gmail.com';
+}
 async function syncToGCal(e,btn){
   e.stopPropagation();
   const card=btn.closest('.card'); const title=card.querySelector('.ct').textContent; const detail=card.querySelector('.det-area')?.value||''; const timeStr=(card.querySelector('.ctime')?.textContent||'').replace('⏰ ','').trim(); const parentId=card.closest('[id^="wb-"]')?.id||''; const iso=parentId.replace('wb-','')||isoOf(new Date());
-  if(gToken){ btn.textContent='⏳';btn.disabled=true; try{ await pushEventToGCalAPI({title,iso,time:timeStr,detail,cal:card.dataset.cal}); btn.textContent='✓';btn.style.color='#10B981'; setTimeout(()=>btn.remove(),1600); }catch(err){ btn.textContent='⚠️';btn.disabled=false;setTimeout(()=>{btn.textContent='📅';btn.style.color='';},2000);} }
+  if(gToken){ btn.textContent='⏳';btn.disabled=true; try{ const targetCalId=getGCalIdForCal(card.dataset.cal); await pushEventToGCalAPI({title,iso,time:timeStr,detail,cal:card.dataset.cal},targetCalId); btn.textContent='✓';btn.style.color='#10B981'; setTimeout(()=>btn.remove(),1600); }catch(err){ btn.textContent='⚠️';btn.disabled=false;setTimeout(()=>{btn.textContent='📅';btn.style.color='';},2000);} }
   else{ const url='https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(title)+(detail?'&details='+encodeURIComponent(detail):''); window.open(url,'_blank'); }
+}
+
+async function syncAllToGCal(){
+  if(!gToken){alert('Conecta Google Calendar primero');return;}
+  const cards=[...document.querySelectorAll('.card')].filter(c=>c.querySelector('.sync-btn'));
+  if(!cards.length){alert('No hay tarjetas para sincronizar.');return;}
+  if(!confirm(`¿Sincronizar ${cards.length} tarjetas a Google Calendar?`))return;
+  let ok=0,fail=0;
+  for(const card of cards){
+    const title=card.querySelector('.ct').textContent;
+    const detail=card.querySelector('.det-area')?.value||'';
+    const timeStr=(card.querySelector('.ctime')?.textContent||'').replace('⏰ ','').trim();
+    const parentId=card.closest('[id^="wb-"]')?.id||'';
+    const iso=parentId.replace('wb-','')||isoOf(new Date());
+    const calId=getGCalIdForCal(card.dataset.cal);
+    try{
+      await pushEventToGCalAPI({title,iso,time:timeStr,detail,cal:card.dataset.cal},calId);
+      const btn=card.querySelector('.sync-btn');
+      if(btn){btn.textContent='✓';btn.style.color='#10B981';setTimeout(()=>btn.remove(),1600);}
+      ok++;
+    }catch(err){fail++;console.warn('Sync fail:',title,err);}
+  }
+  announce(`Sincronización: ${ok} exitosas${fail?`, ${fail} errores`:''}`);
+  alert(`✓ ${ok} tarjetas sincronizadas${fail?`\n⚠️ ${fail} errores`:''}`);
 }
 async function pushEventToGCalAPI(ev,calId='gaete.gaona@gmail.com'){
   if(!gToken)return false;

@@ -9,7 +9,7 @@
     <title>TABLERO — Rö · v1.1.1</title>
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
     <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=chillax@300,400,500,600,700&display=swap">
-    <link rel="stylesheet" href="css/styles.css?v=1.1.1">
+    <link rel="stylesheet" href="css/styles.css?v=1.1.2">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
@@ -40,6 +40,7 @@
                 <div class="tool-menu" id="tool-menu" role="menu" aria-label="Utilidades">
                     <button class="sec-btn save-btn" id="save-btn" onclick="saveBoard()" role="menuitem">💾 Guardar</button>
                     <button class="sec-btn sync-topbtn" id="sync-topbtn" onclick="openCalModal()" role="menuitem">🔄 Sync</button>
+                    <button class="sec-btn" id="push-all-btn" onclick="syncAllToGCal()" role="menuitem">📤 Enviar a Calendarios</button>
                     <button class="sec-btn" onclick="openAdminModal()" role="menuitem">⚙️ Admin</button>
                 </div>
             </div>
@@ -240,7 +241,7 @@
                 </div>
                 <div class="faq-item">
                     <div class="faq-q" onclick="toggleFaq(this)">¿Los cambios se sincronizan automáticamente? <span class="faq-chevron">▼</span></div>
-                    <div class="faq-a">No. El sync es manual: usa 🔄 Sync para traer eventos, y 💾 Guardar para persistir el estado local. Los eventos solo se envían a Google Calendar cuando usas el botón 📅 en una tarjeta específica.</div>
+                    <div class="faq-a">El sync es manual: usa 🔄 Sync para traer eventos, 💾 Guardar para persistir el estado local, y 📤 Enviar a Calendarios para empujar todas las tarjetas locales a Google Calendar según su categoría.</div>
                 </div>
             </div>
             <div class="tab-pane" id="tab-recursos">
@@ -401,7 +402,7 @@
     </div>
     </div>
 
-    <script src="js/app.js?v=1.1.1" defer></script>
+    <script src="js/app.js?v=1.1.2" defer></script>
 </body>
 
 </html>

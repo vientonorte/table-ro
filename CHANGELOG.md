@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.1.2] — 2026-04-05
+
+### 🐛 Bugfixes
+
+- **ctag vacío**: restauradas variables `${ci.c}` y `${ci.l}` en `makeCard()` que fueron eliminadas por un `perl` en v1.1.1, dejando las etiquetas de categoría sin color ni texto.
+- **parsePaste() rechazaba texto libre**: el análisis BuJo manual solo aceptaba líneas con viñeta (●◆—○-*>$•). Ahora acepta cualquier línea de texto como tarea personal.
+- **changeCat() no funcionaba**: consecuencia directa del ctag vacío — el `<span>` no tenía texto visible para hacer clic.
+
+### 📤 Sync bidireccional a calendarios
+
+- **Botón 📅 en todas las tarjetas locales**: antes solo aparecía en tarjetas con permiso `rw` (solo Personal). Ahora aparece en toda tarjeta no importada desde calendario.
+- **Routing por categoría**: `syncToGCal()` ahora resuelve el `gcalId` correcto según la categoría de la tarjeta (Personal → gaete.gaona@gmail.com, Finanzas → grupo finanzas, Camila → c.camilapalma@gmail.com).
+- **Nuevo `syncAllToGCal()`**: botón "📤 Enviar a Calendarios" en el menú ☰ que empuja TODAS las tarjetas locales a sus calendarios de destino en un solo clic.
+- **`getGCalIdForCal()` helper**: mapea `dataset.cal` → `gcalId` de SOURCES, con fallback a cuenta principal.
+
 ## [1.1.0] — 2026-04-04
 
 ### 📱 Mobile-first responsive
