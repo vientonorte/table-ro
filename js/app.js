@@ -293,8 +293,10 @@ let SYNC_ADVANCED = false;
 // UX IMPROVEMENT: flujo guiado en 5 pasos para reducir carga cognitiva.
 function setBujoStep(step) {
     BUJO_STEP = Math.max(1, Math.min(3, Number(step || 1)));
-    document.querySelectorAll(".step-pill").forEach((el, idx) => { el.classList.toggle("active", idx + 1 === BUJO_STEP);
-        el.setAttribute("aria-selected", idx + 1 === BUJO_STEP ? "true" : "false"); });
+    document.querySelectorAll(".step-pill").forEach((el, idx) => {
+        el.classList.toggle("active", idx + 1 === BUJO_STEP);
+        el.setAttribute("aria-selected", idx + 1 === BUJO_STEP ? "true" : "false");
+    });
     document.querySelectorAll(".step-panel").forEach((el, idx) => el.classList.toggle("active", idx + 1 === BUJO_STEP));
     announce(`Paso ${BUJO_STEP} activo en captura BuJo`);
 }
@@ -309,7 +311,7 @@ function toggleLegend() {
 }
 
 function toggleToolsMenu(event) {
-    event ?.stopPropagation();
+    event ? .stopPropagation();
     const menu = document.getElementById('tool-menu');
     const btn = document.getElementById('tools-btn');
     if (!menu || !btn) return;
@@ -331,8 +333,8 @@ function closeToolsMenu() {
 function setSyncView(advanced) {
     SYNC_ADVANCED = !!advanced;
     document.body.classList.toggle('sync-simple', !SYNC_ADVANCED);
-    document.getElementById('sync-simple-btn') ?.classList.toggle('selected', !SYNC_ADVANCED);
-    document.getElementById('sync-advanced-btn') ?.classList.toggle('selected', SYNC_ADVANCED);
+    document.getElementById('sync-simple-btn') ? .classList.toggle('selected', !SYNC_ADVANCED);
+    document.getElementById('sync-advanced-btn') ? .classList.toggle('selected', SYNC_ADVANCED);
     renderCalSources();
 }
 const KIND_LABELS = { task: 'Tarea', event: 'Evento', note: 'Nota', habit: 'Hábito' };
@@ -343,36 +345,47 @@ function sourceLabel(src) { return src === 'bujo' ? 'BuJo' : src === 'gcal' ? 'G
 
 
 /* ── Toast Notification System ── */
-let _toastTimer=null;
-function showToast(msg,type='info',duration=3000){
-  let cont=document.getElementById('toast-container');
-  if(!cont){cont=document.createElement('div');cont.id='toast-container';cont.setAttribute('role','status');cont.setAttribute('aria-live','polite');document.body.appendChild(cont);}
-  const t=document.createElement('div');
-  t.className='toast toast-'+type;
-  t.textContent=msg;
-  cont.appendChild(t);
-  requestAnimationFrame(()=>t.classList.add('show'));
-  setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300);},duration);
+let _toastTimer = null;
+
+function showToast(msg, type = 'info', duration = 3000) {
+    let cont = document.getElementById('toast-container');
+    if (!cont) { cont = document.createElement('div');
+        cont.id = 'toast-container';
+        cont.setAttribute('role', 'status');
+        cont.setAttribute('aria-live', 'polite');
+        document.body.appendChild(cont); }
+    const t = document.createElement('div');
+    t.className = 'toast toast-' + type;
+    t.textContent = msg;
+    cont.appendChild(t);
+    requestAnimationFrame(() => t.classList.add('show'));
+    setTimeout(() => { t.classList.remove('show');
+        setTimeout(() => t.remove(), 300); }, duration);
 }
 
 
 /* ── Auto-save debounce ── */
-let _autoSaveTimer=null;
-function autoSave(){
-  clearTimeout(_autoSaveTimer);
-  _autoSaveTimer=setTimeout(()=>{
-    try{saveBoard();showToast('Guardado automático','info',1500);}
-    catch(e){console.warn('autosave:',e);}
-  },1200);
+let _autoSaveTimer = null;
+
+function autoSave() {
+    clearTimeout(_autoSaveTimer);
+    _autoSaveTimer = setTimeout(() => {
+        try { saveBoard();
+            showToast('Guardado automático', 'info', 1500); } catch (e) { console.warn('autosave:', e); }
+    }, 1200);
 }
 
 /* ── Undo last action ── */
-let _lastAction=null;
-function pushUndo(type,card,prev){_lastAction={type,card,prev,ts:Date.now()};}
-function undo(){
-  if(!_lastAction||Date.now()-_lastAction.ts>15000)return;
-  if(_lastAction.type==='done'){_lastAction.card.classList.toggle('done');announce('Acción deshecha');autoSave();}
-  _lastAction=null;
+let _lastAction = null;
+
+function pushUndo(type, card, prev) { _lastAction = { type, card, prev, ts: Date.now() }; }
+
+function undo() {
+    if (!_lastAction || Date.now() - _lastAction.ts > 15000) return;
+    if (_lastAction.type === 'done') { _lastAction.card.classList.toggle('done');
+        announce('Acción deshecha');
+        autoSave(); }
+    _lastAction = null;
 }
 const DRAG = { card: null };
 const LONG_PRESS_MS = 520;
@@ -381,39 +394,49 @@ let LAST_LONG_PRESS_AT = 0;
 const PRESS_STATE = { timer: null, card: null, x: 0, y: 0, active: false, opened: false };
 
 function removePH() { document.querySelectorAll('.drop-placeholder').forEach(p => p.remove()); }
-function isPressInteractiveTarget(target){ return !!target.closest('button,textarea,input,select,a,.ctag,.det-area,.sync-btn,.det-btn,.chk,.ctx-menu'); }
-function clearCardPress(){ if(PRESS_STATE.card) PRESS_STATE.card.classList.remove('press-hold'); clearTimeout(PRESS_STATE.timer); PRESS_STATE.timer=null; PRESS_STATE.card=null; PRESS_STATE.active=false; PRESS_STATE.opened=false; }
-function startCardPress(card,e){
-  if(!e.touches||e.touches.length!==1||isPressInteractiveTarget(e.target)) return;
-  const touch=e.touches[0];
-  clearCardPress();
-  PRESS_STATE.card=card;
-  PRESS_STATE.x=touch.clientX;
-  PRESS_STATE.y=touch.clientY;
-  PRESS_STATE.active=true;
-  card.classList.add('press-hold');
-  PRESS_STATE.timer=setTimeout(()=>{
-    if(!PRESS_STATE.active||!PRESS_STATE.card) return;
-    LAST_LONG_PRESS_AT=Date.now();
-    PRESS_STATE.opened=true;
-    showCtxMenu({clientX:PRESS_STATE.x,clientY:PRESS_STATE.y}, PRESS_STATE.card);
-    if(navigator.vibrate) navigator.vibrate(16);
-  }, LONG_PRESS_MS);
+
+function isPressInteractiveTarget(target) { return !!target.closest('button,textarea,input,select,a,.ctag,.det-area,.sync-btn,.det-btn,.chk,.ctx-menu'); }
+
+function clearCardPress() { if (PRESS_STATE.card) PRESS_STATE.card.classList.remove('press-hold');
+    clearTimeout(PRESS_STATE.timer);
+    PRESS_STATE.timer = null;
+    PRESS_STATE.card = null;
+    PRESS_STATE.active = false;
+    PRESS_STATE.opened = false; }
+
+function startCardPress(card, e) {
+    if (!e.touches || e.touches.length !== 1 || isPressInteractiveTarget(e.target)) return;
+    const touch = e.touches[0];
+    clearCardPress();
+    PRESS_STATE.card = card;
+    PRESS_STATE.x = touch.clientX;
+    PRESS_STATE.y = touch.clientY;
+    PRESS_STATE.active = true;
+    card.classList.add('press-hold');
+    PRESS_STATE.timer = setTimeout(() => {
+        if (!PRESS_STATE.active || !PRESS_STATE.card) return;
+        LAST_LONG_PRESS_AT = Date.now();
+        PRESS_STATE.opened = true;
+        showCtxMenu({ clientX: PRESS_STATE.x, clientY: PRESS_STATE.y }, PRESS_STATE.card);
+        if (navigator.vibrate) navigator.vibrate(16);
+    }, LONG_PRESS_MS);
 }
-function moveCardPress(e){
-  if(!PRESS_STATE.active||!e.touches||!e.touches.length) return;
-  const touch=e.touches[0];
-  const dx=Math.abs(touch.clientX-PRESS_STATE.x);
-  const dy=Math.abs(touch.clientY-PRESS_STATE.y);
-  if(dx>LONG_PRESS_TOLERANCE||dy>LONG_PRESS_TOLERANCE) clearCardPress();
+
+function moveCardPress(e) {
+    if (!PRESS_STATE.active || !e.touches || !e.touches.length) return;
+    const touch = e.touches[0];
+    const dx = Math.abs(touch.clientX - PRESS_STATE.x);
+    const dy = Math.abs(touch.clientY - PRESS_STATE.y);
+    if (dx > LONG_PRESS_TOLERANCE || dy > LONG_PRESS_TOLERANCE) clearCardPress();
 }
-function endCardPress(){ clearCardPress(); }
+
+function endCardPress() { clearCardPress(); }
 
 function setupDrop(zone) {
     zone.addEventListener('dragover', e => {
         if (!DRAG.card) return;
         e.preventDefault();
-        zone.closest('.wday') ?.classList.add('drag-over-col');
+        zone.closest('.wday') ? .classList.add('drag-over-col');
         removePH();
         const ph = document.createElement('div');
         ph.className = 'drop-placeholder';
@@ -423,18 +446,18 @@ function setupDrop(zone) {
     });
     zone.addEventListener('dragleave', e => {
         if (!zone.contains(e.relatedTarget)) {
-            zone.closest('.wday') ?.classList.remove('drag-over-col');
+            zone.closest('.wday') ? .classList.remove('drag-over-col');
             removePH();
         }
     });
     zone.addEventListener('drop', e => {
         e.preventDefault();
         if (!DRAG.card) return;
-        zone.closest('.wday') ?.classList.remove('drag-over-col');
+        zone.closest('.wday') ? .classList.remove('drag-over-col');
         const ph = zone.querySelector('.drop-placeholder');
         ph ? zone.insertBefore(DRAG.card, ph) : zone.appendChild(DRAG.card);
         removePH();
-        zone.querySelector('.day-empty') ?.remove();
+        zone.querySelector('.day-empty') ? .remove();
         updateDayCount(zone.closest('.wday'));
         autoSave();
     });
