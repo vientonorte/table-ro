@@ -552,6 +552,66 @@ h1 {
     background: rgba(255, 255, 255, .07);
     color: var(--mut);
     margin-top: 2px;
+    cursor: pointer;
+    transition: opacity .15s;
+}
+
+.ctag:hover {
+    opacity: .7;
+}
+
+.cat-picker {
+    position: absolute;
+    left: 0;
+    top: calc(100% + 4px);
+    z-index: 50;
+    background: var(--s1);
+    border: 1px solid var(--bd);
+    border-radius: 9px;
+    padding: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .5);
+    min-width: 120px;
+}
+
+.cat-opt {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 8px;
+    border: none;
+    border-radius: 6px;
+    background: none;
+    color: var(--txt);
+    font-family: var(--font-ui);
+    font-size: .62rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .12s;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.cat-opt:hover {
+    background: rgba(255, 255, 255, .08);
+}
+
+.cat-opt.active {
+    background: rgba(124, 58, 237, .15);
+    color: #c4b5fd;
+}
+
+.cat-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.card-meta {
+    position: relative;
 }
 
 .drop-placeholder {

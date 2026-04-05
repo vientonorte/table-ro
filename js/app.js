@@ -293,8 +293,9 @@ let SYNC_ADVANCED = false;
 // UX IMPROVEMENT: flujo guiado en 5 pasos para reducir carga cognitiva.
 function setBujoStep(step) {
     BUJO_STEP = Math.max(1, Math.min(3, Number(step || 1)));
-    document.querySelectorAll(".step-pill").forEach((el,idx)=>{el.classList.toggle("active",idx+1===BUJO_STEP);el.setAttribute("aria-selected",idx+1===BUJO_STEP?"true":"false");});
-    document.querySelectorAll(".step-panel").forEach((el,idx)=>el.classList.toggle("active",idx+1===BUJO_STEP));
+    document.querySelectorAll(".step-pill").forEach((el, idx) => { el.classList.toggle("active", idx + 1 === BUJO_STEP);
+        el.setAttribute("aria-selected", idx + 1 === BUJO_STEP ? "true" : "false"); });
+    document.querySelectorAll(".step-panel").forEach((el, idx) => el.classList.toggle("active", idx + 1 === BUJO_STEP));
     announce(`Paso ${BUJO_STEP} activo en captura BuJo`);
 }
 
@@ -394,7 +395,7 @@ function makeCard(ev) {
     const detailContent = ev.detail ?
         `<div class="card-detail show"><textarea class="det-area" rows="2" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${ev.detail}</textarea></div>` :
         `<div class="card-detail"><textarea class="det-area" rows="2" placeholder="Notas..." onclick="event.stopPropagation()" onmousedown="event.stopPropagation()"></textarea></div>`;
-    el.innerHTML = `<div class="card-row"><div class="chk" aria-hidden="true"></div><div style="flex:1;min-width:0"><div class="ct">${ev.title}</div>${tStr?`<div class="ctime">⏰ ${tStr}</div>`:''}<div class="card-meta"><span class="ctag" style="color:${ci.c}">${ci.l}</span><span class="kind-badge">${KIND_LABELS[kind]||'Tarea'}</span><span class="src-badge ${src}${readonly?' readonly':''}">${sourceLabel(src)}</span></div></div><div class="card-actions">${syncBtn}<button class="det-btn${ev.detail?' open':''}" title="Detalles" aria-label="Editar detalles" onclick="toggleDetail(event,this)">···</button></div></div>${detailContent}`;
+    el.innerHTML = `<div class="card-row"><div class="chk" aria-hidden="true"></div><div style="flex:1;min-width:0"><div class="ct">${ev.title}</div>${tStr?`<div class="ctime">⏰ ${tStr}</div>`:''}<div class="card-meta"><span class="ctag" style="color:;cursor:pointer" onclick="changeCat(event,this)" title="Cambiar categoría"></span><span class="kind-badge">${KIND_LABELS[kind]||'Tarea'}</span><span class="src-badge ${src}${readonly?' readonly':''}">${sourceLabel(src)}</span></div></div><div class="card-actions">${syncBtn}<button class="det-btn${ev.detail?' open':''}" title="Detalles" aria-label="Editar detalles" onclick="toggleDetail(event,this)">···</button></div></div>${detailContent}`;
   el.classList.toggle('is-readonly',readonly);el.setAttribute('tabindex','0');el.setAttribute('role','group');el.setAttribute('aria-label',`${KIND_LABELS[kind]||'Tarea'}: ${ev.title}`);
   el.querySelector('.chk').addEventListener('click',e=>{e.stopPropagation();el.classList.toggle('done');announce(el.classList.contains('done')?'Tarjeta marcada como completada':'Tarjeta marcada como pendiente');});
   el.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();el.querySelector('.chk')?.click();}});
@@ -940,6 +941,38 @@ function clearBJ(){ bjList.innerHTML=''; document.getElementById('paste-area').v
 const HIDDEN=new Set();
 function toggleCat(keys,el){ const cats=typeof keys==='string'?[keys]:keys; const wasOff=el.classList.contains('off'); if(wasOff){cats.forEach(k=>HIDDEN.delete(k));el.classList.remove('off');} else{cats.forEach(k=>HIDDEN.add(k));el.classList.add('off');} applyFilter(); }
 function applyFilter(){ document.querySelectorAll('.card').forEach(c=>{c.style.display=HIDDEN.has(c.dataset.cal)?'none':'';}); document.querySelectorAll('.aday-pill').forEach(p=>{p.style.display=HIDDEN.has(p.dataset.cal)?'none':'';}); }
+
+function changeCat(e,tag){
+  e.stopPropagation();
+  if(document.querySelector('.cat-picker')){document.querySelector('.cat-picker').remove();return;}
+  const card=tag.closest('.card');if(!card)return;
+  const current=card.dataset.cal;
+  const picker=document.createElement('div');
+  picker.className='cat-picker';
+  const cats=Object.entries(CAL).filter(([k])=>k!=='bujo');
+  cats.forEach(([key,val])=>{
+    const opt=document.createElement('button');
+    opt.className='cat-opt'+(key===current?' active':'');
+    opt.style.setProperty('--oc',val.c);
+    opt.innerHTML=`<span class="cat-dot" style="background:${val.c}"></span>${val.l}`;
+    opt.addEventListener('click',ev=>{
+      ev.stopPropagation();
+      card.dataset.cal=key;
+      card.style.setProperty('--cc',val.c);
+      tag.style.color=val.c;
+      tag.textContent=val.l;
+      card.querySelector('.chk').style.borderColor=val.c;
+      const ctime=card.querySelector('.ctime');
+      if(ctime)ctime.style.color=val.c;
+      picker.remove();
+      announce(`Categoría cambiada a ${val.l}`);
+    });
+    picker.appendChild(opt);
+  });
+  tag.parentElement.appendChild(picker);
+  const closeOnClick=ev=>{if(!picker.contains(ev.target)&&ev.target!==tag){picker.remove();document.removeEventListener('click',closeOnClick);}};
+  setTimeout(()=>document.addEventListener('click',closeOnClick),0);
+}
 
 const SYNC_STATUS={}; let _cfgSrcId=null;
 function unfoldICS(t){return t.replace(/\r\n[ \t]/g,'').replace(/\r\n/g,'\n').replace(/\r/g,'\n');}
