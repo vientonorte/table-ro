@@ -5,18 +5,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Tablero Rö — Planificador semanal personal con Google Calendar, Bullet Journal y sync bidireccional.">
-    <meta name="version" content="1.1.1">
-    <title>TABLERO — Rö · v1.1.1</title>
+    <meta name="version" content="1.2.0">
+    <title>TABLERO — Rö · v1.2.0</title>
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
     <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=chillax@300,400,500,600,700&display=swap">
-    <link rel="stylesheet" href="css/styles.css?v=1.1.2">
+    <link rel="stylesheet" href="css/styles.css?v=1.2.0">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
 <body>
+    <a class="skip-link" href="#wboard">Saltar al tablero</a>
 
     <!-- TOPBAR -->
-    <div class="topbar">
+    <nav class="topbar" aria-label="Barra de herramientas">
         <div class="topbar-main">
             <h1>ABRIL 2026</h1>
             <span class="layer-chip">Uso diario</span>
@@ -38,7 +39,7 @@
             <div class="tool-menu-wrap">
                 <button class="sec-btn" id="tools-btn" onclick="toggleToolsMenu(event)" aria-expanded="false" aria-controls="tool-menu">☰ Más</button>
                 <div class="tool-menu" id="tool-menu" role="menu" aria-label="Utilidades">
-                    <button class="sec-btn save-btn" id="save-btn" onclick="saveBoard()" role="menuitem">💾 Guardar</button>
+                    <button class="sec-btn save-btn" id="save-btn" onclick="saveBoard()" role="menuitem" title="Guardar estado (Ctrl+S)">💾 Guardar</button>
                     <button class="sec-btn sync-topbtn" id="sync-topbtn" onclick="openCalModal()" role="menuitem">🔄 Sync</button>
                     <button class="sec-btn" id="push-all-btn" onclick="syncAllToGCal()" role="menuitem">📤 Enviar a Calendarios</button>
                     <button class="sec-btn" onclick="openAdminModal()" role="menuitem">⚙️ Admin</button>
@@ -55,7 +56,7 @@
             <div class="leg" onclick="toggleCat(['trabajo','fin'],this)" role="button" tabindex="0" aria-label="Filtrar categoría Trabajo" aria-pressed="true">
                 <div class="ldot" style="background:#F97316"></div>Trabajo</div>
         </div>
-    </div>
+    </nav>
 
     <div class="sr-live" id="sr-live" aria-live="polite" aria-atomic="true"></div>
 
@@ -278,9 +279,9 @@
         </div>
     </div>
 
-    <div class="week-wrap">
-        <div class="wboard" id="wboard"></div>
-    </div>
+    <main class="week-wrap" aria-label="Tablero semanal">
+        <div class="wboard" id="wboard" role="region" aria-label="Columnas de la semana"></div>
+    </main>
 
     <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
     <div class="drawer" id="drawer">
@@ -402,7 +403,7 @@
     </div>
     </div>
 
-    <script src="js/app.js?v=1.1.2" defer></script>
+    <script src="js/app.js?v=1.2.0" defer></script>
 </body>
 
 </html>

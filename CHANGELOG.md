@@ -4,6 +4,44 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.2.0] — 2026-04-04
+
+### 🔄 Auto-guardado inteligente (Human-Centered Design)
+
+- **Auto-save debounce** (1.2s): se guarda automáticamente al marcar una tarea como completada, mover una tarjeta (drag & drop), editar detalles (on blur), o cambiar categoría.
+- **Toast notifications**: feedback visual no-bloqueante reemplaza `alert()` en operaciones de sync y guardado. Toasts tipo `ok`, `error`, `info` con animación suave.
+- **localStorage quota check**: si el almacenamiento está lleno, muestra advertencia en lugar de fallar silenciosamente.
+- **Indicador visual**: el botón Guardar cambia a verde con conteo de tarjetas guardadas.
+
+### ♿ Accesibilidad (WCAG 2.1 AA)
+
+- **Skip-to-content link**: enlace "Saltar al tablero" visible con Tab para usuarios de teclado.
+- **Landmarks semánticos**: `<nav>` para topbar, `<main>` para el tablero, `role="region"` para el board.
+- **Focus-visible**: outlines violeta en cards, botones y pills al navegar con teclado.
+- **Reduced motion**: `@media (prefers-reduced-motion)` deshabilita animaciones y transiciones.
+- **Keyboard navigation**: Escape cierra el category picker; Ctrl+Z deshace el último toggle de completado.
+- **Tooltips con atajos**: botón Guardar muestra "(Ctrl+S)" en el tooltip.
+
+### ⌨️ Undo (Design Thinking — reduce fricciones)
+
+- **Ctrl+Z / Cmd+Z**: deshace el último toggle de "completado" (ventana de 15 segundos).
+- Sistema extensible con `pushUndo(type, card, prevState)`.
+
+### 🎨 UI / Legibilidad (Atomic Design)
+
+- **Toast component**: componente reutilizable con variantes semánticas (`ok`, `error`, `info`).
+- **Category picker animation**: entrada suave con `catPickerIn` keyframe.
+- **Print styles**: `@media print` oculta chrome de la app, muestra solo el tablero en blanco limpio.
+- **Save indicator**: clase `.saved` con borde verde para feedback de guardado.
+
+### 🧹 Limpieza técnica (Debug / Scrum)
+
+- Eliminado ternario muerto `(true) ? ...` en `syncBtn`.
+- Reemplazados `alert()` por `showToast()` en `syncAllToGCal`, sync vacío, y fallback URL.
+- Error boundary en `saveBoard` con catch de `QuotaExceededError`.
+- Version header actualizado a 1.2.0 en JS, CSS y HTML.
+- Cache bust `?v=1.2.0` en assets.
+
 ## [1.1.2] — 2026-04-05
 
 ### 🐛 Bugfixes

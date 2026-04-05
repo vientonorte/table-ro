@@ -1,7 +1,7 @@
 /**
  * Tablero Rö — Lógica principal
  * ==============================
- * Versión: 1.0.0
+ * Versión: 1.2.0
  * Descripción: Tablero semanal personal con integración Google Calendar,
  *              Bullet Journal (BuJo) y sync bidireccional.
  *
@@ -341,6 +341,39 @@ function normalizeKind(kind, fallbackTitle = '') { if (['task', 'event', 'note',
 
 function sourceLabel(src) { return src === 'bujo' ? 'BuJo' : src === 'gcal' ? 'Google' : src === 'ics' ? 'ICS' : 'Manual'; }
 
+
+/* ── Toast Notification System ── */
+let _toastTimer=null;
+function showToast(msg,type='info',duration=3000){
+  let cont=document.getElementById('toast-container');
+  if(!cont){cont=document.createElement('div');cont.id='toast-container';cont.setAttribute('role','status');cont.setAttribute('aria-live','polite');document.body.appendChild(cont);}
+  const t=document.createElement('div');
+  t.className='toast toast-'+type;
+  t.textContent=msg;
+  cont.appendChild(t);
+  requestAnimationFrame(()=>t.classList.add('show'));
+  setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300);},duration);
+}
+
+
+/* ── Auto-save debounce ── */
+let _autoSaveTimer=null;
+function autoSave(){
+  clearTimeout(_autoSaveTimer);
+  _autoSaveTimer=setTimeout(()=>{
+    try{saveBoard();showToast('Guardado automático','info',1500);}
+    catch(e){console.warn('autosave:',e);}
+  },1200);
+}
+
+/* ── Undo last action ── */
+let _lastAction=null;
+function pushUndo(type,card,prev){_lastAction={type,card,prev,ts:Date.now()};}
+function undo(){
+  if(!_lastAction||Date.now()-_lastAction.ts>15000)return;
+  if(_lastAction.type==='done'){_lastAction.card.classList.toggle('done');announce('Acción deshecha');autoSave();}
+  _lastAction=null;
+}
 const DRAG = { card: null };
 
 function removePH() { document.querySelectorAll('.drop-placeholder').forEach(p => p.remove()); }
@@ -372,6 +405,7 @@ function setupDrop(zone) {
         removePH();
         zone.querySelector('.day-empty') ?.remove();
         updateDayCount(zone.closest('.wday'));
+        autoSave();
     });
 }
 
@@ -391,13 +425,13 @@ function makeCard(ev) {
     const tStr = ev.allDay ? 'Todo el día' : (ev.time || '');
     const perm = getPermForCal(ev.cal);
     const readonly = !!ev.readonly || ev.fromCal;
-    const syncBtn = (true) ? `<button class="sync-btn" title="Agregar a Google Calendar" aria-label="Sincronizar esta tarjeta con Google Calendar" onclick="syncToGCal(event,this)">📅</button>` : '';
+    const syncBtn = `<button class="sync-btn" title="Sync a calendario (Ctrl·S guarda)" aria-label="Sincronizar esta tarjeta con Google Calendar" onclick="syncToGCal(event,this)">📅</button>`;
     const detailContent = ev.detail ?
         `<div class="card-detail show"><textarea class="det-area" rows="2" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${ev.detail}</textarea></div>` :
-        `<div class="card-detail"><textarea class="det-area" rows="2" placeholder="Notas..." onclick="event.stopPropagation()" onmousedown="event.stopPropagation()"></textarea></div>`;
+        `<div class="card-detail"><textarea class="det-area" rows="2" placeholder="Notas..." onclick="event.stopPropagation()" onmousedown="event.stopPropagation()" onblur="autoSave()"></textarea></div>`;
     el.innerHTML = `<div class="card-row"><div class="chk" aria-hidden="true"></div><div style="flex:1;min-width:0"><div class="ct">${ev.title}</div>${tStr?`<div class="ctime">⏰ ${tStr}</div>`:''}<div class="card-meta"><span class="ctag" style="color:${ci.c};cursor:pointer" onclick="changeCat(event,this)" title="Cambiar categoría">${ci.l}</span><span class="kind-badge">${KIND_LABELS[kind]||'Tarea'}</span><span class="src-badge ${src}${readonly?' readonly':''}">${sourceLabel(src)}</span></div></div><div class="card-actions">${syncBtn}<button class="det-btn${ev.detail?' open':''}" title="Detalles" aria-label="Editar detalles" onclick="toggleDetail(event,this)">···</button></div></div>${detailContent}`;
   el.classList.toggle('is-readonly',readonly);el.setAttribute('tabindex','0');el.setAttribute('role','group');el.setAttribute('aria-label',`${KIND_LABELS[kind]||'Tarea'}: ${ev.title}`);
-  el.querySelector('.chk').addEventListener('click',e=>{e.stopPropagation();el.classList.toggle('done');announce(el.classList.contains('done')?'Tarjeta marcada como completada':'Tarjeta marcada como pendiente');});
+  el.querySelector('.chk').addEventListener('click',e=>{e.stopPropagation();pushUndo('done',el,el.classList.contains('done'));el.classList.toggle('done');announce(el.classList.contains('done')?'Tarjeta marcada como completada':'Tarjeta marcada como pendiente');autoSave();});
   el.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();el.querySelector('.chk')?.click();}});
   el.addEventListener('dragstart',e=>{DRAG.card=el;setTimeout(()=>el.classList.add('dragging'),0);e.dataTransfer.effectAllowed='move';});
   el.addEventListener('dragend',()=>{el.classList.remove('dragging');removePH();document.querySelectorAll('.drag-over-col').forEach(z=>z.classList.remove('drag-over-col'));DRAG.card=null;});
@@ -967,13 +1001,15 @@ function changeCat(e,tag){
       const ctime=card.querySelector('.ctime');
       if(ctime)ctime.style.color=val.c;
       picker.remove();
-      announce(`Categoría cambiada a ${val.l}`);
+      announce(`Categoría cambiada a ${val.l}`);autoSave();
     });
     picker.appendChild(opt);
   });
   tag.parentElement.appendChild(picker);
   const closeOnClick=ev=>{if(!picker.contains(ev.target)&&ev.target!==tag){picker.remove();document.removeEventListener('click',closeOnClick);}};
   setTimeout(()=>document.addEventListener('click',closeOnClick),0);
+  const closeOnEsc=ev=>{if(ev.key==='Escape'){picker.remove();document.removeEventListener('keydown',closeOnEsc);document.removeEventListener('click',closeOnClick);}};
+  document.addEventListener('keydown',closeOnEsc);
 }
 
 const SYNC_STATUS={}; let _cfgSrcId=null;
@@ -1131,13 +1167,13 @@ async function syncToGCal(e,btn){
   e.stopPropagation();
   const card=btn.closest('.card'); const title=card.querySelector('.ct').textContent; const detail=card.querySelector('.det-area')?.value||''; const timeStr=(card.querySelector('.ctime')?.textContent||'').replace('⏰ ','').trim(); const parentId=card.closest('[id^="wb-"]')?.id||''; const iso=parentId.replace('wb-','')||isoOf(new Date());
   if(gToken){ btn.textContent='⏳';btn.disabled=true; try{ const targetCalId=getGCalIdForCal(card.dataset.cal); await pushEventToGCalAPI({title,iso,time:timeStr,detail,cal:card.dataset.cal},targetCalId); btn.textContent='✓';btn.style.color='#10B981'; setTimeout(()=>btn.remove(),1600); }catch(err){ btn.textContent='⚠️';btn.disabled=false;setTimeout(()=>{btn.textContent='📅';btn.style.color='';},2000);} }
-  else{ const url='https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(title)+(detail?'&details='+encodeURIComponent(detail):''); window.open(url,'_blank'); }
+  else{ showToast('Abriendo Google Calendar...','info',2000); const url='https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(title)+(detail?'&details='+encodeURIComponent(detail):''); window.open(url,'_blank'); }
 }
 
 async function syncAllToGCal(){
   if(!gToken){alert('Conecta Google Calendar primero');return;}
   const cards=[...document.querySelectorAll('.card')].filter(c=>c.querySelector('.sync-btn'));
-  if(!cards.length){alert('No hay tarjetas para sincronizar.');return;}
+  if(!cards.length){showToast('No hay tarjetas para sincronizar.','info');return;}
   if(!confirm(`¿Sincronizar ${cards.length} tarjetas a Google Calendar?`))return;
   let ok=0,fail=0;
   for(const card of cards){
@@ -1155,7 +1191,7 @@ async function syncAllToGCal(){
     }catch(err){fail++;console.warn('Sync fail:',title,err);}
   }
   announce(`Sincronización: ${ok} exitosas${fail?`, ${fail} errores`:''}`);
-  alert(`✓ ${ok} tarjetas sincronizadas${fail?`\n⚠️ ${fail} errores`:''}`);
+  showToast(`✓ ${ok} sincronizadas${fail?` · ${fail} errores`:''}`,fail?'error':'ok',4000);
 }
 async function pushEventToGCalAPI(ev,calId='gaete.gaona@gmail.com'){
   if(!gToken)return false;
@@ -1211,8 +1247,10 @@ function saveBoard(){
       const done=card.classList.contains('done');const detail=card.querySelector('.det-area')?.value||''; const time=(card.querySelector('.ctime')?.textContent||'').replace('⏰ ','').trim(); const hasSync=!!card.querySelector('.sync-btn'); const key=cardKey(iso,title,cal); const source=card.dataset.source||'manual'; const kind=card.dataset.kind||'task'; states[key]={done,detail}; if(source==="manual"||source==="bujo")extra.push({iso,title,cal,time,detail,fromCal:false,source,kind});
     });
   });
-  CARD_STATES=states;EXTRA_EVENTS=extra; localStorage.setItem('tablero_states_ro',JSON.stringify(states)); localStorage.setItem('tablero_extra_ro',JSON.stringify(extra));
+  CARD_STATES=states;EXTRA_EVENTS=extra; try{localStorage.setItem('tablero_states_ro',JSON.stringify(states)); localStorage.setItem('tablero_extra_ro',JSON.stringify(extra));}catch(e){if(e.name==='QuotaExceededError'){showToast('⚠️ Almacenamiento lleno. Exporta y limpia datos antiguos.','error',5000);}else{throw e;}}
   const btn=document.getElementById('save-btn'); if(btn){btn.textContent='✓ Guardado';btn.classList.add('saved');setTimeout(()=>{btn.textContent='💾 Guardar';btn.classList.remove('saved');},2200);}
+  const n=Object.keys(states).length; const xn=extra.length;
+  showToast(`💾 ${n} tarjetas · ${xn} manuales guardadas`,'ok',2000);
 }
 function loadBoard(){
   try{ CARD_STATES=JSON.parse(localStorage.getItem('tablero_states_ro')||'{}'); EXTRA_EVENTS=JSON.parse(localStorage.getItem('tablero_extra_ro')||'[]'); EXTRA_EVENTS.forEach(ev=>{if(!EVENTS.find(e=>e.iso===ev.iso&&e.title===ev.title))EVENTS.push(ev);}); }
@@ -1221,6 +1259,6 @@ function loadBoard(){
 function applyCardStates(){ document.querySelectorAll('[id^="wb-"]').forEach(body=>{ const iso=body.id.replace('wb-',''); body.querySelectorAll('.card').forEach(card=>{ const title=card.querySelector('.ct')?.textContent||'';const cal=card.dataset.cal||'bujo'; const st=CARD_STATES[cardKey(iso,title,cal)];if(!st)return; if(st.done)card.classList.add('done'); if(st.detail){const area=card.querySelector('.det-area');if(area){area.value=st.detail;card.querySelector('.card-detail')?.classList.add('show');}} }); }); }
 
 document.addEventListener('click',e=>{ if(!e.target.closest('.tool-menu-wrap')) closeToolsMenu(); });
-document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeDrawer();closeAddModal();closeCalModal();closeAdminModal();closeToolsMenu();} if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();saveBoard();} });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){closeDrawer();closeAddModal();closeCalModal();closeAdminModal();closeToolsMenu();} if((e.metaKey||e.ctrlKey)&&e.key==='s'){e.preventDefault();saveBoard();} if((e.metaKey||e.ctrlKey)&&e.key==='z'){e.preventDefault();undo();} });
 (function restoreSura(){const sid=localStorage.getItem('gcal_sura_id');if(sid){const s=SOURCES.find(x=>x.id==='trabajo');if(s&&!s.gcalId)s.gcalId=sid;}})();
 loadPerms(); loadBoard(); renderWeek(); initGAuthUI(); hydrateAIForm(); hydrateAIAdmin(); updateAIStatus(); updateBujoSummary(); setSyncView(false);
