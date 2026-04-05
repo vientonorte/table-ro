@@ -1,11 +1,11 @@
-# Tablero Rö · v1.0
+# Tablero Rö · v1.2.0
 
 ![Tablero Rö v1.0](https://github.com/user-attachments/assets/b353cb36-19c7-42b3-b55c-d0e32a9c1ab8)
 
-Planificador semanal personal con integración Google Calendar, Bullet Journal (BuJo) y sync bidireccional. Desplegado en GitHub Pages sin dependencias ni build.
+Planificador semanal personal con integración Google Calendar, Bullet Journal (BuJo) con IA multimodal (Claude/OpenAI/Gemini), auto-save, undo y accesibilidad. Desplegado en GitHub Pages sin dependencias ni build.
 
 **Live:** https://vientonorte.github.io/table-ro  
-**Versión:** 1.0.0
+**Versión:** 1.2.0
 
 ---
 
@@ -109,6 +109,17 @@ Configuración en ⚙️ Admin → pestaña IA: proveedor, modelo, perfil (speed
 - **🔄 Sync** — configuración y estado de fuentes de calendario
 - **⚙️ Admin** — tabs: Admin · Permisos · IA · FAQ · Recursos
 
+### 9 · Mejoras v1.1–v1.2
+- **Auto-save** — debounce 2s en localStorage tras cada cambio
+- **Toast notifications** — reemplazo de `alert()` con sistema no-intrusivo
+- **Undo** — Ctrl+Z / ⌘+Z para revertir última acción
+- **Cambio de categoría** — click en etiqueta de color para reasignar
+- **Sync masivo** — botón "📤 Enviar a Calendarios" para push bulk a GCal
+- **Accesibilidad** — skip-to-content, landmarks ARIA, focus-visible, reduced motion
+- **Print styles** — hoja de estilos optimizada para impresión
+- **Mobile-first** — responsive completo, touch-friendly
+- **BuJo 3 pasos** — pipeline simplificado (Subir → Revisar → Agregar)
+
 ### 9 · Persistencia (`localStorage`)
 | Key | Contenido |
 |-----|-----------|
@@ -197,4 +208,4 @@ Todos los eventos usan `America/Santiago`. Las conversiones de timestamps UTC (I
 
 ---
 
-Rö · v1.0 · 2026
+Rö · v1.2.0 · Abril 2026
