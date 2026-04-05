@@ -292,9 +292,9 @@ let BUJO_STEP = 1;
 let SYNC_ADVANCED = false;
 // UX IMPROVEMENT: flujo guiado en 5 pasos para reducir carga cognitiva.
 function setBujoStep(step) {
-    BUJO_STEP = Math.max(1, Math.min(5, Number(step || 1)));
-    document.querySelectorAll('.step-pill').forEach((el, idx) => el.classList.toggle('active', idx + 1 === BUJO_STEP));
-    document.querySelectorAll('.step-panel').forEach((el, idx) => el.classList.toggle('active', idx + 1 === BUJO_STEP));
+    BUJO_STEP = Math.max(1, Math.min(3, Number(step || 1)));
+    document.querySelectorAll(".step-pill").forEach((el,idx)=>{el.classList.toggle("active",idx+1===BUJO_STEP);el.setAttribute("aria-selected",idx+1===BUJO_STEP?"true":"false");});
+    document.querySelectorAll(".step-panel").forEach((el,idx)=>el.classList.toggle("active",idx+1===BUJO_STEP));
     announce(`Paso ${BUJO_STEP} activo en captura BuJo`);
 }
 
@@ -670,7 +670,7 @@ function renderAIResult(provider, parsed){
   target.style.display='block';
   target.innerHTML=`<div class="ai-result"><strong>${providerLabel(provider)}</strong> · ${parsed.items.length} ítems${warnings.length ? `<br><br><strong>Warnings:</strong><br>${warnings.map(w => `• ${w}`).join('<br>')}` : ''}</div>`;
 }
-function showAIFallbackNote(msg='No se pudo analizar con IA. Puedes continuar en modo manual desde el Paso 4.'){
+function showAIFallbackNote(msg='No se pudo analizar con IA. Revisa los ítems o usa texto manual.'){
   const note = document.getElementById('ai-fallback-note');
   if(!note) return;
   note.style.display = 'block';
@@ -693,9 +693,19 @@ function isQuotaErrorMessage(msg){
     t.includes('billing')
   );
 }
+function goToAnalyze(){
+  var hasImages = bjImages.length > 0;
+  var hasText = (document.getElementById("paste-area")?.value || "").trim().length > 0;
+  if(!hasImages && !hasText){ announce("Sube una foto o escribe texto para continuar"); return; }
+  if(hasText) parsePaste();
+  setBujoStep(2);
+  if(hasImages && getAvailableAIProviders().length) { analyzeBujo(); }
+  else if(!hasImages) { showBJItems(); announce("Texto procesado. Revisa los ítems extraídos."); }
+  else { updateAIStatus(); }
+}
 function continueWithoutAI(){
-  setBujoStep(4);
-  showAIFallbackNote('Has continuado en modo manual. Pega o corrige texto en el Paso 4 y luego agrega al tablero.');
+  setBujoStep(1);
+  showAIFallbackNote('Has continuado en modo manual. Vuelve al Paso 1 y usa texto manual.');
   announce('Continuaste en modo manual sin análisis IA');
 }
 async function callClaude(prompt){
@@ -736,8 +746,8 @@ async function analyzeBujo(){
   hideAIFallbackNote();
   const candidates=getProviderCandidates();
   if(!candidates.length){
-    showAIFallbackNote('No hay API Key disponible. Continúa en modo manual desde el Paso 4.');
-    setBujoStep(4);
+    showAIFallbackNote('No hay API Key disponible. Configura en Admin o usa texto manual.');
+    setBujoStep(1);
     announce('Sin API key, continuaste en modo manual');
     return;
   }
@@ -781,8 +791,8 @@ async function analyzeBujo(){
       bjList.appendChild(makeBJItem({text:item.text.trim(),type:item.type||'personal',kind:item.kind||'task',details:item.details||'',timeText:item.time_text||'',dateText:item.date_text||'',confidence:item.confidence ?? 0}));
       added++;
     });
-    progressBar.style.width='100%'; showBJItems(); updateBadge(); updateBujoSummary(); setBujoStep(3); announce(`Análisis completado con ${added} ítems`);
-    if(!added){ showAIFallbackNote('La IA no devolvió ítems utilizables. Puedes continuar en modo manual en el Paso 4.'); }
+    progressBar.style.width="100%"; showBJItems(); updateBadge(); updateBujoSummary(); announce("Análisis completado"); announce(`Análisis completado con ${added} ítems`);
+    if(!added){ showAIFallbackNote('La IA no devolvió ítems utilizables. Usa texto manual en Paso 1.'); }
     btn.classList.remove('loading'); btn.innerHTML=`<span class="btn-label" style="color:#86efac;">✓ ${added} ítems · ${providerLabel(providerUsed)}</span>`;
     setTimeout(()=>{ btn.innerHTML='<div class="spin"></div><span class="btn-label">🤖 Analizar Bullet</span>'; btn.disabled=false; },2200);
   }catch(err){
@@ -790,11 +800,11 @@ async function analyzeBujo(){
     const msg = String(err?.message || err || 'Error desconocido al analizar');
     btn.classList.remove('loading'); btn.innerHTML=`<span class="btn-label" style="color:#fca5a5;">⚠️ ${String(err.message).slice(0,60)}</span>`;
     if(isQuotaErrorMessage(msg)){
-      showAIFallbackNote('Se agotó la cuota disponible en los proveedores configurados. Continúa en modo manual desde el Paso 4.');
-      setBujoStep(4);
+      showAIFallbackNote('Cuota agotada. Usa texto manual en Paso 1.');
+      setBujoStep(1);
       announce('Cuota agotada, continuaste en modo manual');
     }else{
-      showAIFallbackNote('No se pudo analizar con IA en este intento. Puedes continuar manualmente en el Paso 4.');
+      showAIFallbackNote('Error de IA. Revisa tu API key o usa texto manual.');
     }
     setTimeout(()=>{ btn.innerHTML='<div class="spin"></div><span class="btn-label">🤖 Analizar Bullet</span>'; btn.disabled=false; },3000);
   }finally{
@@ -828,7 +838,7 @@ function parsePaste(){
     if(!m) return;
     bjList.appendChild(makeBJItem({text:m[2].trim(),type:SYM_MAP[m[1]]||'personal'})); added++;
   });
-  document.getElementById('paste-area').value=''; if(added){ showBJItems(); setBujoStep(3); }
+  document.getElementById('paste-area').value=''; if(added){ showBJItems(); setBujoStep(2); }
 }
 function filterBJ(type,btn){ document.querySelectorAll('#ftags .ftag').forEach(t=>t.classList.remove('on'));btn.classList.add('on'); document.querySelectorAll('#bj-list .bj-item').forEach(el=>{el.style.display=(type==='all'||el.dataset.type===type)?'flex':'none';}); }
 function normalizeHHMM(txt){ const m=String(txt||'').trim().match(/^([01]?\d|2[0-3])[:.]([0-5]\d)$/); if(!m) return ''; return `${String(m[1]).padStart(2,'0')}:${m[2]}`; }

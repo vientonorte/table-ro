@@ -5,11 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Tablero Rö — Planificador semanal personal con Google Calendar, Bullet Journal y sync bidireccional.">
-    <meta name="version" content="1.0.6">
-    <title>TABLERO — Rö · v1.0.6</title>
+    <meta name="version" content="1.1.0">
+    <title>TABLERO — Rö · v1.1.0</title>
     <link rel="preconnect" href="https://api.fontshare.com" crossorigin>
     <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=chillax@300,400,500,600,700&display=swap">
-    <link rel="stylesheet" href="css/styles.css?v=1.0.6">
+    <link rel="stylesheet" href="css/styles.css?v=1.1.0">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
@@ -18,7 +18,7 @@
     <!-- TOPBAR -->
     <div class="topbar">
         <div class="topbar-main">
-            <h1>MARZO 2026</h1>
+            <h1>ABRIL 2026</h1>
             <span class="layer-chip">Uso diario</span>
             <div class="topbar-sep"></div>
             <div class="wnav-group" aria-label="Navegación semanal">
@@ -45,13 +45,13 @@
             </div>
         </div>
         <div class="legend" id="legend-panel" hidden>
-            <div class="leg" onclick="toggleCat(['personal'],this)">
+            <div class="leg" onclick="toggleCat(['personal'],this)" role="button" tabindex="0" aria-label="Filtrar categoría Personal" aria-pressed="true">
                 <div class="ldot" style="background:#EC4899"></div>Personal</div>
-            <div class="leg" onclick="toggleCat(['vinculos'],this)">
+            <div class="leg" onclick="toggleCat(['vinculos'],this)" role="button" tabindex="0" aria-label="Filtrar categoría Vínculos" aria-pressed="true">
                 <div class="ldot" style="background:#7C3AED"></div>Vínculos</div>
-            <div class="leg" onclick="toggleCat(['camila'],this)">
+            <div class="leg" onclick="toggleCat(['camila'],this)" role="button" tabindex="0" aria-label="Filtrar categoría Camila" aria-pressed="true">
                 <div class="ldot" style="background:#10B981"></div>Camila</div>
-            <div class="leg" onclick="toggleCat(['trabajo','fin'],this)">
+            <div class="leg" onclick="toggleCat(['trabajo','fin'],this)" role="button" tabindex="0" aria-label="Filtrar categoría Trabajo" aria-pressed="true">
                 <div class="ldot" style="background:#F97316"></div>Trabajo</div>
         </div>
     </div>
@@ -207,7 +207,7 @@
                     <div class="btn-row">
                         <button class="btn btn-g" onclick="exportBoard()">⬇ Exportar JSON</button>
                         <button class="btn btn-g" onclick="importBoardClick()">⬆ Importar JSON</button>
-                        <input type="file" id="import-file" accept=".json" style="display:none" onchange="importBoard(this)">
+                        <input type="file" id="import-file" accept=".json" style="display:none" aria-label="Importar archivo JSON" onchange="importBoard(this)">
                     </div>
                 </div>
                 <div class="adm-danger">
@@ -288,12 +288,10 @@
             <button class="drawer-close" onclick="closeDrawer()" aria-label="Cerrar captura BuJo">✕</button>
         </div>
         <div class="drawer-body">
-            <div class="pipeline" id="bujo-pipeline">
-                <button class="step-pill active" id="step-pill-1" onclick="setBujoStep(1)">1 Subir</button>
-                <button class="step-pill" id="step-pill-2" onclick="setBujoStep(2)">2 Analizar</button>
-                <button class="step-pill" id="step-pill-3" onclick="setBujoStep(3)">3 Revisar</button>
-                <button class="step-pill" id="step-pill-4" onclick="setBujoStep(4)">4 Editar</button>
-                <button class="step-pill" id="step-pill-5" onclick="setBujoStep(5)">5 Agregar</button>
+            <div class="pipeline" id="bujo-pipeline" role="tablist" aria-label="Pasos de extracción BuJo">
+                <button class="step-pill active" id="step-pill-1" onclick="setBujoStep(1)" role="tab" aria-selected="true" aria-controls="step-panel-1">1 Capturar</button>
+                <button class="step-pill" id="step-pill-2" onclick="setBujoStep(2)" role="tab" aria-selected="false" aria-controls="step-panel-2">2 Analizar</button>
+                <button class="step-pill" id="step-pill-3" onclick="setBujoStep(3)" role="tab" aria-selected="false" aria-controls="step-panel-3">3 Agregar</button>
             </div>
 
             <div class="summary-grid" aria-live="polite">
@@ -311,25 +309,37 @@
                 </div>
             </div>
 
-            <div class="step-panel active" id="step-panel-1">
+            <!-- PASO 1: CAPTURAR (fusión de subir fotos + texto manual) -->
+            <div class="step-panel active" id="step-panel-1" role="tabpanel" aria-labelledby="step-pill-1">
                 <div class="ai-zone">
-                    <div class="ai-zone-title">📤 Paso 1 · Subir fotos</div>
+                    <div class="ai-zone-title">📸 Paso 1 · Capturar BuJo</div>
                     <div class="upload-zone" id="upzone" aria-label="Subir imágenes del bullet journal">
-                        <input type="file" id="bj-input" accept="image/*" multiple>
+                        <input type="file" id="bj-input" accept="image/*" multiple aria-label="Seleccionar fotos del Bullet Journal">
                         <span class="upload-icon">📷</span>
                         <div class="upload-big">Sube foto de tu BuJo</div>
                         <div class="upload-sub">JPG · PNG · HEIC · varias páginas</div>
                     </div>
                     <div class="thumb-grid" id="thumbs"></div>
-                    <button class="btn btn-p" onclick="setBujoStep(2)" style="justify-content:center;">Continuar a análisis</button>
+
+                    <div style="position:relative;text-align:center;margin:6px 0;">
+                        <div style="border-top:1px solid var(--bd);"></div>
+                        <span style="position:relative;top:-9px;background:var(--s1);padding:0 10px;font-size:.6rem;color:var(--mut);font-weight:700;">O ESCRIBE MANUALMENTE</span>
+                    </div>
+
+                    <textarea class="paste-area" id="paste-area" placeholder="● Tarea pendiente&#10;◆ Evento / cita&#10;— Nota / reflexión&#10;○ Personal / salud / hábito&#10;* Trabajo&#10;> Camila&#10;$ Finanzas" aria-label="Texto manual del Bullet Journal"></textarea>
+
+                    <div class="btn-row" style="margin-top:4px;">
+                        <button class="btn btn-p" id="goto-analyze-btn" onclick="goToAnalyze()" style="flex:1;justify-content:center;">Continuar a análisis →</button>
+                    </div>
                 </div>
             </div>
 
-            <div class="step-panel" id="step-panel-2">
+            <!-- PASO 2: ANALIZAR (IA + revisión de resultados) -->
+            <div class="step-panel" id="step-panel-2" role="tabpanel" aria-labelledby="step-pill-2">
                 <div class="ai-zone">
-                    <div class="ai-zone-title">🤖 Paso 2 · Analizar con IA</div>
+                    <div class="ai-zone-title">🤖 Paso 2 · Analizar y revisar</div>
                     <div class="hint" style="margin-bottom:8px;">
-                        <span>🤖</span> Modo automático: si un proveedor queda sin cuota, se intenta con otro proveedor configurado antes de pasar a modo manual.
+                        <span>🤖</span> La IA extrae eventos de tus fotos. Si falla o no tienes API key, el texto manual se procesa automáticamente.
                     </div>
 
                     <div style="display:flex;align-items:center;gap:8px;">
@@ -339,16 +349,12 @@
                     </div>
 
                     <button class="ai-analyze-btn" id="ai-analyze-btn" onclick="analyzeBujo()" disabled>
-        <div class="spin"></div>
-        <span class="btn-label">🤖 Analizar Bullet</span>
-      </button>
-
-                    <div class="btn-row" style="margin-top:6px;">
-                        <button class="btn btn-g" style="width:100%;justify-content:center;" onclick="continueWithoutAI()">↪ Continuar sin IA (modo manual)</button>
-                    </div>
+                        <div class="spin"></div>
+                        <span class="btn-label">🤖 Analizar Bullet</span>
+                    </button>
 
                     <div id="ai-fallback-note" class="hint" style="display:none;">
-                        <span>⚠️</span> No se pudo analizar con IA. Puedes continuar en modo manual desde el Paso 4.
+                        <span>⚠️</span> Sin IA disponible. El texto manual fue procesado.
                     </div>
 
                     <div class="progress-bar-wrap" id="ai-progress-wrap" style="display:none;" aria-live="polite">
@@ -357,41 +363,35 @@
 
                     <div id="ai-result-preview" style="display:none;" aria-live="polite"></div>
                 </div>
-            </div>
 
-            <div class="step-panel" id="step-panel-3">
-                <div class="sec-title">✅ Paso 3 · Revisar extracción</div>
+                <!-- Revisión inline (antes era paso 3 separado) -->
                 <div id="bj-section" style="display:none;">
+                    <div class="sec-title">✅ Revisar extracción</div>
                     <div class="ftag-row" id="ftags">
-                        <div class="ftag on" style="background:rgba(168,85,247,.15);border-color:#A855F7;color:#d8b4fe" onclick="filterBJ('all',this)">Todos</div>
-                        <div class="ftag" style="background:rgba(236,72,153,.12);border-color:#EC4899;color:#EC4899" onclick="filterBJ('personal',this)">Personal</div>
-                        <div class="ftag" style="background:rgba(124,58,237,.12);border-color:#7C3AED;color:#a78bfa" onclick="filterBJ('vinculos',this)">Vínculos</div>
-                        <div class="ftag" style="background:rgba(16,185,129,.12);border-color:#10B981;color:#10B981" onclick="filterBJ('camila',this)">Camila</div>
-                        <div class="ftag" style="background:rgba(249,115,22,.12);border-color:#F97316;color:#F97316" onclick="filterBJ('trabajo',this)">Trabajo</div>
-                        <div class="ftag" style="background:rgba(251,146,60,.12);border-color:#FB923C;color:#FB923C" onclick="filterBJ('fin',this)">Finanzas</div>
+                        <div class="ftag on" style="background:rgba(168,85,247,.15);border-color:#A855F7;color:#d8b4fe" onclick="filterBJ('all',this)" role="button" tabindex="0">Todos</div>
+                        <div class="ftag" style="background:rgba(236,72,153,.12);border-color:#EC4899;color:#EC4899" onclick="filterBJ('personal',this)" role="button" tabindex="0">Personal</div>
+                        <div class="ftag" style="background:rgba(124,58,237,.12);border-color:#7C3AED;color:#a78bfa" onclick="filterBJ('vinculos',this)" role="button" tabindex="0">Vínculos</div>
+                        <div class="ftag" style="background:rgba(16,185,129,.12);border-color:#10B981;color:#10B981" onclick="filterBJ('camila',this)" role="button" tabindex="0">Camila</div>
+                        <div class="ftag" style="background:rgba(249,115,22,.12);border-color:#F97316;color:#F97316" onclick="filterBJ('trabajo',this)" role="button" tabindex="0">Trabajo</div>
+                        <div class="ftag" style="background:rgba(251,146,60,.12);border-color:#FB923C;color:#FB923C" onclick="filterBJ('fin',this)" role="button" tabindex="0">Finanzas</div>
                     </div>
                     <div class="bj-list" id="bj-list"></div>
                     <div class="btn-row" style="margin-top:9px;">
                         <button class="btn btn-g" onclick="selectAllBJ(true)">Seleccionar todos</button>
                         <button class="btn btn-g" onclick="selectAllBJ(false)">Limpiar selección</button>
-                        <button class="btn btn-p" onclick="setBujoStep(4)">Continuar a edición</button>
+                        <button class="btn btn-p" onclick="setBujoStep(3)">Agregar al tablero →</button>
                     </div>
                 </div>
             </div>
 
-            <div class="step-panel" id="step-panel-4">
-                <div class="sec-title">✍️ Paso 4 · Editar / Corregir</div>
-                <textarea class="paste-area" id="paste-area" placeholder="● Tarea pendiente&#10;◆ Evento / cita&#10;— Nota / reflexión&#10;○ Personal / salud / hábito&#10;* Trabajo&#10;> Camila&#10;$ Finanzas"></textarea>
-                <div class="btn-row" style="margin-top:7px;">
-                    <button class="btn btn-p" onclick="parsePaste()">✨ Procesar texto</button>
-                    <button class="btn btn-g" onclick="setBujoStep(5)">Ir a agregar</button>
+            <!-- PASO 3: AGREGAR (confirmar y agregar) -->
+            <div class="step-panel" id="step-panel-3" role="tabpanel" aria-labelledby="step-pill-3">
+                <div class="sec-title">📥 Paso 3 · Agregar al tablero</div>
+                <div class="hint" style="margin-bottom:8px;">
+                    <span>💡</span> Se agregarán los ítems seleccionados a la semana visible del tablero.
                 </div>
-            </div>
-
-            <div class="step-panel" id="step-panel-5">
-                <div class="sec-title">📥 Paso 5 · Agregar al tablero</div>
                 <div class="btn-row" style="margin-top:9px;">
-                    <button class="btn btn-p" onclick="addToBoard()">＋ Agregar al tablero</button>
+                    <button class="btn btn-p" onclick="addToBoard()" style="flex:1;justify-content:center;">＋ Agregar al tablero</button>
                     <button class="btn btn-g" onclick="clearBJ()">🗑 Limpiar</button>
                 </div>
             </div>
@@ -401,7 +401,7 @@
     </div>
     </div>
 
-    <script src="js/app.js?v=1.0.6" defer></script>
+    <script src="js/app.js?v=1.1.0" defer></script>
 </body>
 
 </html>

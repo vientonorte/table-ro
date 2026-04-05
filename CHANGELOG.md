@@ -4,6 +4,42 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.1.0] — 2026-04-04
+
+### 📱 Mobile-first responsive
+
+- Rediseño completo de media queries para pantallas ≤720px.
+- Board semanal ahora hace scroll horizontal con CSS snap (una columna por pantalla en móvil).
+- Touch targets mínimos 44px en botones, checkboxes y controles (WCAG 2.5.8).
+- Drawer BuJo ocupa 100vw en mobile con scroll interno.
+- Modales ocupan 96–98vw, campos de formulario con min-height 44px.
+- Topbar colapsa: oculta chip y separador, scroll horizontal en acciones.
+- Pipeline BuJo en scroll horizontal sin wrap.
+- Admin tabs en scroll horizontal para pantallas angostas.
+
+### ♿ Accesibilidad
+
+- Filtros de categoría con `role="button"`, `tabindex="0"`, `aria-label` y `aria-pressed`.
+- Pipeline BuJo con `role="tablist"` y pills con `role="tab"` / `aria-selected`.
+- Paneles de paso con `role="tabpanel"` y `aria-labelledby`.
+- `<input type="file">` con `aria-label` explícito (BuJo e importar JSON).
+- Filtros de categoría BuJo (ftags) con `role="button"` y `tabindex="0"`.
+- Fix contraste en `.day-count`, `.sum-label`, `.upload-sub`, `.src-desc` (de `#64748B` a `#94a3b8`).
+
+### 🔄 Flujo BuJo simplificado (5 → 3 pasos)
+
+- **Paso 1 — Capturar**: fusiona subir fotos + entrada de texto manual en un solo paso.
+- **Paso 2 — Analizar**: la IA procesa fotos y muestra revisión inline (antes eran 2 pasos separados).
+- **Paso 3 — Agregar**: confirma e inserta ítems al tablero.
+- Nueva función `goToAnalyze()`: valida que haya input (foto o texto), auto-procesa texto manual con `parsePaste()`, y lanza análisis IA si hay fotos con API key configurada.
+- Si no hay IA disponible, el flujo manual funciona 100% sin bloqueos.
+- Reducción de errores: validación antes de avanzar (no se puede ir a paso 2 sin contenido).
+
+### 📅 Contenido
+
+- Título actualizado de "MARZO 2026" a "ABRIL 2026".
+- Bump de assets a v1.1.0 para invalidar caché.
+
 ## [1.0.6] — 2026-04-04
 
 ### 🚑 Hotfix runtime — optional chaining corrupto
