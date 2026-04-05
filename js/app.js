@@ -391,7 +391,7 @@ function makeCard(ev) {
     const tStr = ev.allDay ? 'Todo el día' : (ev.time || '');
     const perm = getPermForCal(ev.cal);
     const readonly = !!ev.readonly || ev.fromCal;
-    const syncBtn = (!ev.fromCal) ? `<button class="sync-btn" title="Agregar a Google Calendar" aria-label="Sincronizar esta tarjeta con Google Calendar" onclick="syncToGCal(event,this)">📅</button>` : '';
+    const syncBtn = (true) ? `<button class="sync-btn" title="Agregar a Google Calendar" aria-label="Sincronizar esta tarjeta con Google Calendar" onclick="syncToGCal(event,this)">📅</button>` : '';
     const detailContent = ev.detail ?
         `<div class="card-detail show"><textarea class="det-area" rows="2" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${ev.detail}</textarea></div>` :
         `<div class="card-detail"><textarea class="det-area" rows="2" placeholder="Notas..." onclick="event.stopPropagation()" onmousedown="event.stopPropagation()"></textarea></div>`;
@@ -1208,7 +1208,7 @@ function saveBoard(){
     const iso=body.id.replace('wb-','');
     body.querySelectorAll('.card').forEach(card=>{
       const title=card.querySelector('.ct')?.textContent||'';const cal=card.dataset.cal||'bujo';
-      const done=card.classList.contains('done');const detail=card.querySelector('.det-area')?.value||''; const time=(card.querySelector('.ctime')?.textContent||'').replace('⏰ ','').trim(); const hasSync=!!card.querySelector('.sync-btn'); const key=cardKey(iso,title,cal); const source=card.dataset.source||'manual'; const kind=card.dataset.kind||'task'; states[key]={done,detail}; if(hasSync)extra.push({iso,title,cal,time,detail,fromCal:false,source,kind});
+      const done=card.classList.contains('done');const detail=card.querySelector('.det-area')?.value||''; const time=(card.querySelector('.ctime')?.textContent||'').replace('⏰ ','').trim(); const hasSync=!!card.querySelector('.sync-btn'); const key=cardKey(iso,title,cal); const source=card.dataset.source||'manual'; const kind=card.dataset.kind||'task'; states[key]={done,detail}; if(source==="manual"||source==="bujo")extra.push({iso,title,cal,time,detail,fromCal:false,source,kind});
     });
   });
   CARD_STATES=states;EXTRA_EVENTS=extra; localStorage.setItem('tablero_states_ro',JSON.stringify(states)); localStorage.setItem('tablero_extra_ro',JSON.stringify(extra));
