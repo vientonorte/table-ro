@@ -235,7 +235,7 @@ const SOURCES = [{
         icon: '🏢',
         gcalId: null,
         readonly: true,
-        icsUrl: 'https://outlook.office365.com/owa/calendar/1ec82b2e6c504125abafa8cd1db794b7@surainvestments.com/80353e1836164569848df1cc2404366c17529804927850062492/calendar.ics',
+        icsUrl: '',
         embedUrl: null,
         lsKey: 'ics_trabajo',
         permKey: 'trabajo'
