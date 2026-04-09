@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.2.2] — 2026-04-05
+
+### 🔧 Interacciones y manejo de estado
+
+- Refactor en `js/app.js` para mejorar la consistencia de interacciones de tarjetas y acciones asociadas.
+- Ajustes de flujo interno de estado para reducir efectos secundarios entre acciones de UI.
+- Limpieza de rutas de actualización para una experiencia más predecible en uso diario.
+
 ## [1.2.1] — 2026-04-04
 
 ### 📱 Mobile long-press para menú contextual
