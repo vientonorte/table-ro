@@ -382,10 +382,30 @@ function pushUndo(type, card, prev) { _lastAction = { type, card, prev, ts: Date
 
 function undo() {
     if (!_lastAction || Date.now() - _lastAction.ts > 15000) return;
-    if (_lastAction.type === 'done') { _lastAction.card.classList.toggle('done');
-        announce('Acción deshecha');
-        autoSave(); }
-    _lastAction = null;
+    const a = _lastAction; _lastAction = null;
+    if (a.type === 'done') { a.card.classList.toggle('done'); }
+    else if (a.type === 'cancel') { a.card.classList.toggle('cancelled'); }
+    else if (a.type === 'delete') {
+        const body = document.getElementById('wb-' + a.prev.iso);
+        if (body) { const empty = body.querySelector('.day-empty'); if (empty) empty.remove(); body.appendChild(a.card); updateDayCount(body.closest('.wday')); }
+    }
+    else if (a.type === 'edit') {
+        const ci = CAL[a.prev.cal] || CAL.bujo;
+        a.card.querySelector('.ct').textContent = a.prev.title;
+        a.card.dataset.cal = a.prev.cal;
+        a.card.style.setProperty('--cc', ci.c);
+        const ctag = a.card.querySelector('.ctag'); if (ctag) { ctag.textContent = ci.l; ctag.style.color = ci.c; }
+        const ctime = a.card.querySelector('.ctime'); if (ctime) ctime.textContent = a.prev.time ? '⏰ ' + a.prev.time : '⏰ Todo el día';
+        const area = a.card.querySelector('.det-area'); if (area) area.value = a.prev.detail;
+        if (a.prev.iso !== a.prev.newIso) {
+            const oldBody = document.getElementById('wb-' + a.prev.iso);
+            if (oldBody) { oldBody.appendChild(a.card); oldBody.querySelector('.day-empty')?.remove(); updateDayCount(oldBody.closest('.wday')); }
+            const newBody = document.getElementById('wb-' + a.prev.newIso);
+            if (newBody) updateDayCount(newBody.closest('.wday'));
+        }
+    }
+    announce('Acción deshecha'); autoSave();
+    showToast('↩ Deshecho', 'info', 1500);
 }
 const DRAG = { card: null };
 const LONG_PRESS_MS = 520;
@@ -1356,8 +1376,8 @@ function showCtxMenu(e,card){
 }
 function closeCtxMenu(){const m=document.querySelector('.ctx-menu');if(m)m.remove();CTX_CARD=null;}
 function editFromCtx(){const card=CTX_CARD;closeCtxMenu();if(card)openEditModal(card);}
-function cancelFromCtx(){const card=CTX_CARD;closeCtxMenu();if(!card)return;card.classList.toggle('cancelled');announce(card.classList.contains('cancelled')?'Evento cancelado':'Evento reactivado');autoSave();}
-function deleteFromCtx(){const card=CTX_CARD;closeCtxMenu();if(!card)return;const title=card.querySelector('.ct')?.textContent||'evento';if(!confirm('¿Eliminar "'+title+'"?'))return;const wday=card.closest('.wday');card.remove();if(wday){updateDayCount(wday);const body=wday.querySelector('[id^="wb-"]');if(body&&!body.querySelector('.card')){body.innerHTML='<div class="day-empty">Sin eventos</div>';}}autoSave();announce('Evento eliminado');}
+function cancelFromCtx(){const card=CTX_CARD;closeCtxMenu();if(!card)return;pushUndo('cancel',card,card.classList.contains('cancelled'));card.classList.toggle('cancelled');announce(card.classList.contains('cancelled')?'Evento cancelado':'Evento reactivado');autoSave();}
+function deleteFromCtx(){const card=CTX_CARD;closeCtxMenu();if(!card)return;const title=card.querySelector('.ct')?.textContent||'evento';if(!confirm('¿Eliminar "'+title+'"?'))return;const parentBody=card.closest('[id^="wb-"]');const delIso=parentBody?parentBody.id.replace('wb-',''):'';pushUndo('delete',card,{iso:delIso});const wday=card.closest('.wday');card.remove();if(wday){updateDayCount(wday);const body=wday.querySelector('[id^="wb-"]');if(body&&!body.querySelector('.card')){body.innerHTML='<div class="day-empty">Sin eventos</div>';}}autoSave();announce('Evento eliminado');}
 
 function openEditModal(card){
   const iso=card.closest('[id^="wb-"]')?.id.replace('wb-','')||'';
@@ -1393,6 +1413,9 @@ function submitEdit(){
   let targetCard=null;
   oldBody.querySelectorAll('.card').forEach(c=>{if(c.querySelector('.ct')?.textContent===oldTitle&&c.dataset.cal===oldCal)targetCard=c;});
   if(!targetCard){closeEditModal();return;}
+  const oldTime=(targetCard.querySelector('.ctime')?.textContent||'').replace('⏰ ','').trim();
+  const oldDetail=targetCard.querySelector('.det-area')?.value||'';
+  pushUndo('edit',targetCard,{title:oldTitle,cal:oldCal,iso:oldIso,newIso:newIso,time:oldTime==='Todo el día'?'':oldTime,detail:oldDetail});
   const ci=CAL[newCat]||CAL.bujo;
   targetCard.querySelector('.ct').textContent=newTitle;
   targetCard.dataset.cal=newCat;
