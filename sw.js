@@ -3,7 +3,7 @@
  * Strategy: Cache-first for static assets, network-first for API calls
  */
 
-const CACHE_NAME = 'table-ro-v1';
+const CACHE_NAME = 'table-ro-v2';
 
 const STATIC_ASSETS = [
     '/table-ro/',
@@ -11,9 +11,9 @@ const STATIC_ASSETS = [
     '/table-ro/css/styles.css',
     '/table-ro/js/app.js',
     '/table-ro/manifest.json',
-    '/table-ro/Chillax_Complete/Fonts/WEB/fonts/Chillax-Regular.woff2',
-    '/table-ro/Chillax_Complete/Fonts/WEB/fonts/Chillax-Semibold.woff2',
-    '/table-ro/Chillax_Complete/Fonts/WEB/fonts/Chillax-Bold.woff2',
+    '/table-ro/fonts/Chillax-Regular.woff2',
+    '/table-ro/fonts/Chillax-Semibold.woff2',
+    '/table-ro/fonts/Chillax-Bold.woff2',
 ];
 
 // Install: pre-cache static assets
