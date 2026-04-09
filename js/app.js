@@ -850,8 +850,8 @@ async function callGemini(prompt){
     return getGeminiText(await res.json());
   }
   const apiKey=getActiveKey('gemini'); if(!apiKey) throw new Error('Falta Gemini API Key');
-  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`,{
-    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
+  const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{
+    method:'POST', headers:{'Content-Type':'application/json','x-goog-api-key':apiKey}, body:JSON.stringify(payload)
   });
   if(!res.ok){ const err=await res.json().catch(()=>({})); throw new Error(err?.error?.message || `Gemini HTTP ${res.status}`); }
   return getGeminiText(await res.json());
