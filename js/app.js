@@ -1300,7 +1300,7 @@ function submitAdd(){
   if(body){const card=makeCard({title,cal:cat,time,detail,fromCal:false,source:'manual',kind:'task'});body.appendChild(card);body.querySelector('.day-empty')?.remove();updateDayCount(body.closest('.wday'));applyFilter();}
   closeAddModal();
 }
-function openAdminModal(){ renderAdmCalUrls(); renderResIcal(); renderPermList(); hydrateAIAdmin(); document.getElementById('admin-modal').classList.add('open'); announce('Panel de administración abierto'); }
+function openAdminModal(){ renderAdmCalUrls(); renderResIcal(); renderCredentials(); renderPermList(); hydrateAIAdmin(); document.getElementById('admin-modal').classList.add('open'); announce('Panel de administración abierto'); }
 function closeAdminModal(){document.getElementById('admin-modal').classList.remove('open');}
 function switchTab(id,btn){ document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active')); btn.classList.add('active');document.getElementById('tab-'+id).classList.add('active'); if(id==='permisos')renderPermList(); }
 function toggleFaq(q){const a=q.nextElementSibling;const isOpen=q.classList.contains('open');document.querySelectorAll('.faq-q.open').forEach(x=>{x.classList.remove('open');x.nextElementSibling.classList.remove('open');});if(!isOpen){q.classList.add('open');a.classList.add('open');}}
@@ -1416,3 +1416,17 @@ function submitEdit(){
 
 (function restoreSura(){const sid=localStorage.getItem('gcal_sura_id');if(sid){const s=SOURCES.find(x=>x.id==='trabajo');if(s&&!s.gcalId)s.gcalId=sid;}})();
 loadPerms(); loadBoard(); renderWeek(); initGAuthUI(); hydrateAIForm(); hydrateAIAdmin(); updateAIStatus(); updateBujoSummary(); setSyncView(false);
+function renderCredentials(){
+  const cont=document.getElementById('res-credentials-list');if(!cont)return;cont.innerHTML='';
+  const clientId=localStorage.getItem('gcal_client_id')||GCAL_CLIENT_ID;
+  const items=[
+    {icon:'🔐',name:'OAuth Client ID',value:clientId},
+    ...SOURCES.map(s=>({icon:s.icon,name:s.name,value:s.gcalId||s.desc||''}))
+  ];
+  items.forEach(item=>{
+    if(!item.value)return;
+    const div=document.createElement('div');div.className='res-card';div.style='cursor:default';
+    div.innerHTML='<span class="res-icon">'+item.icon+'</span><div class="res-info"><div class="res-name">'+item.name+'</div><div class="res-url">'+item.value+'</div></div><button class="res-copy" onclick="copyText(\''+item.value.replace(/'/g,"\\'")+'\',this)">Copiar</button>';
+    cont.appendChild(div);
+  });
+}
