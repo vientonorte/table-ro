@@ -238,6 +238,15 @@ h1 {
     user-select: none;
     min-height: 32px;
     padding: 0 4px;
+    /* button reset */
+    background: none;
+    border: none;
+    font-family: inherit;
+}
+.leg:focus-visible {
+    outline: 2px solid var(--acc);
+    outline-offset: 2px;
+    border-radius: 3px;
 }
 
 .leg:hover {

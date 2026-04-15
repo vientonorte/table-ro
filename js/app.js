@@ -1076,8 +1076,14 @@ function addToBoard(){
 function clearBJ(){ bjList.innerHTML=''; document.getElementById('paste-area').value=''; ths.innerHTML=''; bjImages=[]; document.getElementById('ai-analyze-btn').disabled=true; document.getElementById('ai-result-preview').style.display='none'; showBJItems(); updateAIStatus(); setBujoStep(1); announce('Captura BuJo limpiada'); }
 
 const HIDDEN=new Set();
-function toggleCat(keys,el){ const cats=typeof keys==='string'?[keys]:keys; const wasOff=el.classList.contains('off'); if(wasOff){cats.forEach(k=>HIDDEN.delete(k));el.classList.remove('off');} else{cats.forEach(k=>HIDDEN.add(k));el.classList.add('off');} applyFilter(); }
+const CAT_MAP={'personal':['personal'],'vinculos':['vinculos'],'camila':['camila'],'trabajo':['trabajo','fin']};
+function toggleCat(keys,el){ const cats=typeof keys==='string'?[keys]:keys; const wasOff=el.classList.contains('off'); if(wasOff){cats.forEach(k=>HIDDEN.delete(k));el.classList.remove('off');el.setAttribute('aria-pressed','true');} else{cats.forEach(k=>HIDDEN.add(k));el.classList.add('off');el.setAttribute('aria-pressed','false');} applyFilter(); }
 function applyFilter(){ document.querySelectorAll('.card').forEach(c=>{c.style.display=HIDDEN.has(c.dataset.cal)?'none':'';}); document.querySelectorAll('.aday-pill').forEach(p=>{p.style.display=HIDDEN.has(p.dataset.cal)?'none':'';}); }
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('#legend-panel .leg').forEach(btn=>{
+    btn.addEventListener('click',()=>toggleCat(CAT_MAP[btn.dataset.cat]||[btn.dataset.cat],btn));
+  });
+});
 
 function changeCat(e,tag){
   e.stopPropagation();
