@@ -602,8 +602,8 @@ function renderWeek(){
   applyCardStates();
 }
 
-function openDrawer(){document.getElementById('drawer').classList.add('open');document.getElementById('overlay').classList.add('open');setBujoStep(1);updateAIStatus();if(!getAvailableAIProviders().length){showAIFallbackNote('Configura una API key en ⚙️ Ajustes para activar análisis IA.');}else{hideAIFallbackNote();}announce('Captura de Bullet Journal abierta');}
-function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('overlay').classList.remove('open');announce('Captura de Bullet Journal cerrada');}
+function openDrawer(){document.getElementById('drawer').classList.add('open');document.getElementById('overlay').classList.add('open');const btn=document.getElementById('bujo-btn');if(btn)btn.setAttribute('aria-expanded','true');setBujoStep(1);updateAIStatus();if(!getAvailableAIProviders().length){showAIFallbackNote('Configura una API key en ⚙️ Ajustes para activar análisis IA.');}else{hideAIFallbackNote();}announce('Captura de Bullet Journal abierta');}
+function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('overlay').classList.remove('open');const btn=document.getElementById('bujo-btn');if(btn)btn.setAttribute('aria-expanded','false');announce('Captura de Bullet Journal cerrada');}
 
 let bjImages=[];
 const SYM_MAP={'●':'personal','○':'personal','◆':'vinculos','—':'personal','-':'personal','*':'trabajo','>':'camila','$':'fin','•':'personal','✦':'vinculos','⬡':'camila'};
