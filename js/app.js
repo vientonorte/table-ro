@@ -77,6 +77,7 @@
  * localStorage keys:
  *   tablero_states_ro  — estados de cards (done, detail)
  *   tablero_extra_ro   — eventos agregados manualmente
+ *   tablero_synced_ro  — caché de eventos sincronizados (ICS/GCal/Trello)
  *   tablero_perms_ro   — permisos de fuentes
  *   tablero_ai_cfg_ro  — configuración de IA
  *   gcal_client_id     — OAuth Client ID (sobrescribe default)
@@ -1208,6 +1209,7 @@ async function syncSource(srcId,btn){
     EVENTS.push(...newEvs);
     SYNC_STATUS[srcId]={ok:true,count:newEvs.length,time:new Date(),via:syncVia};
     setSourceStatus(srcId,'ok',newEvs.length);
+    cacheSyncedEvents();
     if(btn){btn.textContent='✓';setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},1800);} renderWeek(); updateSyncTopBtn('synced');
   }catch(err){
     SYNC_STATUS[srcId]={ok:false,error:err.message,time:new Date()}; setSourceStatus(srcId,'error',0,err.message);
@@ -1377,15 +1379,30 @@ function renderAdmCalUrls(){
   SOURCES.filter(src=>src.type!=='trello').forEach(src=>{ const custom=src.lsKey?localStorage.getItem(src.lsKey)||'':'';const url=custom||src.icsUrl||'';const div=document.createElement('div');div.className='mfield';div.style='margin-bottom:5px'; div.innerHTML=`<label style="display:flex;gap:5px;align-items:center"><span style="background:${src.color};width:6px;height:6px;border-radius:50%;display:inline-block"></span>${src.name}${src.gcalId?' <span style="font-size:.48rem;background:rgba(16,185,129,.18);color:#10B981;padding:1px 4px;border-radius:3px">API ✓</span>':''}</label><div style="display:flex;gap:5px;align-items:center"><input type="text" value="${url}" placeholder="URL iCal..." style="font-size:.59rem;flex:1" data-src="${src.id}">${src.lsKey?`<button class="res-copy" onclick="saveCalUrl('${src.id}',this)">💾</button>`:'<span style="font-size:.58rem;color:var(--mut)">no config</span>'}</div>`; cont.appendChild(div); });
 }
 function saveCalUrl(srcId,btn){const src=SOURCES.find(s=>s.id===srcId);if(!src||!src.lsKey)return;const input=btn.previousElementSibling;const url=input?.value?.trim();if(!url)return;localStorage.setItem(src.lsKey,url);btn.textContent='✓';btn.style.color='#10B981';setTimeout(()=>{btn.textContent='💾';btn.style.color='';},1800);}
-function exportBoard(){const data={states:JSON.parse(localStorage.getItem('tablero_states_ro')||'{}'),extra:JSON.parse(localStorage.getItem('tablero_extra_ro')||'[]'),perms:PERMS,ai:AI_CFG,exported:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`tablero-ro-${isoOf(new Date())}.json`;a.click();URL.revokeObjectURL(a.href);}
+function exportBoard(){const data={states:JSON.parse(localStorage.getItem('tablero_states_ro')||'{}'),extra:JSON.parse(localStorage.getItem('tablero_extra_ro')||'[]'),synced:JSON.parse(localStorage.getItem('tablero_synced_ro')||'[]'),perms:PERMS,ai:AI_CFG,exported:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`tablero-ro-${isoOf(new Date())}.json`;a.click();URL.revokeObjectURL(a.href);}
 function importBoardClick(){document.getElementById('import-file').click();}
-function importBoard(input){const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const data=JSON.parse(ev.target.result);if(data.states)localStorage.setItem('tablero_states_ro',JSON.stringify(data.states));if(data.extra)localStorage.setItem('tablero_extra_ro',JSON.stringify(data.extra));if(data.perms){PERMS=data.perms;savePerms();} if(data.ai){AI_CFG=deepMerge(AI_DEFAULTS,data.ai); saveAICfg(); hydrateAIForm(); hydrateAIAdmin();} loadBoard();renderWeek();closeAdminModal();alert('✓ Estado importado correctamente.');}catch(e){alert('Error al importar: '+e.message);}};r.readAsText(f);}
-function clearSavedState(){if(!confirm('¿Eliminar todos los estados guardados?'))return;localStorage.removeItem('tablero_states_ro');localStorage.removeItem('tablero_extra_ro');CARD_STATES={};EXTRA_EVENTS=[];renderWeek();closeAdminModal();}
+function importBoard(input){const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const data=JSON.parse(ev.target.result);if(data.states)localStorage.setItem('tablero_states_ro',JSON.stringify(data.states));if(data.extra)localStorage.setItem('tablero_extra_ro',JSON.stringify(data.extra));if(data.synced)localStorage.setItem('tablero_synced_ro',JSON.stringify(data.synced));if(data.perms){PERMS=data.perms;savePerms();} if(data.ai){AI_CFG=deepMerge(AI_DEFAULTS,data.ai); saveAICfg(); hydrateAIForm(); hydrateAIAdmin();} loadBoard();renderWeek();closeAdminModal();alert('✓ Estado importado correctamente.');}catch(e){alert('Error al importar: '+e.message);}};r.readAsText(f);}
+function clearSavedState(){if(!confirm('¿Eliminar todos los estados guardados?'))return;localStorage.removeItem('tablero_states_ro');localStorage.removeItem('tablero_extra_ro');localStorage.removeItem('tablero_synced_ro');CARD_STATES={};EXTRA_EVENTS=[];renderWeek();closeAdminModal();}
 function renderResIcal(){const cont=document.getElementById('res-ical-list');if(!cont)return;cont.innerHTML='';SOURCES.forEach(src=>{const url=src.icsUrl||'';if(!url)return;const div=document.createElement('div');div.className='res-card';div.style='margin-bottom:4px;cursor:default';div.innerHTML=`<span class="res-icon" style="font-size:.9rem">${src.icon}</span><div class="res-info"><div class="res-name">${src.name}</div><div class="res-url">${url.slice(0,52)}…</div></div><button class="res-copy" onclick="copyText('${url}',this)">Copiar</button>`;cont.appendChild(div);});}
 function copyText(text,btn){navigator.clipboard.writeText(text).then(()=>{const orig=btn.textContent;btn.textContent='✓';btn.style.color='#10B981';setTimeout(()=>{btn.textContent=orig;btn.style.color='';},1800);}).catch(()=>{alert('Copia manual:\n'+text);});}
 
 let EXTRA_EVENTS=[];let CARD_STATES={};
 function cardKey(iso,title,cal){return `${iso}|${title}|${cal}`;}
+
+/* ── Sync cache: persist synced calendar events across refreshes ── */
+function cacheSyncedEvents(){
+  try{
+    const synced=EVENTS.filter(e=>e.uid&&e.fromCal);
+    localStorage.setItem('tablero_synced_ro',JSON.stringify(synced));
+  }catch(e){if(e.name==='QuotaExceededError')console.warn('cacheSyncedEvents: storage full');else console.warn('cacheSyncedEvents:',e);}
+}
+function loadSyncedCache(){
+  try{
+    const cached=JSON.parse(localStorage.getItem('tablero_synced_ro')||'[]');
+    cached.forEach(ev=>{if(ev.uid&&!EVENTS.find(e=>e.uid===ev.uid))EVENTS.push(ev);});
+  }catch(e){console.warn('loadSyncedCache:',e);}
+}
+
 function saveBoard(){
   const states={};const extra=[];
   document.querySelectorAll('[id^="wb-"]').forEach(body=>{
@@ -1401,7 +1418,7 @@ function saveBoard(){
   showToast(`💾 ${n} tarjetas · ${xn} manuales guardadas`,'ok',2000);
 }
 function loadBoard(){
-  try{ CARD_STATES=JSON.parse(localStorage.getItem('tablero_states_ro')||'{}'); EXTRA_EVENTS=JSON.parse(localStorage.getItem('tablero_extra_ro')||'[]'); EXTRA_EVENTS.forEach(ev=>{if(!EVENTS.find(e=>e.iso===ev.iso&&e.title===ev.title))EVENTS.push(ev);}); }
+  try{ CARD_STATES=JSON.parse(localStorage.getItem('tablero_states_ro')||'{}'); EXTRA_EVENTS=JSON.parse(localStorage.getItem('tablero_extra_ro')||'[]'); EXTRA_EVENTS.forEach(ev=>{if(!EVENTS.find(e=>e.iso===ev.iso&&e.title===ev.title))EVENTS.push(ev);}); loadSyncedCache(); }
   catch(e){console.warn('loadBoard:',e);} 
 }
 function applyCardStates(){ document.querySelectorAll('[id^="wb-"]').forEach(body=>{ const iso=body.id.replace('wb-',''); body.querySelectorAll('.card').forEach(card=>{ const title=card.querySelector('.ct')?.textContent||'';const cal=card.dataset.cal||'bujo'; const st=CARD_STATES[cardKey(iso,title,cal)];if(!st)return; if(st.done)card.classList.add('done');if(st.cancelled)card.classList.add('cancelled'); if(st.detail){const area=card.querySelector('.det-area');if(area){area.value=st.detail;card.querySelector('.card-detail')?.classList.add('show');}} }); }); }
@@ -1486,6 +1503,8 @@ function submitEdit(){
 
 (function restoreSura(){const sid=localStorage.getItem('gcal_sura_id');if(sid){const s=SOURCES.find(x=>x.id==='trabajo');if(s&&!s.gcalId)s.gcalId=sid;}})();
 loadPerms(); loadBoard(); renderWeek(); initGAuthUI(); hydrateAIForm(); hydrateAIAdmin(); updateAIStatus(); updateBujoSummary(); setSyncView(false);
+/* ── Auto-sync on page load: refresh cached events in background ── */
+setTimeout(()=>{syncAll().then(()=>renderWeek()).catch(err=>console.warn('Auto-sync:',err));},1500);
 function renderCredentials(){
   const cont=document.getElementById('res-credentials-list');if(!cont)return;cont.innerHTML='';
   const clientId=localStorage.getItem('gcal_client_id')||GCAL_CLIENT_ID;
