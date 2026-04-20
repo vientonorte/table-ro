@@ -91,6 +91,7 @@ const CAL = {
     camila: { c: '#10B981', bg: 'rgba(16,185,129,.16)', l: 'Camila' },
     trabajo: { c: '#F97316', bg: 'rgba(249,115,22,.16)', l: 'Sura' },
     fin: { c: '#FB923C', bg: 'rgba(251,146,60,.16)', l: 'Finanzas' },
+    'espacio-seguro': { c: '#10B981', bg: 'rgba(16,185,129,.16)', l: 'Espacio Seguro' },
     bujo: { c: '#C084FC', bg: 'rgba(192,132,252,.16)', l: '📓 BuJo' },
 };
 
@@ -259,18 +260,17 @@ const SOURCES = [{
     {
         id: 'espacio-seguro',
         name: 'Espacio Seguro · Romila',
-        desc: 'Trello · Tareas domésticas',
-        cal: 'camila',
+        desc: 'Trello ICS · Tareas RO',
+        cal: 'espacio-seguro',
         color: '#10B981',
         icon: '🏠',
         gcalId: null,
         readonly: true,
-        icsUrl: '',
+        icsUrl: 'https://trello.com/calendar/5be8d432f8dc74493aaf53e6/69c558a7d79162569df9a98a/3b84dbc14a0b216f20c2b1ca2120a49f.ics',
         embedUrl: 'https://trello.com/b/69c558a7d79162569df9a98a/diseno-de-espacio-seguro-romila',
-        lsKey: 'trello_espacio_seguro',
+        lsKey: 'ics_espacio_seguro',
         permKey: 'espacio-seguro',
-        type: 'trello',
-        trelloBoardId: '69c558a7d79162569df9a98a'
+        filterRe: /\bRO\b|Rö/i
     },
 ];
 
@@ -625,7 +625,7 @@ function closeDrawer(){document.getElementById('drawer').classList.remove('open'
 
 let bjImages=[];
 const SYM_MAP={'●':'personal','○':'personal','◆':'vinculos','—':'personal','-':'personal','*':'trabajo','>':'camila','$':'fin','•':'personal','✦':'vinculos','⬡':'camila'};
-const BJ_CAL={personal:{c:'#EC4899',l:'Personal'},vinculos:{c:'#7C3AED',l:'Vínculos'},camila:{c:'#10B981',l:'Camila'},trabajo:{c:'#F97316',l:'Trabajo'},fin:{c:'#FB923C',l:'Finanzas'},bujo:{c:'#C084FC',l:'📓 BuJo'}};
+const BJ_CAL={personal:{c:'#EC4899',l:'Personal'},vinculos:{c:'#7C3AED',l:'Vínculos'},camila:{c:'#10B981',l:'Camila'},trabajo:{c:'#F97316',l:'Trabajo'},fin:{c:'#FB923C',l:'Finanzas'},'espacio-seguro':{c:'#10B981',l:'Espacio Seguro'},bujo:{c:'#C084FC',l:'📓 BuJo'}};
 
 const AI_CFG_KEY = 'tablero_ai_cfg_ro';
 const AI_DEFAULTS = {
@@ -1205,6 +1205,7 @@ async function syncSource(srcId,btn){
       if(!icsText||!icsText.includes('BEGIN:VCALENDAR'))throw new Error('No es ICS válido');
       newEvs=parseICS(icsText,src.cal,srcId);
     }
+    if(src.filterRe)newEvs=newEvs.filter(e=>src.filterRe.test(e.title));
     for(let i=EVENTS.length-1;i>=0;i--){if(EVENTS[i].uid&&(EVENTS[i].srcId===srcId||(!EVENTS[i].srcId&&EVENTS[i].cal===src.cal)))EVENTS.splice(i,1);}
     EVENTS.push(...newEvs);
     SYNC_STATUS[srcId]={ok:true,count:newEvs.length,time:new Date(),via:syncVia};
