@@ -270,7 +270,7 @@ const SOURCES = [{
         embedUrl: 'https://trello.com/b/69c558a7d79162569df9a98a/diseno-de-espacio-seguro-romila',
         lsKey: 'ics_espacio_seguro',
         permKey: 'espacio-seguro',
-        filterRe: /\bR[oöO]\b/i
+        filterRe: /\bRO\b|Rö/i
     },
 ];
 
