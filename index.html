@@ -233,6 +233,23 @@
                 </div>
                 <div class="adm-sep"></div>
                 <div>
+                    <div class="sec-title" style="font-size:.74rem;">🏠 Trello · Espacio Seguro</div>
+                    <div style="font-size:.62rem;color:var(--mut);margin-bottom:6px;line-height:1.5">Sync del tablero <strong style="color:#10B981">Diseño de Espacio Seguro Romila</strong> (tareas domésticas). Las tarjetas con fecha se sincronizan como categoría Camila.</div>
+                    <div class="mfield">
+                        <label>Trello API Key</label>
+                        <div style="display:flex;gap:6px;">
+                            <input type="password" id="adm-trello-key" placeholder="Tu API Key de Trello" autocomplete="off" style="font-size:.61rem;flex:1">
+                            <button class="res-copy" onclick="saveTrelloCredentials(this)">💾</button>
+                        </div>
+                    </div>
+                    <div class="mfield">
+                        <label>Trello Token</label>
+                        <input type="password" id="adm-trello-token" placeholder="Token de autorización" autocomplete="off" style="font-size:.61rem">
+                    </div>
+                    <div class="hint" style="margin-top:5px"><span>🔑</span> Obtén tu API Key en <a href="https://developer.atlassian.com/cloud/trello/guides/rest-api/api-introduction/#authentication-and-authorization" target="_blank" style="color:#a78bfa">developer.atlassian.com</a>. Genera el token desde el enlace que aparece junto a la key.</div>
+                </div>
+                <div class="adm-sep"></div>
+                <div>
                     <div class="sec-title" style="font-size:.74rem;">📅 URLs de Calendarios</div>
                     <div id="adm-cal-urls"></div>
                 </div>
@@ -255,7 +272,7 @@
                 <div style="font-size:.68rem;color:var(--mut);line-height:1.6;">Control de acceso por fuente de calendario. Los cambios se aplican en el próximo sync.</div>
                 <div id="perm-list"></div>
                 <div class="hint"><span>🔐</span> <strong style="color:#a78bfa">Sura Investments</strong> requiere permiso de admin para mostrar eventos. Solo lectura — no se pueden empujar eventos a este calendario. <strong style="color:#60A5FA">Camila</strong> es consulta:
-                    requiere que ella haya compartido su calendario contigo.</div>
+                    requiere que ella haya compartido su calendario contigo. <strong style="color:#10B981">Espacio Seguro</strong> sincroniza tareas domésticas desde Trello (requiere API Key).</div>
             </div>
             <div class="tab-pane" id="tab-faq">
                 <div class="faq-item">
