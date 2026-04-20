@@ -1392,14 +1392,14 @@ function cardKey(iso,title,cal){return `${iso}|${title}|${cal}`;}
 /* ── Sync cache: persist synced calendar events across refreshes ── */
 function cacheSyncedEvents(){
   try{
-    const synced=EVENTS.filter(e=>e.fromCal||e.uid);
+    const synced=EVENTS.filter(e=>e.uid&&e.fromCal);
     localStorage.setItem('tablero_synced_ro',JSON.stringify(synced));
   }catch(e){if(e.name==='QuotaExceededError')console.warn('cacheSyncedEvents: storage full');else console.warn('cacheSyncedEvents:',e);}
 }
 function loadSyncedCache(){
   try{
     const cached=JSON.parse(localStorage.getItem('tablero_synced_ro')||'[]');
-    cached.forEach(ev=>{if(!EVENTS.find(e=>e.uid&&e.uid===ev.uid))EVENTS.push(ev);});
+    cached.forEach(ev=>{if(ev.uid&&!EVENTS.find(e=>e.uid===ev.uid))EVENTS.push(ev);});
   }catch(e){console.warn('loadSyncedCache:',e);}
 }
 
@@ -1504,7 +1504,7 @@ function submitEdit(){
 (function restoreSura(){const sid=localStorage.getItem('gcal_sura_id');if(sid){const s=SOURCES.find(x=>x.id==='trabajo');if(s&&!s.gcalId)s.gcalId=sid;}})();
 loadPerms(); loadBoard(); renderWeek(); initGAuthUI(); hydrateAIForm(); hydrateAIAdmin(); updateAIStatus(); updateBujoSummary(); setSyncView(false);
 /* ── Auto-sync on page load: refresh cached events in background ── */
-setTimeout(()=>{syncAll().then(()=>renderWeek()).catch(()=>{});},1500);
+setTimeout(()=>{syncAll().then(()=>renderWeek()).catch(err=>console.warn('Auto-sync:',err));},1500);
 function renderCredentials(){
   const cont=document.getElementById('res-credentials-list');if(!cont)return;cont.innerHTML='';
   const clientId=localStorage.getItem('gcal_client_id')||GCAL_CLIENT_ID;
