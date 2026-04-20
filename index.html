@@ -184,40 +184,84 @@
                             <button class="ai-pill" data-val="openai" onclick="selectAIProvider(this)">GPT</button>
                             <button class="ai-pill" data-val="gemini" onclick="selectAIProvider(this)">Gemini</button>
                         </div>
+                        <div class="ai-auto-hint" id="ai-auto-hint"></div>
                     </div>
 
-                    <div style="display:flex;flex-direction:column;gap:6px;">
-                        <div class="ai-provider-card claude">
-                            <div class="ai-card-head claude">Claude</div>
-                            <div class="mrow">
-                                <div class="mfield"><label>API Key</label><input type="password" id="adm-claude-key" placeholder="sk-ant-..." autocomplete="off"></div>
-                                <div class="mfield"><label>Modelo</label><input type="text" id="adm-claude-model" value="claude-sonnet-4-6"></div>
+                    <div class="ai-provider-list" id="ai-provider-list">
+                        <details class="ai-provider-card claude" id="ai-card-claude" open>
+                            <summary class="ai-card-head claude">
+                                <span class="ai-card-icon">🟣</span> Claude
+                                <span class="ai-status-dot" id="ai-dot-claude"></span>
+                            </summary>
+                            <div class="ai-card-body">
+                                <div class="mfield"><label>API Key</label>
+                                    <div class="key-input-wrap">
+                                        <input type="password" id="adm-claude-key" placeholder="sk-ant-..." autocomplete="off" onchange="autoSaveAIAdmin()">
+                                        <button class="key-toggle" onclick="toggleKeyVis(this)" aria-label="Mostrar/ocultar key" type="button">👁</button>
+                                    </div>
+                                </div>
+                                <div class="mfield"><label>Modelo</label>
+                                    <select id="adm-claude-model" onchange="autoSaveAIAdmin()">
+                                        <option value="claude-sonnet-4-6">claude-sonnet-4-6</option>
+                                        <option value="claude-sonnet-4-5-20250514">claude-sonnet-4-5</option>
+                                        <option value="claude-haiku-3-5-20241022">claude-haiku-3.5</option>
+                                        <option value="claude-opus-4-0-20250514">claude-opus-4</option>
+                                    </select>
+                                </div>
                             </div>
-                        </div>
-                        <div class="ai-provider-card openai">
-                            <div class="ai-card-head openai">OpenAI</div>
-                            <div class="mrow">
-                                <div class="mfield"><label>API Key</label><input type="password" id="adm-openai-key" placeholder="sk-..." autocomplete="off"></div>
-                                <div class="mfield"><label>Modelo</label><input type="text" id="adm-openai-model" value="gpt-5.4"></div>
+                        </details>
+                        <details class="ai-provider-card openai" id="ai-card-openai">
+                            <summary class="ai-card-head openai">
+                                <span class="ai-card-icon">🟢</span> OpenAI
+                                <span class="ai-status-dot" id="ai-dot-openai"></span>
+                            </summary>
+                            <div class="ai-card-body">
+                                <div class="mfield"><label>API Key</label>
+                                    <div class="key-input-wrap">
+                                        <input type="password" id="adm-openai-key" placeholder="sk-..." autocomplete="off" onchange="autoSaveAIAdmin()">
+                                        <button class="key-toggle" onclick="toggleKeyVis(this)" aria-label="Mostrar/ocultar key" type="button">👁</button>
+                                    </div>
+                                </div>
+                                <div class="mfield"><label>Modelo</label>
+                                    <select id="adm-openai-model" onchange="autoSaveAIAdmin()">
+                                        <option value="gpt-5.4">gpt-5.4</option>
+                                        <option value="gpt-5-mini">gpt-5-mini</option>
+                                        <option value="gpt-4.1">gpt-4.1</option>
+                                        <option value="o3-mini">o3-mini</option>
+                                    </select>
+                                </div>
                             </div>
-                        </div>
-                        <div class="ai-provider-card gemini">
-                            <div class="ai-card-head gemini">Gemini</div>
-                            <div class="mrow">
-                                <div class="mfield"><label>API Key</label><input type="password" id="adm-gemini-key" placeholder="AIza..." autocomplete="off"></div>
-                                <div class="mfield"><label>Modelo</label><input type="text" id="adm-gemini-model" value="gemini-3.1-pro-preview"></div>
+                        </details>
+                        <details class="ai-provider-card gemini" id="ai-card-gemini">
+                            <summary class="ai-card-head gemini">
+                                <span class="ai-card-icon">🔵</span> Gemini
+                                <span class="ai-status-dot" id="ai-dot-gemini"></span>
+                            </summary>
+                            <div class="ai-card-body">
+                                <div class="mfield"><label>API Key</label>
+                                    <div class="key-input-wrap">
+                                        <input type="password" id="adm-gemini-key" placeholder="AIza..." autocomplete="off" onchange="autoSaveAIAdmin()">
+                                        <button class="key-toggle" onclick="toggleKeyVis(this)" aria-label="Mostrar/ocultar key" type="button">👁</button>
+                                    </div>
+                                </div>
+                                <div class="mfield"><label>Modelo</label>
+                                    <select id="adm-gemini-model" onchange="autoSaveAIAdmin()">
+                                        <option value="gemini-3.1-pro-preview">gemini-3.1-pro</option>
+                                        <option value="gemini-2.5-flash-preview-05-20">gemini-2.5-flash</option>
+                                        <option value="gemini-2.5-pro-preview-05-06">gemini-2.5-pro</option>
+                                    </select>
+                                </div>
                             </div>
-                        </div>
+                        </details>
                     </div>
 
-                    <div class="btn-row" style="margin-top:6px;">
-                        <button class="btn btn-p" style="flex:1;justify-content:center;" onclick="saveAIAdmin()">💾 Guardar IA</button>
-                    </div>
                     <div class="mfield" style="margin-top:6px;">
                         <label>Proxy URL <small style="opacity:.6">(opcional — Cloudflare Worker)</small></label>
-                        <input type="url" id="adm-proxy-url" placeholder="https://table-ro-ai-proxy.tu-cuenta.workers.dev" autocomplete="off" style="font-size:.65rem">
+                        <input type="url" id="adm-proxy-url" placeholder="https://table-ro-ai-proxy.tu-cuenta.workers.dev" autocomplete="off" style="font-size:.65rem" onchange="autoSaveAIAdmin()">
                     </div>
-                    <div style="font-size:.65rem;color:#f59e0b;background:rgba(245,158,11,.1);border-radius:6px;padding:6px 8px;margin-top:4px;">⚠️ Las API keys se guardan en localStorage (solo este navegador). Configura el proxy para no exponer keys.</div>
+                    <div class="ai-security-note">
+                        <span>🔒</span> Las API keys se guardan en localStorage (solo este navegador). <strong>Configura el proxy</strong> para no exponer keys directamente al navegador.
+                    </div>
                 </div>
                 <div class="adm-sep"></div>
                 <div>
@@ -277,8 +321,7 @@
             <div class="tab-pane" id="tab-faq">
                 <div class="faq-item">
                     <div class="faq-q" onclick="toggleFaq(this)">¿Cómo funciona la extracción automática de BuJo con IA? <span class="faq-chevron">▼</span></div>
-                    <div class="faq-a">1. Ve a <strong>📓 Bullet Journal</strong> → sube una foto de tu BuJo físico.<br>2. Configura tu proveedor y API Key en ⚙️ Admin → Motor IA.<br>3. Haz clic en <strong>🤖 Analizar Bullet</strong>.<br>4. El resultado se parsea en JSON
-                        y se transforma en ítems BuJo.<br>5. Selecciona los que quieres y pulsa <strong>＋ Agregar al tablero</strong>.</div>
+                    <div class="faq-a">1. Ve a <strong>📓 Bullet Journal</strong> → sube una foto o escribe texto manualmente.<br>2. Pulsa <strong>Analizar y revisar →</strong>. La IA extrae los ítems automáticamente.<br>3. Revisa, selecciona los que quieres y pulsa <strong>＋ Agregar al tablero</strong>.<br><br>Configura tu API Key en ⚙️ Admin → Motor IA. Sin key, el texto manual se procesa igualmente.</div>
                 </div>
                 <div class="faq-item">
                     <div class="faq-q" onclick="toggleFaq(this)">¿Por qué sale Error 400 al conectar Google? <span class="faq-chevron">▼</span></div>
@@ -326,10 +369,9 @@
             <button class="drawer-close" onclick="closeDrawer()" aria-label="Cerrar captura BuJo">✕</button>
         </div>
         <div class="drawer-body">
-            <div class="pipeline" id="bujo-pipeline" role="tablist" aria-label="Pasos de extracción BuJo">
+            <div class="pipeline" id="bujo-pipeline" role="tablist" aria-label="Pasos de captura BuJo">
                 <button class="step-pill active" id="step-pill-1" onclick="setBujoStep(1)" role="tab" aria-selected="true" aria-controls="step-panel-1">1 Capturar</button>
-                <button class="step-pill" id="step-pill-2" onclick="setBujoStep(2)" role="tab" aria-selected="false" aria-controls="step-panel-2">2 Analizar</button>
-                <button class="step-pill" id="step-pill-3" onclick="setBujoStep(3)" role="tab" aria-selected="false" aria-controls="step-panel-3">3 Agregar</button>
+                <button class="step-pill" id="step-pill-2" onclick="setBujoStep(2)" role="tab" aria-selected="false" aria-controls="step-panel-2">2 Revisar y agregar</button>
             </div>
 
             <div class="summary-grid" aria-live="polite">
@@ -347,10 +389,10 @@
                 </div>
             </div>
 
-            <!-- PASO 1: CAPTURAR (fusión de subir fotos + texto manual) -->
+            <!-- PASO 1: CAPTURAR (subir fotos + texto manual) -->
             <div class="step-panel active" id="step-panel-1" role="tabpanel" aria-labelledby="step-pill-1">
                 <div class="ai-zone">
-                    <div class="ai-zone-title">📸 Paso 1 · Capturar BuJo</div>
+                    <div class="ai-zone-title">📸 Capturar BuJo</div>
                     <div class="upload-zone" id="upzone" aria-label="Subir imágenes del bullet journal">
                         <input type="file" id="bj-input" accept="image/*" multiple aria-label="Seleccionar fotos del Bullet Journal">
                         <span class="upload-icon">📷</span>
@@ -367,23 +409,17 @@
                     <textarea class="paste-area" id="paste-area" placeholder="● Tarea pendiente&#10;◆ Evento / cita&#10;— Nota / reflexión&#10;○ Personal / salud / hábito&#10;* Trabajo&#10;> Camila&#10;$ Finanzas" aria-label="Texto manual del Bullet Journal"></textarea>
 
                     <div class="btn-row" style="margin-top:4px;">
-                        <button class="btn btn-p" id="goto-analyze-btn" onclick="goToAnalyze()" style="flex:1;justify-content:center;">Continuar a análisis →</button>
+                        <button class="btn btn-p" id="goto-analyze-btn" onclick="goToAnalyze()" style="flex:1;justify-content:center;">Analizar y revisar →</button>
                     </div>
                 </div>
             </div>
 
-            <!-- PASO 2: ANALIZAR (IA + revisión de resultados) -->
+            <!-- PASO 2: ANALIZAR + REVISAR + AGREGAR (todo junto) -->
             <div class="step-panel" id="step-panel-2" role="tabpanel" aria-labelledby="step-pill-2">
                 <div class="ai-zone">
-                    <div class="ai-zone-title">🤖 Paso 2 · Analizar y revisar</div>
-                    <div class="hint" style="margin-bottom:8px;">
-                        <span>🤖</span> La IA extrae eventos de tus fotos. Si falla o no tienes API key, el texto manual se procesa automáticamente.
-                    </div>
-
-                    <div style="display:flex;align-items:center;gap:8px;">
-                        <span style="font-size:.65rem;color:var(--mut);">Estado:</span>
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
                         <span class="ai-key-status" id="api-key-status">Sin configurar</span>
-                        <button class="btn btn-g" style="padding:3px 8px;font-size:.6rem;margin-left:auto;" onclick="openAdminModal()">⚙️ Configurar</button>
+                        <button class="btn btn-g" style="padding:3px 8px;font-size:.6rem;margin-left:auto;" onclick="openAdminModal()">⚙️ Config IA</button>
                     </div>
 
                     <button class="ai-analyze-btn" id="ai-analyze-btn" onclick="analyzeBujo()" disabled>
@@ -402,9 +438,9 @@
                     <div id="ai-result-preview" style="display:none;" aria-live="polite"></div>
                 </div>
 
-                <!-- Revisión inline (antes era paso 3 separado) -->
+                <!-- Revisión + agregar (inline) -->
                 <div id="bj-section" style="display:none;">
-                    <div class="sec-title">✅ Revisar extracción</div>
+                    <div class="sec-title">✅ Revisar y agregar</div>
                     <div class="ftag-row" id="ftags">
                         <div class="ftag on" style="background:rgba(168,85,247,.15);border-color:#A855F7;color:#d8b4fe" onclick="filterBJ('all',this)" role="button" tabindex="0">Todos</div>
                         <div class="ftag" style="background:rgba(236,72,153,.12);border-color:#EC4899;color:#EC4899" onclick="filterBJ('personal',this)" role="button" tabindex="0">Personal</div>
@@ -417,26 +453,16 @@
                     <div class="btn-row" style="margin-top:9px;">
                         <button class="btn btn-g" onclick="selectAllBJ(true)">Seleccionar todos</button>
                         <button class="btn btn-g" onclick="selectAllBJ(false)">Limpiar selección</button>
-                        <button class="btn btn-p" onclick="setBujoStep(3)">Agregar al tablero →</button>
+                        <button class="btn btn-p" onclick="addToBoard()" style="flex:1;">＋ Agregar al tablero</button>
+                    </div>
+                    <div class="btn-row" style="margin-top:4px;">
+                        <button class="btn btn-g" onclick="clearBJ()" style="flex:1;justify-content:center;">🗑 Limpiar todo</button>
                     </div>
                 </div>
             </div>
 
-            <!-- PASO 3: AGREGAR (confirmar y agregar) -->
-            <div class="step-panel" id="step-panel-3" role="tabpanel" aria-labelledby="step-pill-3">
-                <div class="sec-title">📥 Paso 3 · Agregar al tablero</div>
-                <div class="hint" style="margin-bottom:8px;">
-                    <span>💡</span> Se agregarán los ítems seleccionados a la semana visible del tablero.
-                </div>
-                <div class="btn-row" style="margin-top:9px;">
-                    <button class="btn btn-p" onclick="addToBoard()" style="flex:1;justify-content:center;">＋ Agregar al tablero</button>
-                    <button class="btn btn-g" onclick="clearBJ()">🗑 Limpiar</button>
-                </div>
-            </div>
-
         </div>
-        <div class="hint"><span>💡</span> Simbología: <strong style="color:#EC4899">●</strong> Personal &nbsp;<strong style="color:#7C3AED">◆</strong> Vínculos &nbsp;<strong style="color:#EC4899">○</strong> Personal / salud / hábito &nbsp;<strong style="color:#F97316">*</strong>            Trabajo &nbsp;<strong style="color:#10B981">></strong> Camila &nbsp;<strong style="color:#FB923C">$</strong> Finanzas</div>
-    </div>
+        <div class="hint"><span>💡</span> Simbología: <strong style="color:#EC4899">●</strong> Personal &nbsp;<strong style="color:#7C3AED">◆</strong> Vínculos &nbsp;<strong style="color:#EC4899">○</strong> Personal / salud / hábito &nbsp;<strong style="color:#F97316">*</strong> Trabajo &nbsp;<strong style="color:#10B981">></strong> Camila &nbsp;<strong style="color:#FB923C">$</strong> Finanzas</div>
     </div>
 
     <script src="js/app.js?v=1.2.0" defer></script>
