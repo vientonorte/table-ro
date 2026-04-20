@@ -310,7 +310,7 @@ let BUJO_STEP = 1;
 let SYNC_ADVANCED = false;
 // UX IMPROVEMENT: flujo guiado en 5 pasos para reducir carga cognitiva.
 function setBujoStep(step) {
-    BUJO_STEP = Math.max(1, Math.min(3, Number(step || 1)));
+    BUJO_STEP = Math.max(1, Math.min(2, Number(step || 1)));
     document.querySelectorAll(".step-pill").forEach((el, idx) => {
         el.classList.toggle("active", idx + 1 === BUJO_STEP);
         el.setAttribute("aria-selected", idx + 1 === BUJO_STEP ? "true" : "false");
@@ -682,8 +682,28 @@ function saveAIAdmin(){
   AI_CFG.providers.gemini.model = (document.getElementById('adm-gemini-model')?.value || 'gemini-3.1-pro-preview').trim();
   AI_CFG.proxyUrl = (document.getElementById('adm-proxy-url')?.value || '').trim().replace(/\/+$/,'');
   saveAICfg();
-  const btn = event?.target;
-  if(btn){ btn.textContent = '✓ Guardado'; setTimeout(() => btn.textContent = '💾 Guardar IA', 1800); }
+  updateProviderCardStates();
+}
+let _aiAutoSaveTimer=null;
+function autoSaveAIAdmin(){ clearTimeout(_aiAutoSaveTimer); _aiAutoSaveTimer=setTimeout(()=>{ saveAIAdmin(); showToast('✓ Config IA guardada','ok'); },400); }
+function toggleKeyVis(btn){ const inp=btn.previousElementSibling; if(!inp) return; inp.type=inp.type==='password'?'text':'password'; btn.textContent=inp.type==='password'?'👁':'🙈'; }
+function updateProviderCardStates(){
+  ['claude','openai','gemini'].forEach(p=>{
+    const card=document.getElementById('ai-card-'+p);
+    const dot=document.getElementById('ai-dot-'+p);
+    const hasKey=!!getActiveKey(p) || !!AI_CFG.proxyUrl;
+    if(card) card.classList.toggle('configured', hasKey);
+    if(dot){ dot.className='ai-status-dot '+(hasKey?'ok':'none'); }
+  });
+  const hint=document.getElementById('ai-auto-hint');
+  if(hint){
+    const pv=AI_CFG.provider;
+    if(pv==='auto'){
+      const resolved=resolveProvider();
+      const available=getAvailableAIProviders();
+      hint.textContent=available.length ? `Auto selecciona → ${providerLabel(resolved)}` : 'Configura al menos un proveedor';
+    } else { hint.textContent=''; }
+  }
 }
 function selectAIProvider(btn){
   document.querySelectorAll('#ai-pills .ai-pill').forEach(b=>b.classList.remove('active'));
@@ -691,21 +711,29 @@ function selectAIProvider(btn){
   const inp = document.getElementById('adm-ai-provider');
   if(inp) inp.value = btn.dataset.val;
   saveAIAdmin();
+  updateProviderCardStates();
 }
 function hydrateAIAdmin(){
   const ids = {
     'adm-ai-provider': AI_CFG.provider,
     'adm-claude-key': AI_CFG.providers.claude.key,
-    'adm-claude-model': AI_CFG.providers.claude.model,
     'adm-openai-key': AI_CFG.providers.openai.key,
-    'adm-openai-model': AI_CFG.providers.openai.model,
     'adm-gemini-key': AI_CFG.providers.gemini.key,
-    'adm-gemini-model': AI_CFG.providers.gemini.model,
     'adm-proxy-url': AI_CFG.proxyUrl || ''
   };
   Object.entries(ids).forEach(([id, value]) => { const el = document.getElementById(id); if(el) el.value = value; });
+  // For model selects: set value or add custom option if not in list
+  ['claude','openai','gemini'].forEach(p=>{
+    const sel=document.getElementById('adm-'+p+'-model');
+    const model=AI_CFG.providers[p]?.model||'';
+    if(!sel||!model) return;
+    const exists=[...sel.options].some(o=>o.value===model);
+    if(!exists){ const opt=document.createElement('option'); opt.value=model; opt.textContent=model; sel.appendChild(opt); }
+    sel.value=model;
+  });
   const pv = AI_CFG.provider || 'auto';
   document.querySelectorAll('#ai-pills .ai-pill').forEach(b=>b.classList.toggle('active', b.dataset.val===pv));
+  updateProviderCardStates();
 }
 function hydrateAIForm(){
   const ids = {
