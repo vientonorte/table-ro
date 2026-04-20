@@ -196,6 +196,7 @@ const PERMS_DEFAULT = {
     finanzas: { perm: 'ro', enabled: true, adminRequired: false },
     trabajo: { perm: 'admin', enabled: false, adminRequired: true },
     camila: { perm: 'query', enabled: true, adminRequired: false },
+    'espacio-seguro': { perm: 'ro', enabled: true, adminRequired: false },
 };
 
 const SOURCES = [{
@@ -253,6 +254,22 @@ const SOURCES = [{
         embedUrl: 'https://calendar.google.com/calendar/embed?src=c.camilapalma%40gmail.com&ctz=America%2FSantiago',
         lsKey: 'ics_camila',
         permKey: 'camila'
+    },
+    {
+        id: 'espacio-seguro',
+        name: 'Espacio Seguro · Romila',
+        desc: 'Trello · Tareas domésticas',
+        cal: 'camila',
+        color: '#10B981',
+        icon: '🏠',
+        gcalId: null,
+        readonly: true,
+        icsUrl: '',
+        embedUrl: 'https://trello.com/b/69c558a7d79162569df9a98a/diseno-de-espacio-seguro-romila',
+        lsKey: 'trello_espacio_seguro',
+        permKey: 'espacio-seguro',
+        type: 'trello',
+        trelloBoardId: '69c558a7d79162569df9a98a'
     },
 ];
 
@@ -341,7 +358,7 @@ const KIND_LABELS = { task: 'Tarea', event: 'Evento', note: 'Nota', habit: 'Háb
 
 function normalizeKind(kind, fallbackTitle = '') { if (['task', 'event', 'note', 'habit'].includes(kind)) return kind; if (/^(📅|⏰)/.test(fallbackTitle)) return 'event'; if (/^(📝)/.test(fallbackTitle)) return 'note'; if (/^(🔁)/.test(fallbackTitle)) return 'habit'; return 'task'; }
 
-function sourceLabel(src) { return src === 'bujo' ? 'BuJo' : src === 'gcal' ? 'Google' : src === 'ics' ? 'ICS' : 'Manual'; }
+function sourceLabel(src) { return src === 'bujo' ? 'BuJo' : src === 'gcal' ? 'Google' : src === 'ics' ? 'ICS' : src === 'trello' ? 'Trello' : 'Manual'; }
 
 
 /* ── Toast Notification System ── */
@@ -1121,7 +1138,7 @@ function changeCat(e,tag){
 
 const SYNC_STATUS={}; let _cfgSrcId=null;
 function unfoldICS(t){return t.replace(/\r\n[ \t]/g,'').replace(/\r\n/g,'\n').replace(/\r/g,'\n');}
-function parseICS(text,calKey){
+function parseICS(text,calKey,srcId){
   const evs=[];const lines=unfoldICS(text);const blocks=lines.split('BEGIN:VEVENT').slice(1);
   const now=new Date();const from=new Date(now);from.setMonth(from.getMonth()-1);const to=new Date(now);to.setMonth(to.getMonth()+4);
   blocks.forEach(blk=>{
@@ -1141,9 +1158,29 @@ function parseICS(text,calKey){
     }else if(/^\d{8}$/.test(dt)){iso=`${dt.slice(0,4)}-${dt.slice(4,6)}-${dt.slice(6,8)}`;allDay=true;}
     if(!iso)return;
     const evDate=new Date(iso);if(evDate<from||evDate>to)return;
-    evs.push({iso,title:summary,cal:calKey,time,allDay,uid,fromCal:true,source:'ics',kind:'event',readonly:true});
+    evs.push({iso,title:summary,cal:calKey,time,allDay,uid,fromCal:true,source:'ics',srcId:srcId||'',kind:'event',readonly:true});
   });
   return evs;
+}
+async function fetchTrelloCards(boardId,calKey,srcId){
+  const apiKey=localStorage.getItem('trello_api_key')||'';
+  const apiToken=localStorage.getItem('trello_api_token')||'';
+  if(!apiKey||!apiToken)throw new Error('Configura API Key y Token de Trello en ⚙️ Admin.');
+  const url=`https://api.trello.com/1/boards/${encodeURIComponent(boardId)}/cards?key=${encodeURIComponent(apiKey)}&token=${encodeURIComponent(apiToken)}&fields=name,due,desc,labels,url,idList&filter=open`;
+  const resp=await fetch(url);
+  if(resp.status===401||resp.status===403)throw new Error('Trello: credenciales inválidas o sin acceso al tablero.');
+  if(!resp.ok)throw new Error(`Trello API ${resp.status}`);
+  const cards=await resp.json();
+  const now=new Date();const from=new Date(now);from.setMonth(from.getMonth()-1);const to=new Date(now);to.setMonth(to.getMonth()+4);
+  return cards.filter(c=>c.due).map(card=>{
+    const d=new Date(card.due);
+    const fmt=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(d);
+    const[dp,tp]=(fmt+', 00:00').split(', ');
+    const iso=dp;const time=tp.replace(/^24:/,'00:').slice(0,5);
+    const allDay=d.getUTCHours()===12&&d.getUTCMinutes()===0;
+    const evDate=new Date(iso);if(evDate<from||evDate>to)return null;
+    return{iso,title:(card.name||'(sin título)').slice(0,80),cal:calKey,time:allDay?undefined:time,allDay,uid:'trello-'+card.id,fromCal:true,source:'trello',srcId:srcId||'',kind:'task',readonly:true,trelloUrl:card.url||''};
+  }).filter(Boolean);
 }
 async function syncSource(srcId,btn){
   const src=SOURCES.find(s=>s.id===srcId);if(!src)return;
@@ -1151,23 +1188,25 @@ async function syncSource(srcId,btn){
   if(btn){btn.textContent='⏳';btn.disabled=true;}
   updateSyncTopBtn('syncing');setSourceStatus(srcId,'loading');
   try{
-    let newEvs;let icsVia='ICS';
-    if(gToken&&src.gcalId){ newEvs=await fetchGCalEvents(src.gcalId,src.cal,src.readonly); if(!newEvs)throw new Error('Token expirado — vuelve a conectar'); }
+    let newEvs;let syncVia='ICS';
+    if(src.type==='trello'){
+      newEvs=await fetchTrelloCards(src.trelloBoardId,src.cal,srcId);syncVia='Trello';
+    } else if(gToken&&src.gcalId){ newEvs=await fetchGCalEvents(src.gcalId,src.cal,src.readonly,srcId); if(!newEvs)throw new Error('Token expirado — vuelve a conectar');syncVia='API'; }
     else{
       const customUrl=src.lsKey?localStorage.getItem(src.lsKey):null;
       const url=customUrl||src.icsUrl;if(!url)throw new Error('Sin URL configurada');
       let icsText=null;
       try{const r=await fetch(url,{mode:'cors',cache:'no-cache'});if(!r.ok)throw new Error(`HTTP ${r.status}`);icsText=await r.text();}
       catch(corsErr){
-        try{const r2=await fetch('https://corsproxy.io/?url='+encodeURIComponent(url),{cache:'no-cache'});if(!r2.ok)throw new Error(`Proxy ${r2.status}`);icsText=await r2.text();icsVia='ICS·proxy';}
+        try{const r2=await fetch('https://corsproxy.io/?url='+encodeURIComponent(url),{cache:'no-cache'});if(!r2.ok)throw new Error(`Proxy ${r2.status}`);icsText=await r2.text();syncVia='ICS·proxy';}
         catch(proxyErr){throw new Error('CORS bloqueado y proxy falló. Conecta OAuth o revisa la URL.');}
       }
       if(!icsText||!icsText.includes('BEGIN:VCALENDAR'))throw new Error('No es ICS válido');
-      newEvs=parseICS(icsText,src.cal);
+      newEvs=parseICS(icsText,src.cal,srcId);
     }
-    for(let i=EVENTS.length-1;i>=0;i--){if(EVENTS[i].cal===src.cal&&EVENTS[i].uid)EVENTS.splice(i,1);}
+    for(let i=EVENTS.length-1;i>=0;i--){if(EVENTS[i].uid&&(EVENTS[i].srcId===srcId||(!EVENTS[i].srcId&&EVENTS[i].cal===src.cal)))EVENTS.splice(i,1);}
     EVENTS.push(...newEvs);
-    SYNC_STATUS[srcId]={ok:true,count:newEvs.length,time:new Date(),via:gToken&&src.gcalId?'API':icsVia};
+    SYNC_STATUS[srcId]={ok:true,count:newEvs.length,time:new Date(),via:syncVia};
     setSourceStatus(srcId,'ok',newEvs.length);
     if(btn){btn.textContent='✓';setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},1800);} renderWeek(); updateSyncTopBtn('synced');
   }catch(err){
@@ -1184,7 +1223,7 @@ function setSourceStatus(id,state,count=0,err=''){
   else if(state==='ok')el.innerHTML=`<span style="color:#10B981">✓ ${count} evento${count!==1?'s':''} · ${t}</span>${viaBadge}`;
   else if(state==='error'){ const src=SOURCES.find(s=>s.id===id);const hasCfg=src&&src.lsKey; el.innerHTML=`<span style="color:#F87171">⚠️ ${err.slice(0,44)}</span>${hasCfg?` <a href="#" style="color:#FB923C;font-size:.58rem" onclick="startConfig('${id}',event)">Configurar →</a>`:''}`; }
 }
-function startConfig(srcId,e){ if(e)e.preventDefault(); const src=SOURCES.find(s=>s.id===srcId);if(!src||!src.lsKey)return; _cfgSrcId=srcId; document.getElementById('cfg-label').textContent=`URL iCal — ${src.name}`; document.getElementById('cfg-url-input').value=localStorage.getItem(src.lsKey)||''; document.getElementById('cal-config-zone').classList.add('show'); document.getElementById('cal-main-actions').style.display='none'; setTimeout(()=>document.getElementById('cfg-url-input').focus(),80); }
+function startConfig(srcId,e){ if(e)e.preventDefault(); const src=SOURCES.find(s=>s.id===srcId);if(!src||!src.lsKey)return; _cfgSrcId=srcId; if(src.type==='trello'){ document.getElementById('cfg-label').textContent=`🔑 Trello API — ${src.name}`; document.getElementById('cfg-url-input').value=localStorage.getItem('trello_api_key')||''; document.getElementById('cfg-url-input').placeholder='API Key de Trello (developer.atlassian.com)'; } else { document.getElementById('cfg-label').textContent=`URL iCal — ${src.name}`; document.getElementById('cfg-url-input').value=localStorage.getItem(src.lsKey)||''; document.getElementById('cfg-url-input').placeholder='https://calendar.google.com/calendar/ical/...'; } document.getElementById('cal-config-zone').classList.add('show'); document.getElementById('cal-main-actions').style.display='none'; setTimeout(()=>document.getElementById('cfg-url-input').focus(),80); }
 function cancelConfig(){ _cfgSrcId=null; document.getElementById('cal-config-zone').classList.remove('show'); document.getElementById('cal-main-actions').style.display='flex'; }
 function saveConfig(){ const url=document.getElementById('cfg-url-input').value.trim();if(!url||!_cfgSrcId)return; const src=SOURCES.find(s=>s.id===_cfgSrcId);if(src&&src.lsKey)localStorage.setItem(src.lsKey,url); cancelConfig(); syncSource(_cfgSrcId,null); }
 function renderCalSources(){
@@ -1201,7 +1240,7 @@ function renderCalSources(){
     card.innerHTML=`<div class="src-icon">${src.icon}</div>
     <div class="src-info">
       <div class="src-name" style="display:flex;align-items:center;gap:6px;">${src.name} <span class="perm-badge ${permClass[perm]||'perm-ro'}">${permLabels[perm]||perm}</span></div>
-      <div class="src-desc">${src.desc}${customUrl?' · <span style="color:#a78bfa;font-size:.56rem">URL privada ✓</span>':''}</div>
+      <div class="src-desc">${src.desc}${src.type==='trello'?' · <span style="font-size:.56rem;background:rgba(16,185,129,.18);color:#10B981;padding:1px 4px;border-radius:3px">Trello</span>':''}${customUrl?' · <span style="color:#a78bfa;font-size:.56rem">URL privada ✓</span>':''}</div>
       <div class="src-status">${statusHtml}</div>
     </div>
     <div class="src-actions">
@@ -1250,7 +1289,7 @@ async function listCals(){
     if(!document.getElementById('gcal-cal-list')&&zone){ const div=document.createElement('div');div.id='gcal-cal-list';div.style='margin-top:7px;font-size:.6rem;color:var(--mut)'; const names=items.map(c=>`· ${c.summary}`).join('<br>'); div.innerHTML=`<strong style="color:#a78bfa">${items.length} calendarios:</strong><br>${names}${sura?'<br><span style="color:#F97316">🏢 Sura encontrado ✓</span>':''}`; zone.appendChild(div); }
   }catch(err){alert('Error al listar calendarios: '+err.message);}
 }
-async function fetchGCalEvents(calId,calKey,readonly=true){
+async function fetchGCalEvents(calId,calKey,readonly=true,srcId=''){
   if(!gToken)return null;
   const now=new Date();const from=new Date(now);from.setMonth(from.getMonth()-1);const to=new Date(now);to.setMonth(to.getMonth()+4);
   const p=new URLSearchParams({timeMin:from.toISOString(),timeMax:to.toISOString(),singleEvents:'true',orderBy:'startTime',maxResults:'500'});
@@ -1263,7 +1302,7 @@ async function fetchGCalEvents(calId,calKey,readonly=true){
     if(start.date){iso=start.date;allDay=true;}
     else if(start.dateTime){ const d=new Date(start.dateTime); const fmt=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(d); const[dp,tp]=(fmt+', 00:00').split(', ');iso=dp;time=tp.replace(/^24:/,'00:').slice(0,5); }
     if(!iso)return null;
-    return{iso,title:(item.summary||'(sin título)').slice(0,80),cal:calKey,time,allDay,uid:item.id,fromCal:true,readonly,source:'gcal',kind:'event'};
+    return{iso,title:(item.summary||'(sin título)').slice(0,80),cal:calKey,time,allDay,uid:item.id,fromCal:true,readonly,source:'gcal',srcId:srcId||'',kind:'event'};
   }).filter(Boolean);
 }
 function getGCalIdForCal(calKey){
@@ -1326,14 +1365,16 @@ function submitAdd(){
   if(body){const card=makeCard({title,cal:cat,time,detail,fromCal:false,source:'manual',kind:'task'});body.appendChild(card);body.querySelector('.day-empty')?.remove();updateDayCount(body.closest('.wday'));applyFilter();}
   closeAddModal();
 }
-function openAdminModal(){ renderAdmCalUrls(); renderResIcal(); renderCredentials(); renderPermList(); hydrateAIAdmin(); document.getElementById('admin-modal').classList.add('open'); announce('Panel de administración abierto'); }
+function openAdminModal(){ renderAdmCalUrls(); renderResIcal(); renderCredentials(); renderPermList(); hydrateAIAdmin(); hydrateTrelloAdmin(); document.getElementById('admin-modal').classList.add('open'); announce('Panel de administración abierto'); }
 function closeAdminModal(){document.getElementById('admin-modal').classList.remove('open');}
 function switchTab(id,btn){ document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active')); btn.classList.add('active');document.getElementById('tab-'+id).classList.add('active'); if(id==='permisos')renderPermList(); }
 function toggleFaq(q){const a=q.nextElementSibling;const isOpen=q.classList.contains('open');document.querySelectorAll('.faq-q.open').forEach(x=>{x.classList.remove('open');x.nextElementSibling.classList.remove('open');});if(!isOpen){q.classList.add('open');a.classList.add('open');}}
 function saveClientId(){const val=document.getElementById('adm-client-id')?.value?.trim();if(!val)return;localStorage.setItem('gcal_client_id',val);const btn=event.target;btn.textContent='✓';btn.style.color='#10B981';setTimeout(()=>{btn.textContent='💾';btn.style.color='';},1800);}
+function saveTrelloCredentials(){const key=document.getElementById('adm-trello-key')?.value?.trim();const token=document.getElementById('adm-trello-token')?.value?.trim();if(!key||!token){alert('Ingresa API Key y Token de Trello.');return;}localStorage.setItem('trello_api_key',key);localStorage.setItem('trello_api_token',token);const btn=event.target;btn.textContent='✓';btn.style.color='#10B981';setTimeout(()=>{btn.textContent='💾';btn.style.color='';},1800);}
+function hydrateTrelloAdmin(){const k=document.getElementById('adm-trello-key');const t=document.getElementById('adm-trello-token');if(k)k.value=localStorage.getItem('trello_api_key')||'';if(t)t.value=localStorage.getItem('trello_api_token')||'';}
 function renderAdmCalUrls(){
   const cont=document.getElementById('adm-cal-urls');if(!cont)return;cont.innerHTML='';
-  SOURCES.forEach(src=>{ const custom=src.lsKey?localStorage.getItem(src.lsKey)||'':'';const url=custom||src.icsUrl||'';const div=document.createElement('div');div.className='mfield';div.style='margin-bottom:5px'; div.innerHTML=`<label style="display:flex;gap:5px;align-items:center"><span style="background:${src.color};width:6px;height:6px;border-radius:50%;display:inline-block"></span>${src.name}${src.gcalId?' <span style="font-size:.48rem;background:rgba(16,185,129,.18);color:#10B981;padding:1px 4px;border-radius:3px">API ✓</span>':''}</label><div style="display:flex;gap:5px;align-items:center"><input type="text" value="${url}" placeholder="URL iCal..." style="font-size:.59rem;flex:1" data-src="${src.id}">${src.lsKey?`<button class="res-copy" onclick="saveCalUrl('${src.id}',this)">💾</button>`:'<span style="font-size:.58rem;color:var(--mut)">no config</span>'}</div>`; cont.appendChild(div); });
+  SOURCES.filter(src=>src.type!=='trello').forEach(src=>{ const custom=src.lsKey?localStorage.getItem(src.lsKey)||'':'';const url=custom||src.icsUrl||'';const div=document.createElement('div');div.className='mfield';div.style='margin-bottom:5px'; div.innerHTML=`<label style="display:flex;gap:5px;align-items:center"><span style="background:${src.color};width:6px;height:6px;border-radius:50%;display:inline-block"></span>${src.name}${src.gcalId?' <span style="font-size:.48rem;background:rgba(16,185,129,.18);color:#10B981;padding:1px 4px;border-radius:3px">API ✓</span>':''}</label><div style="display:flex;gap:5px;align-items:center"><input type="text" value="${url}" placeholder="URL iCal..." style="font-size:.59rem;flex:1" data-src="${src.id}">${src.lsKey?`<button class="res-copy" onclick="saveCalUrl('${src.id}',this)">💾</button>`:'<span style="font-size:.58rem;color:var(--mut)">no config</span>'}</div>`; cont.appendChild(div); });
 }
 function saveCalUrl(srcId,btn){const src=SOURCES.find(s=>s.id===srcId);if(!src||!src.lsKey)return;const input=btn.previousElementSibling;const url=input?.value?.trim();if(!url)return;localStorage.setItem(src.lsKey,url);btn.textContent='✓';btn.style.color='#10B981';setTimeout(()=>{btn.textContent='💾';btn.style.color='';},1800);}
 function exportBoard(){const data={states:JSON.parse(localStorage.getItem('tablero_states_ro')||'{}'),extra:JSON.parse(localStorage.getItem('tablero_extra_ro')||'[]'),perms:PERMS,ai:AI_CFG,exported:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`tablero-ro-${isoOf(new Date())}.json`;a.click();URL.revokeObjectURL(a.href);}
