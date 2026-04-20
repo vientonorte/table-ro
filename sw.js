@@ -3,7 +3,7 @@
  * Strategy: Cache-first for static assets, network-first for API calls
  */
 
-const CACHE_NAME = 'table-ro-v4';
+const CACHE_NAME = 'table-ro-v5';
 
 const STATIC_ASSETS = [
     '/table-ro/',

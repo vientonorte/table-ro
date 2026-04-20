@@ -1,7 +1,7 @@
 /**
  * Tablero Rö — Lógica principal
  * ==============================
- * Versión: 1.2.0
+ * Versión: 1.3.0
  * Descripción: Tablero semanal personal con integración Google Calendar,
  *              Bullet Journal (BuJo) y sync bidireccional.
  *
@@ -95,84 +95,40 @@ const CAL = {
     bujo: { c: '#C084FC', bg: 'rgba(192,132,252,.16)', l: '📓 BuJo' },
 };
 
-const EVENTS = [
-    { iso: '2026-03-05', title: 'Agendar eventos mensuales', cal: 'personal', allDay: true },
-    { iso: '2026-03-05', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
-    { iso: '2026-03-05', title: 'Design Check', cal: 'trabajo', time: '08:30' },
-    { iso: '2026-03-05', title: 'Exámenes', cal: 'camila', time: '07:00' },
-    { iso: '2026-03-05', title: 'Laboral', cal: 'camila', time: '10:00' },
-    { iso: '2026-03-05', title: 'Dental 🦷', cal: 'camila', time: '16:00' },
-    { iso: '2026-03-05', title: 'Listado tareas Smorg', cal: 'personal', time: '18:15' },
-    { iso: '2026-03-05', title: 'Juntos Chill 💚', cal: 'camila', time: '21:00' },
-    { iso: '2026-03-06', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
-    { iso: '2026-03-06', title: 'Kinesiología', cal: 'personal', time: '08:30' },
-    { iso: '2026-03-06', title: 'Resp. Hogar c/Rö', cal: 'camila', time: '10:00' },
-    { iso: '2026-03-06', title: 'Hatha Yoga 🧘', cal: 'personal', time: '12:45' },
-    { iso: '2026-03-06', title: 'Radar pendiente', cal: 'personal', time: '15:00' },
-    { iso: '2026-03-06', title: 'Check in planes c/Lily', cal: 'vinculos', time: '20:30' },
-    { iso: '2026-03-06', title: 'Juntos Chill 💚', cal: 'camila', time: '21:30' },
-    { iso: '2026-03-07', title: 'Cita conmigo 🏝️', cal: 'camila', allDay: true },
-    { iso: '2026-03-07', title: 'Viajar a Viña 🚂', cal: 'personal', time: '07:00' },
-    { iso: '2026-03-07', title: 'Día en Viña ☀️', cal: 'vinculos', time: '12:45' },
-    { iso: '2026-03-07', title: 'Ocio', cal: 'camila', time: '14:30' },
-    { iso: '2026-03-08', title: '8M 🌸', cal: 'camila', allDay: true },
-    { iso: '2026-03-08', title: 'Volver Santiago', cal: 'personal', time: '08:00' },
-    { iso: '2026-03-08', title: 'Selfradar', cal: 'personal', time: '09:00' },
-    { iso: '2026-03-08', title: '8M marcha', cal: 'camila', time: '10:00' },
-    { iso: '2026-03-08', title: 'Check Financiero 💰', cal: 'personal', time: '12:30' },
-    { iso: '2026-03-08', title: 'Bici Paseo 🚴', cal: 'personal', time: '14:15' },
-    { iso: '2026-03-08', title: 'Juntos Chill 💚', cal: 'camila', time: '17:00' },
-    { iso: '2026-03-09', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
-    { iso: '2026-03-09', title: 'Cursos Domestika 💻', cal: 'camila', time: '09:30' },
-    { iso: '2026-03-09', title: 'Psicoterapia · Rodrigo', cal: 'personal', time: '12:00' },
-    { iso: '2026-03-09', title: 'Agendar Masaje 🕯️', cal: 'personal', time: '16:00' },
-    { iso: '2026-03-09', title: 'Compra Frutas y Verduras 🛒', cal: 'personal', time: '17:45' },
-    { iso: '2026-03-10', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
-    { iso: '2026-03-10', title: 'Ir al Parque 🌳', cal: 'personal', time: '07:15' },
-    { iso: '2026-03-10', title: 'Almuerzo', cal: 'camila', time: '12:45' },
-    { iso: '2026-03-10', title: 'Kine', cal: 'personal', time: '15:00' },
-    { iso: '2026-03-10', title: 'Juntos Chill 💚', cal: 'camila', time: '21:00' },
-    { iso: '2026-03-11', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
-    { iso: '2026-03-11', title: 'Psicoterapia FONASA · Camila', cal: 'camila', time: '16:00' },
-    { iso: '2026-03-12', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
-    { iso: '2026-03-12', title: 'Juntos Chill 💚', cal: 'camila', time: '21:00' },
-    { iso: '2026-03-13', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
-    { iso: '2026-03-13', title: 'Kinesiología', cal: 'personal', time: '08:30' },
-    { iso: '2026-03-13', title: 'Cita RedSalud 🏥', cal: 'personal', time: '14:15' },
-    { iso: '2026-03-13', title: 'Escalada 🧗', cal: 'personal', time: '16:00' },
-    { iso: '2026-03-14', title: 'Ordenar 🏠', cal: 'personal', time: '08:30' },
-    { iso: '2026-03-14', title: 'Smorgasboard', cal: 'vinculos', time: '10:00' },
-    { iso: '2026-03-15', title: 'Check Financiero 💰', cal: 'personal', time: '07:15' },
-    { iso: '2026-03-15', title: 'Selfradar', cal: 'personal', time: '09:00' },
-    { iso: '2026-03-15', title: 'Bici Paseo 🚴', cal: 'personal', time: '14:15' },
-    { iso: '2026-03-15', title: 'Juntos Chill 💚', cal: 'camila', time: '17:00' },
-    { iso: '2026-03-16', title: 'PAGO GC 💸', cal: 'fin', time: '14:00' },
-    { iso: '2026-03-16', title: 'Compra Frutas y Verduras 🛒', cal: 'personal', time: '17:45' },
-    { iso: '2026-03-16', title: 'Psicoterapia · Rodrigo', cal: 'personal', time: '12:00' },
-    { iso: '2026-03-17', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
-    { iso: '2026-03-18', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
-    { iso: '2026-03-19', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
-    { iso: '2026-03-20', title: 'Kinesiología', cal: 'personal', time: '08:30' },
-    { iso: '2026-03-21', title: 'Ordenar 🏠', cal: 'personal', time: '08:30' },
-    { iso: '2026-03-21', title: 'Smorgasboard', cal: 'vinculos', time: '10:00' },
-    { iso: '2026-03-22', title: 'Check Financiero 💰', cal: 'personal', time: '07:15' },
-    { iso: '2026-03-22', title: 'Selfradar', cal: 'personal', time: '09:00' },
-    { iso: '2026-03-22', title: 'Bici Paseo 🚴', cal: 'personal', time: '14:15' },
-    { iso: '2026-03-22', title: 'Juntos Chill 💚', cal: 'camila', time: '17:00' },
-    { iso: '2026-03-23', title: 'Compra Frutas y Verduras 🛒', cal: 'personal', time: '17:45' },
-    { iso: '2026-03-23', title: 'Psicoterapia · Rodrigo', cal: 'personal', time: '12:00' },
-    { iso: '2026-03-24', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
-    { iso: '2026-03-25', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
-    { iso: '2026-03-26', title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
-    { iso: '2026-03-27', title: 'Kinesiología', cal: 'personal', time: '08:30' },
-    { iso: '2026-03-28', title: 'Ordenar 🏠', cal: 'personal', time: '08:30' },
-    { iso: '2026-03-28', title: 'Smorgasboard', cal: 'vinculos', time: '10:00' },
-    { iso: '2026-03-29', title: 'Check Financiero 💰', cal: 'personal', time: '07:15' },
-    { iso: '2026-03-29', title: 'Selfradar', cal: 'personal', time: '09:00' },
-    { iso: '2026-03-29', title: 'Bici Paseo 🚴', cal: 'personal', time: '14:15' },
-    { iso: '2026-03-30', title: 'Compra Frutas y Verduras 🛒', cal: 'personal', time: '17:45' },
-    { iso: '2026-03-30', title: 'Psicoterapia · Rodrigo', cal: 'personal', time: '12:00' },
+/* ── Recurring event templates: day 0=Mon … 6=Sun ── */
+const RECURRING_WEEKLY = [
+    { day: 0, title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
+    { day: 1, title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
+    { day: 2, title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
+    { day: 3, title: 'Kinesiología', cal: 'personal', time: '08:30' },
+    { day: 4, title: 'Ordenar 🏠', cal: 'personal', time: '08:30' },
+    { day: 4, title: 'Smorgasboard', cal: 'vinculos', time: '10:00' },
+    { day: 5, title: 'Check Financiero 💰', cal: 'personal', time: '07:15' },
+    { day: 5, title: 'Selfradar', cal: 'personal', time: '09:00' },
+    { day: 5, title: 'Bici Paseo 🚴', cal: 'personal', time: '14:15' },
+    { day: 5, title: 'Juntos Chill 💚', cal: 'camila', time: '17:00' },
+    { day: 6, title: 'Psicoterapia · Rodrigo', cal: 'personal', time: '12:00' },
+    { day: 6, title: 'Compra Frutas y Verduras 🛒', cal: 'personal', time: '17:45' },
 ];
+
+function generateSeedEvents() {
+    const evs = [];
+    const now = new Date();
+    const from = new Date(now); from.setMonth(from.getMonth() - 1); from.setDate(1);
+    const to = new Date(now); to.setMonth(to.getMonth() + 2); to.setDate(0);
+    const cursor = mondayOf(from);
+    while (cursor <= to) {
+        RECURRING_WEEKLY.forEach(tpl => {
+            const d = addDays(cursor, tpl.day);
+            if (d < from || d > to) return;
+            evs.push({ iso: isoOf(d), title: tpl.title, cal: tpl.cal, time: tpl.time, source: 'seed' });
+        });
+        cursor.setDate(cursor.getDate() + 7);
+    }
+    return evs;
+}
+
+const EVENTS = generateSeedEvents();
 
 const BUJO_INIT = [
     { text: 'Enviar cotización Cris (p:36)', type: 'trabajo' },
@@ -601,6 +557,9 @@ function renderWeek(){
   const days=Array.from({length:7},(_,i)=>addDays(weekStart,i));
   const s=days[0],e=days[6];
   document.getElementById('wk-label').textContent=`${FDAYS[s.getDay()]} ${s.getDate()} — ${FDAYS[e.getDay()]} ${e.getDate()} ${MONTHS[e.getMonth()]} ${e.getFullYear()}`;
+  const FULL_MONTHS=['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+  const midWeek=addDays(weekStart,3);
+  const ml=document.getElementById('month-label');if(ml)ml.textContent=`${FULL_MONTHS[midWeek.getMonth()]} ${midWeek.getFullYear()}`;
   days.forEach(d=>{
     const iso=isoOf(d);const isT=iso===today;
     const evs=EVENTS.filter(e=>e.iso===iso).sort((a,b)=>{if(a.allDay&&!b.allDay)return -1;if(!a.allDay&&b.allDay)return 1;return(a.time||'').localeCompare(b.time||'');});
@@ -1225,10 +1184,19 @@ async function syncSource(srcId,btn){
       const customUrl=src.lsKey?localStorage.getItem(src.lsKey):null;
       const url=customUrl||src.icsUrl;if(!url)throw new Error('Sin URL configurada');
       let icsText=null;
+      // Try direct fetch first
       try{const r=await fetch(url,{mode:'cors',cache:'no-cache'});if(!r.ok)throw new Error(`HTTP ${r.status}`);icsText=await r.text();}
       catch(corsErr){
-        try{const r2=await fetch('https://corsproxy.io/?url='+encodeURIComponent(url),{cache:'no-cache'});if(!r2.ok)throw new Error(`Proxy ${r2.status}`);icsText=await r2.text();syncVia='ICS·proxy';}
-        catch(proxyErr){throw new Error('CORS bloqueado y proxy falló. Conecta OAuth o revisa la URL.');}
+        // Try worker proxy if configured
+        const proxyUrls=[];
+        if(AI_CFG.proxyUrl) proxyUrls.push(AI_CFG.proxyUrl+'/api/ics?url='+encodeURIComponent(url));
+        proxyUrls.push('https://corsproxy.io/?url='+encodeURIComponent(url));
+        proxyUrls.push('https://api.allorigins.win/raw?url='+encodeURIComponent(url));
+        for(const proxyUrl of proxyUrls){
+          try{const r2=await fetch(proxyUrl,{cache:'no-cache'});if(!r2.ok)continue;icsText=await r2.text();syncVia='ICS·proxy';break;}
+          catch(e){continue;}
+        }
+        if(!icsText)throw new Error('CORS bloqueado y proxies fallaron. Conecta OAuth o revisa la URL.');
       }
       if(!icsText||!icsText.includes('BEGIN:VCALENDAR'))throw new Error('No es ICS válido');
       newEvs=parseICS(icsText,src.cal,srcId);
