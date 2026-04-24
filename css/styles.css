@@ -56,7 +56,7 @@
     --s3: #22223F;
     --bd: rgba(255, 255, 255, .08);
     --txt: #E2E8F0;
-    --mut: #64748B;
+    --mut: #94A3B8;  /* WCAG AA fix: 7.52:1 sobre --bg (era #64748B = 4.05:1 ✗) */
     --ok: #10B981;
     --warn: #FB923C;
     --err: #F87171;
@@ -203,7 +203,7 @@ h1 {
 }
 
 .wnav.today {
-    color: #a855f7;
+    color: #c084fc;  /* WCAG AA fix: 6.39:1 sobre --s2 (era 4.27:1 ✗) */
     border-color: rgba(168, 85, 247, .4);
 }
 
@@ -369,7 +369,7 @@ h1 {
 }
 
 .wday.is-today .day-name {
-    color: #a855f7;
+    color: #c084fc;  /* WCAG AA: 7.29:1 sobre --bg */
 }
 
 .day-num {

@@ -66,13 +66,13 @@
     <div class="modal-overlay" id="add-modal" role="dialog" aria-modal="true" aria-labelledby="add-modal-title" onclick="if(event.target===this)closeAddModal()">
         <div class="modal-box">
             <div class="modal-title" id="add-modal-title">＋ Nueva Tarea</div>
-            <div class="mfield"><label>Título</label><input type="text" id="add-title" placeholder="¿Qué tienes que hacer?" autocomplete="off"></div>
+            <div class="mfield"><label for="add-title">Título</label><input type="text" id="add-title" placeholder="¿Qué tienes que hacer?" autocomplete="off"></div>
             <div class="mrow">
-                <div class="mfield"><label>Día</label><select id="add-day"></select></div>
-                <div class="mfield"><label>Hora (opcional)</label><input type="time" id="add-time"></div>
+                <div class="mfield"><label for="add-day">Día</label><select id="add-day"></select></div>
+                <div class="mfield"><label for="add-time">Hora (opcional)</label><input type="time" id="add-time"></div>
             </div>
             <div class="mfield">
-                <label>Categoría</label>
+                <label for="add-cat">Categoría</label>
                 <select id="add-cat">
         <option value="personal">Personal</option>
         <option value="vinculos">Vínculos</option>
@@ -81,7 +81,7 @@
         <option value="fin">Finanzas</option>
       </select>
             </div>
-            <div class="mfield"><label>Detalles (opcional)</label><textarea id="add-detail" rows="2" placeholder="Notas..."></textarea></div>
+            <div class="mfield"><label for="add-detail">Detalles (opcional)</label><textarea id="add-detail" rows="2" placeholder="Notas..."></textarea></div>
             <div class="modal-actions">
                 <button class="btn btn-g" onclick="closeAddModal()">Cancelar</button>
                 <button class="btn btn-p" onclick="submitAdd()">＋ Agregar</button>
@@ -93,13 +93,13 @@
     <div class="modal-overlay" id="edit-modal" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title" onclick="if(event.target===this)closeEditModal()">
         <div class="modal-box">
             <div class="modal-title" id="edit-modal-title">✏️ Editar Evento</div>
-            <div class="mfield"><label>Título</label><input type="text" id="edit-title" autocomplete="off"></div>
+            <div class="mfield"><label for="edit-title">Título</label><input type="text" id="edit-title" autocomplete="off"></div>
             <div class="mrow">
-                <div class="mfield"><label>Día</label><select id="edit-day"></select></div>
-                <div class="mfield"><label>Hora (opcional)</label><input type="time" id="edit-time"></div>
+                <div class="mfield"><label for="edit-day">Día</label><select id="edit-day"></select></div>
+                <div class="mfield"><label for="edit-time">Hora (opcional)</label><input type="time" id="edit-time"></div>
             </div>
             <div class="mfield">
-                <label>Categoría</label>
+                <label for="edit-cat">Categoría</label>
                 <select id="edit-cat">
                     <option value="personal">Personal</option>
                     <option value="vinculos">Vínculos</option>
@@ -108,7 +108,7 @@
                     <option value="fin">Finanzas</option>
                 </select>
             </div>
-            <div class="mfield"><label>Detalles (opcional)</label><textarea id="edit-detail" rows="2" placeholder="Notas..."></textarea></div>
+            <div class="mfield"><label for="edit-detail">Detalles (opcional)</label><textarea id="edit-detail" rows="2" placeholder="Notas..."></textarea></div>
             <div class="modal-actions">
                 <button class="btn btn-g" onclick="closeEditModal()">Cancelar</button>
                 <button class="btn btn-p" onclick="submitEdit()">💾 Guardar</button>
@@ -142,7 +142,7 @@
             <div id="cal-sources"></div>
             <div class="cal-config-zone" id="cal-config-zone">
                 <div class="mfield">
-                    <label id="cfg-label">URL iCal privada</label>
+                    <label id="cfg-label" for="cfg-url-input">URL iCal privada</label>
                     <input type="text" id="cfg-url-input" placeholder="https://calendar.google.com/calendar/ical/...">
                     <div style="font-size:.58rem;color:var(--mut);margin-top:3px;">Obtén esta URL en Google Calendar → ⚙️ Configuración → Dirección secreta iCal</div>
                 </div>
@@ -190,22 +190,22 @@
                         <div class="ai-provider-card claude">
                             <div class="ai-card-head claude">Claude</div>
                             <div class="mrow">
-                                <div class="mfield"><label>API Key</label><input type="password" id="adm-claude-key" placeholder="sk-ant-..." autocomplete="off"></div>
-                                <div class="mfield"><label>Modelo</label><input type="text" id="adm-claude-model" value="claude-sonnet-4-6"></div>
+                                <div class="mfield"><label for="adm-claude-key">API Key Claude</label><input type="password" id="adm-claude-key" placeholder="sk-ant-..." autocomplete="off"></div>
+                                <div class="mfield"><label for="adm-claude-model">Modelo Claude</label><input type="text" id="adm-claude-model" value="claude-sonnet-4-6"></div>
                             </div>
                         </div>
                         <div class="ai-provider-card openai">
                             <div class="ai-card-head openai">OpenAI</div>
                             <div class="mrow">
-                                <div class="mfield"><label>API Key</label><input type="password" id="adm-openai-key" placeholder="sk-..." autocomplete="off"></div>
-                                <div class="mfield"><label>Modelo</label><input type="text" id="adm-openai-model" value="gpt-5.4"></div>
+                                <div class="mfield"><label for="adm-openai-key">API Key OpenAI</label><input type="password" id="adm-openai-key" placeholder="sk-..." autocomplete="off"></div>
+                                <div class="mfield"><label for="adm-openai-model">Modelo OpenAI</label><input type="text" id="adm-openai-model" value="gpt-5.4"></div>
                             </div>
                         </div>
                         <div class="ai-provider-card gemini">
                             <div class="ai-card-head gemini">Gemini</div>
                             <div class="mrow">
-                                <div class="mfield"><label>API Key</label><input type="password" id="adm-gemini-key" placeholder="AIza..." autocomplete="off"></div>
-                                <div class="mfield"><label>Modelo</label><input type="text" id="adm-gemini-model" value="gemini-3.1-pro-preview"></div>
+                                <div class="mfield"><label for="adm-gemini-key">API Key Gemini</label><input type="password" id="adm-gemini-key" placeholder="AIza..." autocomplete="off"></div>
+                                <div class="mfield"><label for="adm-gemini-model">Modelo Gemini</label><input type="text" id="adm-gemini-model" value="gemini-3.1-pro-preview"></div>
                             </div>
                         </div>
                     </div>
@@ -214,7 +214,7 @@
                         <button class="btn btn-p" style="flex:1;justify-content:center;" onclick="saveAIAdmin()">💾 Guardar IA</button>
                     </div>
                     <div class="mfield" style="margin-top:6px;">
-                        <label>Proxy URL <small style="opacity:.6">(opcional — Cloudflare Worker)</small></label>
+                        <label for="adm-proxy-url">Proxy URL <small style="opacity:.6">(opcional — Cloudflare Worker)</small></label>
                         <input type="url" id="adm-proxy-url" placeholder="https://table-ro-ai-proxy.tu-cuenta.workers.dev" autocomplete="off" style="font-size:.65rem">
                     </div>
                     <div style="font-size:.65rem;color:#f59e0b;background:rgba(245,158,11,.1);border-radius:6px;padding:6px 8px;margin-top:4px;">⚠️ Las API keys se guardan en localStorage (solo este navegador). Configura el proxy para no exponer keys.</div>
@@ -223,7 +223,7 @@
                 <div>
                     <div class="sec-title" style="font-size:.74rem;">🔑 Google OAuth</div>
                     <div class="mfield">
-                        <label>Client ID</label>
+                        <label for="adm-client-id">Client ID</label>
                         <div style="display:flex;gap:6px;">
                             <input type="text" id="adm-client-id" value="5033046467-kgd7gl4tekb4fkt90jq32rob4evmgnmn.apps.googleusercontent.com" style="font-size:.61rem;flex:1">
                             <button class="res-copy" onclick="saveClientId()">💾</button>
