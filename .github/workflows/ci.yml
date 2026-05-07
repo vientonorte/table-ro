@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint & Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Prettier
+        run: npm install --global prettier@3
+
+      - name: Check formatting (HTML)
+        run: prettier --check "index.html" "bujo-admin.html" --config .prettierrc.json
+
+      - name: Check JS syntax
+        run: node --check js/app.js
+
+      - name: Check SW syntax
+        run: node --check sw.js
