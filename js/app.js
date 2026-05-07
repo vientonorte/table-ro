@@ -1139,14 +1139,28 @@ function changeCat(e,tag){
 
 const SYNC_STATUS={}; let _cfgSrcId=null;
 const SYNC_IN_FLIGHT = new Map();
+const SYNC_SUCCESS_DISPLAY_MS = 1800;
+const SYNC_ERROR_DISPLAY_MS = 2500;
+function setSyncBtnState(btn,state){
+  if(!btn)return;
+  if(state==='loading'){ btn.textContent='⏳'; btn.disabled=true; return; }
+  if(state==='ok'){ btn.textContent='✓'; setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},SYNC_SUCCESS_DISPLAY_MS); return; }
+  if(state==='error'){ btn.textContent='⚠️'; setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},SYNC_ERROR_DISPLAY_MS); return; }
+  if(state==='locked'){ btn.textContent='🔒'; setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},SYNC_ERROR_DISPLAY_MS); return; }
+  if(state==='idle'){ btn.textContent='🔄'; btn.disabled=false; return; }
+  btn.textContent='🔄'; btn.disabled=false;
+}
+function getSyncedEventDedupeKey(ev){
+  if(ev.uid) return `uid:${ev.uid}`;
+  const enc = v => encodeURIComponent(v||'');
+  return `src:${enc(ev.source)}|sid:${enc(ev.srcId)}|iso:${enc(ev.iso)}|title:${enc(ev.title)}|time:${enc(ev.time)}|cal:${enc(ev.cal)}|allDay:${ev.allDay?1:0}`;
+}
 function dedupeSyncedEvents(){
   const seen = new Set();
   const out = [];
   EVENTS.forEach(ev => {
     if(!ev.fromCal){ out.push(ev); return; }
-    const key = ev.uid
-      ? `uid:${ev.uid}`
-      : `src:${ev.source||''}|sid:${ev.srcId||''}|iso:${ev.iso||''}|title:${ev.title||''}|time:${ev.time||''}|cal:${ev.cal||''}|allDay:${ev.allDay?1:0}`;
+    const key = getSyncedEventDedupeKey(ev);
     if(seen.has(key)) return;
     seen.add(key);
     out.push(ev);
@@ -1200,13 +1214,13 @@ async function fetchTrelloCards(boardId,calKey,srcId){
 }
 async function syncSource(srcId,btn){
   if(SYNC_IN_FLIGHT.has(srcId)){
-    if(btn){btn.textContent='⏳';btn.disabled=true;}
-    return SYNC_IN_FLIGHT.get(srcId).finally(()=>{if(btn){btn.textContent='🔄';btn.disabled=false;}});
+    setSyncBtnState(btn,'loading');
+    return SYNC_IN_FLIGHT.get(srcId);
   }
   const run = (async()=>{
   const src=SOURCES.find(s=>s.id===srcId);if(!src)return;
-  if(!isSourceEnabled(srcId)){ setSourceStatus(srcId,'error',0,'Deshabilitado en Permisos. Actívalo en ⚙️ → Permisos.'); if(btn){btn.textContent='🔒';setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},2500);} return; }
-  if(btn){btn.textContent='⏳';btn.disabled=true;}
+  if(!isSourceEnabled(srcId)){ setSourceStatus(srcId,'error',0,'Deshabilitado en Permisos. Actívalo en ⚙️ → Permisos.'); setSyncBtnState(btn,'locked'); return; }
+  setSyncBtnState(btn,'loading');
   updateSyncTopBtn('syncing');setSourceStatus(srcId,'loading');
   try{
     let newEvs;let syncVia='ICS';
@@ -1245,10 +1259,10 @@ async function syncSource(srcId,btn){
     SYNC_STATUS[srcId]={ok:true,count:newEvs.length,time:new Date(),via:syncVia};
     setSourceStatus(srcId,'ok',newEvs.length);
     cacheSyncedEvents();
-    if(btn){btn.textContent='✓';setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},1800);} renderWeek(); updateSyncTopBtn('synced');
+    setSyncBtnState(btn,'ok'); renderWeek(); updateSyncTopBtn('synced');
   }catch(err){
     SYNC_STATUS[srcId]={ok:false,error:err.message,time:new Date()}; setSourceStatus(srcId,'error',0,err.message);
-    if(btn){btn.textContent='⚠️';setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},2500);} updateSyncTopBtn('error');
+    setSyncBtnState(btn,'error'); updateSyncTopBtn('error');
   }
   })();
   SYNC_IN_FLIGHT.set(srcId,run);
