@@ -1,7 +1,7 @@
 /**
  * Tablero Rö — Lógica principal
  * ==============================
- * Versión: 1.3.0
+ * Versión: 1.4.0
  * Descripción: Tablero semanal personal con integración Google Calendar,
  *              Bullet Journal (BuJo) y sync bidireccional.
  *
@@ -1138,6 +1138,35 @@ function changeCat(e,tag){
 }
 
 const SYNC_STATUS={}; let _cfgSrcId=null;
+const SYNC_IN_FLIGHT = new Map();
+const SYNC_SUCCESS_DISPLAY_MS = 1800;
+const SYNC_ERROR_DISPLAY_MS = 2500;
+function setSyncBtnState(btn,state){
+  if(!btn)return;
+  if(state==='loading'){ btn.textContent='⏳'; btn.disabled=true; return; }
+  if(state==='ok'){ btn.textContent='✓'; setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},SYNC_SUCCESS_DISPLAY_MS); return; }
+  if(state==='error'){ btn.textContent='⚠️'; setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},SYNC_ERROR_DISPLAY_MS); return; }
+  if(state==='locked'){ btn.textContent='🔒'; setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},SYNC_ERROR_DISPLAY_MS); return; }
+  if(state==='idle'){ btn.textContent='🔄'; btn.disabled=false; return; }
+  btn.textContent='🔄'; btn.disabled=false;
+}
+function getSyncedEventDedupeKey(ev){
+  if(ev.uid) return `uid:${ev.uid}`;
+  const enc = v => encodeURIComponent(v||'');
+  return `src:${enc(ev.source)}|sid:${enc(ev.srcId)}|iso:${enc(ev.iso)}|title:${enc(ev.title)}|time:${enc(ev.time)}|cal:${enc(ev.cal)}|allDay:${ev.allDay?1:0}`;
+}
+function dedupeSyncedEvents(){
+  const seen = new Set();
+  const out = [];
+  EVENTS.forEach(ev => {
+    if(!ev.fromCal){ out.push(ev); return; }
+    const key = getSyncedEventDedupeKey(ev);
+    if(seen.has(key)) return;
+    seen.add(key);
+    out.push(ev);
+  });
+  if(out.length!==EVENTS.length){ EVENTS.length=0; EVENTS.push(...out); }
+}
 function unfoldICS(t){return t.replace(/\r\n[ \t]/g,'').replace(/\r\n/g,'\n').replace(/\r/g,'\n');}
 function parseICS(text,calKey,srcId){
   const evs=[];const lines=unfoldICS(text);const blocks=lines.split('BEGIN:VEVENT').slice(1);
@@ -1184,9 +1213,14 @@ async function fetchTrelloCards(boardId,calKey,srcId){
   }).filter(Boolean);
 }
 async function syncSource(srcId,btn){
+  if(SYNC_IN_FLIGHT.has(srcId)){
+    setSyncBtnState(btn,'loading');
+    return SYNC_IN_FLIGHT.get(srcId);
+  }
+  const run = (async()=>{
   const src=SOURCES.find(s=>s.id===srcId);if(!src)return;
-  if(!isSourceEnabled(srcId)){ setSourceStatus(srcId,'error',0,'Deshabilitado en Permisos. Actívalo en ⚙️ → Permisos.'); if(btn){btn.textContent='🔒';setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},2500);} return; }
-  if(btn){btn.textContent='⏳';btn.disabled=true;}
+  if(!isSourceEnabled(srcId)){ setSourceStatus(srcId,'error',0,'Deshabilitado en Permisos. Actívalo en ⚙️ → Permisos.'); setSyncBtnState(btn,'locked'); return; }
+  setSyncBtnState(btn,'loading');
   updateSyncTopBtn('syncing');setSourceStatus(srcId,'loading');
   try{
     let newEvs;let syncVia='ICS';
@@ -1215,16 +1249,24 @@ async function syncSource(srcId,btn){
       newEvs=parseICS(icsText,src.cal,srcId);
     }
     if(src.filterRe)newEvs=newEvs.filter(e=>src.filterRe.test(e.title));
-    for(let i=EVENTS.length-1;i>=0;i--){if(EVENTS[i].uid&&(EVENTS[i].srcId===srcId||(!EVENTS[i].srcId&&EVENTS[i].cal===src.cal)))EVENTS.splice(i,1);}
+    for(let i=EVENTS.length-1;i>=0;i--){
+      const ev=EVENTS[i];
+      if(!ev.fromCal)continue;
+      if(ev.srcId===srcId||(!ev.srcId&&ev.cal===src.cal))EVENTS.splice(i,1);
+    }
     EVENTS.push(...newEvs);
+    dedupeSyncedEvents();
     SYNC_STATUS[srcId]={ok:true,count:newEvs.length,time:new Date(),via:syncVia};
     setSourceStatus(srcId,'ok',newEvs.length);
     cacheSyncedEvents();
-    if(btn){btn.textContent='✓';setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},1800);} renderWeek(); updateSyncTopBtn('synced');
+    setSyncBtnState(btn,'ok'); renderWeek(); updateSyncTopBtn('synced');
   }catch(err){
     SYNC_STATUS[srcId]={ok:false,error:err.message,time:new Date()}; setSourceStatus(srcId,'error',0,err.message);
-    if(btn){btn.textContent='⚠️';setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},2500);} updateSyncTopBtn('error');
+    setSyncBtnState(btn,'error'); updateSyncTopBtn('error');
   }
+  })();
+  SYNC_IN_FLIGHT.set(srcId,run);
+  try{ await run; }finally{ SYNC_IN_FLIGHT.delete(srcId); }
 }
 async function syncAll(){ const btn=document.getElementById('sync-all-btn'); if(btn){btn.textContent='⏳ Sincronizando...';btn.disabled=true;} await Promise.allSettled(SOURCES.map(s=>syncSource(s.id,null))); if(btn){btn.textContent='🔄 Sincronizar Todo';btn.disabled=false;} }
 function updateSyncTopBtn(state){ const b=document.getElementById('sync-topbtn');if(!b)return; b.classList.remove('syncing','synced','error'); if(state!=='idle')b.classList.add(state); b.textContent=state==='syncing'?'⏳ Sync...':state==='synced'?'✓ Synced':state==='error'?'⚠️ Sync':'🔄 Sync'; if(state!=='syncing')setTimeout(()=>{b.classList.remove('syncing','synced','error');b.textContent='🔄 Sync';},3500); }
@@ -1404,6 +1446,7 @@ function submitAdd(){
   const body=document.getElementById('wb-'+iso);
   if(body){const card=makeCard({title,cal:cat,time,detail,fromCal:false,source:'manual',kind:'task'});body.appendChild(card);body.querySelector('.day-empty')?.remove();updateDayCount(body.closest('.wday'));applyFilter();}
   closeAddModal();
+  if(OB_WAITING_TASK){OB_WAITING_TASK=false;OB_STATE.firstTask=true;obEarnXP('task');document.getElementById('ob-modal').classList.add('open');obApplyStep(4);}
 }
 function openAdminModal(){ renderAdmCalUrls(); renderResIcal(); renderCredentials(); renderPermList(); hydrateAIAdmin(); hydrateTrelloAdmin(); document.getElementById('admin-modal').classList.add('open'); announce('Panel de administración abierto'); }
 function closeAdminModal(){document.getElementById('admin-modal').classList.remove('open');}
@@ -1438,6 +1481,7 @@ function loadSyncedCache(){
   try{
     const cached=JSON.parse(localStorage.getItem('tablero_synced_ro')||'[]');
     cached.forEach(ev=>{if(ev.uid&&!EVENTS.find(e=>e.uid===ev.uid))EVENTS.push(ev);});
+    dedupeSyncedEvents();
   }catch(e){console.warn('loadSyncedCache:',e);}
 }
 
@@ -1546,8 +1590,50 @@ function submitEdit(){
   closeEditModal();autoSave();announce('Evento actualizado');
 }
 
+/* ── ONBOARDING ── */
+const OB_KEY='tablero_onboarding_ro';
+const OB_XP={start:20,tour:30,task:50,done:20};
+let OB_WAITING_TASK=false;
+function obDefaultState(){return {step:1,completed:false,skipped:false,started:null,name:'',xp:0,firstTask:false,earned:{start:false,tour:false,task:false,done:false}};}
+let OB_STATE=obDefaultState();
+function obLoadState(){try{const s=JSON.parse(localStorage.getItem(OB_KEY)||'null');if(s){OB_STATE=Object.assign(obDefaultState(),s,{earned:Object.assign({start:false,tour:false,task:false,done:false},s.earned||{})});}}catch(e){}}
+function obSaveState(){try{localStorage.setItem(OB_KEY,JSON.stringify(OB_STATE));}catch(e){}}
+function obEarnXP(key){if(OB_STATE.earned[key])return;OB_STATE.earned[key]=true;OB_STATE.xp+=OB_XP[key]||0;obSaveState();}
+function initOnboarding(){obLoadState();if(OB_STATE.completed||OB_STATE.skipped)return;if(!OB_STATE.started){OB_STATE.started=new Date().toISOString();obSaveState();}showOnboarding();}
+function showOnboarding(){const m=document.getElementById('ob-modal');if(!m)return;m.classList.add('open');obApplyStep(OB_STATE.step);}
+function obApplyStep(n){
+  OB_STATE.step=n;
+  const total=5;
+  document.querySelectorAll('.ob-step').forEach((el,i)=>el.classList.toggle('active',i+1===n));
+  document.getElementById('ob-progress-fill').style.width=(n/total*100)+'%';
+  document.getElementById('ob-step-label').textContent=`Paso ${n} de ${total}`;
+  document.getElementById('ob-xp').textContent=`⚡ ${OB_STATE.xp} XP`;
+  const prev=document.getElementById('ob-prev-btn');const next=document.getElementById('ob-next-btn');
+  if(prev)prev.style.display=n>1?'':'none';
+  if(next)next.textContent=n<total?'Siguiente →':'¡Empezar! 🚀';
+  const name=OB_STATE.name;
+  if(n===1){const ni=document.getElementById('ob-name-input');if(ni)ni.value=name;const t=document.getElementById('ob-title');if(t)t.textContent=name?`¡Hola, ${name}! 👋`:'¡Bienvenido/a a Tablero Rö!';}
+  if(n===3){const s3=document.getElementById('ob-step3-sub');if(s3)s3.textContent=name?`${name}, agrega algo concreto al tablero: una cita, una tarea o un plan.`:'Agrega algo concreto al tablero: una cita, una tarea pendiente o un plan.';}
+  if(n===4){const reward=document.getElementById('ob-task-reward');if(reward)reward.style.display=OB_STATE.firstTask?'':'none';const msg=document.getElementById('ob-reward-msg');if(msg)msg.textContent=OB_STATE.firstTask?(name?`¡Excelente, ${name}! Primera tarea agregada al tablero. 🎯`:'¡Excelente! Primera tarea agregada al tablero. 🎯'):'Ya conoces el tablero. Puedes crear tareas en cualquier momento con ＋ Añadir.';const txp=document.getElementById('ob-total-xp');if(txp)txp.textContent=`Total: ${OB_STATE.xp} XP ⚡`;}
+  if(n===5){const ft=document.getElementById('ob-final-title');if(ft)ft.textContent=name?`¡Todo listo, ${name}!`:'¡Todo listo!';document.getElementById('ob-xp').textContent=`⚡ ${OB_STATE.xp} XP`;}
+  obSaveState();
+}
+function obStep(dir){
+  let n=OB_STATE.step+dir;if(n<1)n=1;if(n>5){completeOnboarding();return;}
+  if(dir>0){if(n===2)obEarnXP('start');else if(n===3)obEarnXP('tour');}
+  obApplyStep(n);
+}
+function obUpdateName(val){OB_STATE.name=val.trim();const t=document.getElementById('ob-title');if(t&&OB_STATE.step===1)t.textContent=OB_STATE.name?`¡Hola, ${OB_STATE.name}! 👋`:'¡Bienvenido/a a Tablero Rö!';obSaveState();}
+function obOpenAdd(){OB_WAITING_TASK=true;document.getElementById('ob-modal').classList.remove('open');openAddModal();}
+function obLinkSync(){completeOnboarding();openCalModal();}
+function obLinkBujo(){completeOnboarding();openDrawer();}
+function skipOnboarding(){OB_STATE.skipped=true;obSaveState();document.getElementById('ob-modal').classList.remove('open');showToast('Tutorial omitido. Puedes retomarlo en ⚙️ Admin → Reiniciar tutorial.','info',4500);}
+function completeOnboarding(){obEarnXP('done');OB_STATE.completed=true;obSaveState();document.getElementById('ob-modal').classList.remove('open');showToast(`🌟 ¡Onboarding completado! Total: ${OB_STATE.xp} XP ⚡`,'ok',4000);}
+function resetOnboarding(){localStorage.removeItem(OB_KEY);OB_STATE=obDefaultState();closeAdminModal();showOnboarding();}
+
 (function restoreSura(){const sid=localStorage.getItem('gcal_sura_id');if(sid){const s=SOURCES.find(x=>x.id==='trabajo');if(s&&!s.gcalId)s.gcalId=sid;}})();
 loadPerms(); loadBoard(); renderWeek(); initGAuthUI(); hydrateAIForm(); hydrateAIAdmin(); updateAIStatus(); updateBujoSummary(); setSyncView(false);
+initOnboarding();
 /* ── Auto-sync on page load: refresh cached events in background ── */
 setTimeout(()=>{syncAll().then(()=>renderWeek()).catch(err=>console.warn('Auto-sync:',err));},1500);
 function renderCredentials(){
