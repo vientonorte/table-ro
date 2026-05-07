@@ -1382,7 +1382,7 @@ async function patchEventInGCalAPI(uid,calId,changes){
   if(changes.detail!==undefined)body.description=changes.detail;
   if(changes.iso!==undefined){
     const iso=changes.iso;const time=changes.time;
-    if(!time||time==='Todo el dia'||time===''){const nd=new Date(iso);nd.setDate(nd.getDate()+1);body.start={date:iso};body.end={date:isoOf(nd)};}
+    if(!time||time==='Todo el d\u00eda'||time===''){const nd=new Date(iso);nd.setDate(nd.getDate()+1);body.start={date:iso};body.end={date:isoOf(nd)};}
     else{const[h,mi]=time.split(':');const endH=String(parseInt(h)+1).padStart(2,'0');body.start={dateTime:`${iso}T${h.padStart(2,'0')}:${mi||'00'}:00`,timeZone:'America/Santiago'};body.end={dateTime:`${iso}T${endH}:${mi||'00'}:00`,timeZone:'America/Santiago'};}
   }
   const resp=await fetch(`${GCAL_API}/calendars/${encodeURIComponent(calId)}/events/${encodeURIComponent(uid)}`,{method:'PATCH',headers:{'Authorization':`Bearer ${gToken}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
