@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.3.1] — 2026-05-07
+
+### 🐛 Fix — duplicados de eventos sincronizados
+
+- Se agregó un guard de sincronización por fuente (`SYNC_IN_FLIGHT`) para evitar corridas concurrentes de `syncSource()` sobre la misma fuente.
+- Se corrigió la limpieza previa a sync para eliminar eventos sincronizados por `srcId`/`cal` aunque no tengan `uid`.
+- Se agregó deduplicación defensiva de eventos sincronizados (`dedupeSyncedEvents()`), aplicada después de sync y al cargar caché (`loadSyncedCache`).
+- Resultado esperado: no se duplican tarjetas por re-sync solapado ni por arrastre de caché histórica.
+
 ## [1.2.2] — 2026-04-05
 
 ### 🔧 Interacciones y manejo de estado

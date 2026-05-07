@@ -1138,6 +1138,21 @@ function changeCat(e,tag){
 }
 
 const SYNC_STATUS={}; let _cfgSrcId=null;
+const SYNC_IN_FLIGHT = new Map();
+function dedupeSyncedEvents(){
+  const seen = new Set();
+  const out = [];
+  EVENTS.forEach(ev => {
+    if(!ev.fromCal){ out.push(ev); return; }
+    const key = ev.uid
+      ? `uid:${ev.uid}`
+      : `src:${ev.source||''}|sid:${ev.srcId||''}|iso:${ev.iso||''}|title:${ev.title||''}|time:${ev.time||''}|cal:${ev.cal||''}|allDay:${ev.allDay?1:0}`;
+    if(seen.has(key)) return;
+    seen.add(key);
+    out.push(ev);
+  });
+  if(out.length!==EVENTS.length){ EVENTS.length=0; EVENTS.push(...out); }
+}
 function unfoldICS(t){return t.replace(/\r\n[ \t]/g,'').replace(/\r\n/g,'\n').replace(/\r/g,'\n');}
 function parseICS(text,calKey,srcId){
   const evs=[];const lines=unfoldICS(text);const blocks=lines.split('BEGIN:VEVENT').slice(1);
@@ -1184,6 +1199,11 @@ async function fetchTrelloCards(boardId,calKey,srcId){
   }).filter(Boolean);
 }
 async function syncSource(srcId,btn){
+  if(SYNC_IN_FLIGHT.has(srcId)){
+    if(btn){btn.textContent='⏳';btn.disabled=true;}
+    return SYNC_IN_FLIGHT.get(srcId).finally(()=>{if(btn){btn.textContent='🔄';btn.disabled=false;}});
+  }
+  const run = (async()=>{
   const src=SOURCES.find(s=>s.id===srcId);if(!src)return;
   if(!isSourceEnabled(srcId)){ setSourceStatus(srcId,'error',0,'Deshabilitado en Permisos. Actívalo en ⚙️ → Permisos.'); if(btn){btn.textContent='🔒';setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},2500);} return; }
   if(btn){btn.textContent='⏳';btn.disabled=true;}
@@ -1215,8 +1235,13 @@ async function syncSource(srcId,btn){
       newEvs=parseICS(icsText,src.cal,srcId);
     }
     if(src.filterRe)newEvs=newEvs.filter(e=>src.filterRe.test(e.title));
-    for(let i=EVENTS.length-1;i>=0;i--){if(EVENTS[i].uid&&(EVENTS[i].srcId===srcId||(!EVENTS[i].srcId&&EVENTS[i].cal===src.cal)))EVENTS.splice(i,1);}
+    for(let i=EVENTS.length-1;i>=0;i--){
+      const ev=EVENTS[i];
+      if(!ev.fromCal)continue;
+      if(ev.srcId===srcId||(!ev.srcId&&ev.cal===src.cal))EVENTS.splice(i,1);
+    }
     EVENTS.push(...newEvs);
+    dedupeSyncedEvents();
     SYNC_STATUS[srcId]={ok:true,count:newEvs.length,time:new Date(),via:syncVia};
     setSourceStatus(srcId,'ok',newEvs.length);
     cacheSyncedEvents();
@@ -1225,6 +1250,9 @@ async function syncSource(srcId,btn){
     SYNC_STATUS[srcId]={ok:false,error:err.message,time:new Date()}; setSourceStatus(srcId,'error',0,err.message);
     if(btn){btn.textContent='⚠️';setTimeout(()=>{btn.textContent='🔄';btn.disabled=false;},2500);} updateSyncTopBtn('error');
   }
+  })();
+  SYNC_IN_FLIGHT.set(srcId,run);
+  try{ await run; }finally{ SYNC_IN_FLIGHT.delete(srcId); }
 }
 async function syncAll(){ const btn=document.getElementById('sync-all-btn'); if(btn){btn.textContent='⏳ Sincronizando...';btn.disabled=true;} await Promise.allSettled(SOURCES.map(s=>syncSource(s.id,null))); if(btn){btn.textContent='🔄 Sincronizar Todo';btn.disabled=false;} }
 function updateSyncTopBtn(state){ const b=document.getElementById('sync-topbtn');if(!b)return; b.classList.remove('syncing','synced','error'); if(state!=='idle')b.classList.add(state); b.textContent=state==='syncing'?'⏳ Sync...':state==='synced'?'✓ Synced':state==='error'?'⚠️ Sync':'🔄 Sync'; if(state!=='syncing')setTimeout(()=>{b.classList.remove('syncing','synced','error');b.textContent='🔄 Sync';},3500); }
@@ -1438,6 +1466,7 @@ function loadSyncedCache(){
   try{
     const cached=JSON.parse(localStorage.getItem('tablero_synced_ro')||'[]');
     cached.forEach(ev=>{if(ev.uid&&!EVENTS.find(e=>e.uid===ev.uid))EVENTS.push(ev);});
+    dedupeSyncedEvents();
   }catch(e){console.warn('loadSyncedCache:',e);}
 }
 
