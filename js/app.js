@@ -1594,8 +1594,9 @@ function submitEdit(){
 const OB_KEY='tablero_onboarding_ro';
 const OB_XP={start:20,tour:30,task:50,done:20};
 let OB_WAITING_TASK=false;
-let OB_STATE={step:1,completed:false,skipped:false,started:null,name:'',xp:0,firstTask:false,earned:{start:false,tour:false,task:false,done:false}};
-function obLoadState(){try{const s=JSON.parse(localStorage.getItem(OB_KEY)||'null');if(s){OB_STATE=Object.assign({step:1,completed:false,skipped:false,started:null,name:'',xp:0,firstTask:false,earned:{start:false,tour:false,task:false,done:false}},s,{earned:Object.assign({start:false,tour:false,task:false,done:false},s.earned||{})});}}catch(e){}}
+function obDefaultState(){return {step:1,completed:false,skipped:false,started:null,name:'',xp:0,firstTask:false,earned:{start:false,tour:false,task:false,done:false}};}
+let OB_STATE=obDefaultState();
+function obLoadState(){try{const s=JSON.parse(localStorage.getItem(OB_KEY)||'null');if(s){OB_STATE=Object.assign(obDefaultState(),s,{earned:Object.assign({start:false,tour:false,task:false,done:false},s.earned||{})});}}catch(e){}}
 function obSaveState(){try{localStorage.setItem(OB_KEY,JSON.stringify(OB_STATE));}catch(e){}}
 function obEarnXP(key){if(OB_STATE.earned[key])return;OB_STATE.earned[key]=true;OB_STATE.xp+=OB_XP[key]||0;obSaveState();}
 function initOnboarding(){obLoadState();if(OB_STATE.completed||OB_STATE.skipped)return;if(!OB_STATE.started){OB_STATE.started=new Date().toISOString();obSaveState();}showOnboarding();}
@@ -1612,7 +1613,7 @@ function obApplyStep(n){
   if(next)next.textContent=n<total?'Siguiente →':'¡Empezar! 🚀';
   const name=OB_STATE.name;
   if(n===1){const ni=document.getElementById('ob-name-input');if(ni)ni.value=name;const t=document.getElementById('ob-title');if(t)t.textContent=name?`¡Hola, ${name}! 👋`:'¡Bienvenido/a a Tablero Rö!';}
-  if(n===3&&name){const s3=document.getElementById('ob-step3-sub');if(s3&&name.toLowerCase()==='camila')s3.textContent='Camila, agrega algo concreto al tablero: una cita, una tarea o un plan 💚';}
+  if(n===3){const s3=document.getElementById('ob-step3-sub');if(s3)s3.textContent=name?`${name}, agrega algo concreto al tablero: una cita, una tarea o un plan.`:'Agrega algo concreto al tablero: una cita, una tarea pendiente o un plan.';}
   if(n===4){const reward=document.getElementById('ob-task-reward');if(reward)reward.style.display=OB_STATE.firstTask?'':'none';const msg=document.getElementById('ob-reward-msg');if(msg)msg.textContent=OB_STATE.firstTask?(name?`¡Excelente, ${name}! Primera tarea agregada al tablero. 🎯`:'¡Excelente! Primera tarea agregada al tablero. 🎯'):'Ya conoces el tablero. Puedes crear tareas en cualquier momento con ＋ Añadir.';const txp=document.getElementById('ob-total-xp');if(txp)txp.textContent=`Total: ${OB_STATE.xp} XP ⚡`;}
   if(n===5){const ft=document.getElementById('ob-final-title');if(ft)ft.textContent=name?`¡Todo listo, ${name}!`:'¡Todo listo!';document.getElementById('ob-xp').textContent=`⚡ ${OB_STATE.xp} XP`;}
   obSaveState();
@@ -1628,7 +1629,7 @@ function obLinkSync(){completeOnboarding();openCalModal();}
 function obLinkBujo(){completeOnboarding();openDrawer();}
 function skipOnboarding(){OB_STATE.skipped=true;obSaveState();document.getElementById('ob-modal').classList.remove('open');showToast('Tutorial omitido. Puedes retomarlo en ⚙️ Admin → Reiniciar tutorial.','info',4500);}
 function completeOnboarding(){obEarnXP('done');OB_STATE.completed=true;obSaveState();document.getElementById('ob-modal').classList.remove('open');showToast(`🌟 ¡Onboarding completado! Total: ${OB_STATE.xp} XP ⚡`,'ok',4000);}
-function resetOnboarding(){localStorage.removeItem(OB_KEY);OB_STATE={step:1,completed:false,skipped:false,started:null,name:'',xp:0,firstTask:false,earned:{start:false,tour:false,task:false,done:false}};closeAdminModal();showOnboarding();}
+function resetOnboarding(){localStorage.removeItem(OB_KEY);OB_STATE=obDefaultState();closeAdminModal();showOnboarding();}
 
 (function restoreSura(){const sid=localStorage.getItem('gcal_sura_id');if(sid){const s=SOURCES.find(x=>x.id==='trabajo');if(s&&!s.gcalId)s.gcalId=sid;}})();
 loadPerms(); loadBoard(); renderWeek(); initGAuthUI(); hydrateAIForm(); hydrateAIAdmin(); updateAIStatus(); updateBujoSummary(); setSyncView(false);
