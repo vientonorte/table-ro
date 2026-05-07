@@ -381,7 +381,7 @@ function undo() {
     announce('Acción deshecha'); autoSave();
     showToast('↩ Deshecho', 'info', 1500);
 }
-const DRAG = { card: null };
+const DRAG = { card: null, fromIso: '' };
 const LONG_PRESS_MS = 520;
 const LONG_PRESS_TOLERANCE = 10;
 let LAST_LONG_PRESS_AT = 0;
@@ -453,7 +453,19 @@ function setupDrop(zone) {
         removePH();
         zone.querySelector('.day-empty')?.remove();
         updateDayCount(zone.closest('.wday'));
+        const droppedCard = DRAG.card;
+        const newIso = zone.closest('[id^="wb-"]')?.id.replace('wb-','') || '';
+        const oldIso = DRAG.fromIso;
         autoSave();
+        if (newIso && newIso !== oldIso && canSyncBack(droppedCard)) {
+            const timeStr = (droppedCard.querySelector('.ctime')?.textContent||'').replace('⏰ ','').trim();
+            const time = (timeStr === 'Todo el día') ? '' : timeStr;
+            const calId = getGCalIdForCal(droppedCard.dataset.cal);
+            showToast('Actualizando en Google Calendar\u2026', 'info', 2000);
+            patchEventInGCalAPI(droppedCard.dataset.uid, calId, { iso: newIso, time })
+                .then(() => { updateEventInCache(droppedCard.dataset.uid, { iso: newIso }); cacheSyncedEvents(); showToast('\u2713 Movido en Google Calendar', 'ok', 2500); })
+                .catch(err => { console.warn('sync-back move:', err); showToast('\u26a0\ufe0f No se pudo mover en Google Calendar', 'error', 3500); });
+        }
     });
 }
 
@@ -470,6 +482,7 @@ function makeCard(ev) {
     const kind = normalizeKind(ev.kind, ev.title || '');
     el.dataset.source = src;
     el.dataset.kind = kind;
+    el.dataset.uid = ev.uid || '';
     const tStr = ev.allDay ? 'Todo el día' : (ev.time || '');
     const perm = getPermForCal(ev.cal);
     const readonly = !!ev.readonly || ev.fromCal;
@@ -481,7 +494,7 @@ function makeCard(ev) {
   el.classList.toggle('is-readonly',readonly);el.setAttribute('tabindex','0');el.setAttribute('role','group');el.setAttribute('aria-label',`${KIND_LABELS[kind]||'Tarea'}: ${ev.title}`);
   el.querySelector('.chk').addEventListener('click',e=>{e.stopPropagation();pushUndo('done',el,el.classList.contains('done'));el.classList.toggle('done');announce(el.classList.contains('done')?'Tarjeta marcada como completada':'Tarjeta marcada como pendiente');autoSave();});
   el.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();el.querySelector('.chk')?.click();}});
-  el.addEventListener('dragstart',e=>{DRAG.card=el;setTimeout(()=>el.classList.add('dragging'),0);e.dataTransfer.effectAllowed='move';});
+  el.addEventListener('dragstart',e=>{DRAG.card=el;DRAG.fromIso=el.closest('[id^="wb-"]')?.id.replace('wb-','')||'';setTimeout(()=>el.classList.add('dragging'),0);e.dataTransfer.effectAllowed='move';});
   el.addEventListener('dragend',()=>{el.classList.remove('dragging');removePH();document.querySelectorAll('.drag-over-col').forEach(z=>z.classList.remove('drag-over-col'));DRAG.card=null;});
   el.addEventListener('contextmenu',e=>{e.preventDefault();e.stopPropagation();showCtxMenu(e,el);});
   el.addEventListener('touchstart',e=>startCardPress(el,e),{passive:true});
@@ -1349,6 +1362,34 @@ async function pushEventToGCalAPI(ev,calId='gaete.gaona@gmail.com'){
   return await resp.json();
 }
 
+/* ── Sync-back helpers ── */
+function canSyncBack(card){
+  if(!gToken||!card.dataset.uid||card.dataset.source!=='gcal')return false;
+  const src=SOURCES.find(s=>s.cal===card.dataset.cal);
+  return !!(src&&!src.readonly);
+}
+function updateEventInCache(uid,changes){
+  const ev=EVENTS.find(e=>e.uid===uid);if(!ev)return;
+  if(changes.iso!==undefined)ev.iso=changes.iso;
+  if(changes.time!==undefined)ev.time=changes.time;
+  if(changes.title!==undefined)ev.title=changes.title;
+  if(changes.detail!==undefined)ev.detail=changes.detail;
+}
+async function patchEventInGCalAPI(uid,calId,changes){
+  if(!gToken||!uid)return false;
+  const body={};
+  if(changes.title!==undefined)body.summary=changes.title;
+  if(changes.detail!==undefined)body.description=changes.detail;
+  if(changes.iso!==undefined){
+    const iso=changes.iso;const time=changes.time;
+    if(!time||time==='Todo el dia'||time===''){const nd=new Date(iso);nd.setDate(nd.getDate()+1);body.start={date:iso};body.end={date:isoOf(nd)};}
+    else{const[h,mi]=time.split(':');const endH=String(parseInt(h)+1).padStart(2,'0');body.start={dateTime:`${iso}T${h.padStart(2,'0')}:${mi||'00'}:00`,timeZone:'America/Santiago'};body.end={dateTime:`${iso}T${endH}:${mi||'00'}:00`,timeZone:'America/Santiago'};}
+  }
+  const resp=await fetch(`${GCAL_API}/calendars/${encodeURIComponent(calId)}/events/${encodeURIComponent(uid)}`,{method:'PATCH',headers:{'Authorization':`Bearer ${gToken}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!resp.ok)throw new Error(`Patch ${resp.status}`);
+  return await resp.json();
+}
+
 function toggleDetail(e,btn){e.stopPropagation();const card=btn.closest('.card');const panel=card.querySelector('.card-detail');const open=panel.classList.toggle('show');btn.classList.toggle('open',open);if(open)panel.querySelector('.det-area').focus();}
 function openAddModal(){
   const sel=document.getElementById('add-day');sel.innerHTML='';
@@ -1495,6 +1536,13 @@ function submitEdit(){
   }
   const oldKey=cardKey(oldIso,oldTitle,oldCal);
   if(CARD_STATES[oldKey]){const nk=cardKey(newIso,newTitle,newCat);CARD_STATES[nk]=CARD_STATES[oldKey];if(nk!==oldKey)delete CARD_STATES[oldKey];}
+  if(canSyncBack(targetCard)){
+    const calId=getGCalIdForCal(newCat);
+    showToast('Actualizando en Google Calendar\u2026','info',2000);
+    patchEventInGCalAPI(targetCard.dataset.uid,calId,{iso:newIso,time:newTime,title:newTitle,detail:newDetail})
+      .then(()=>{updateEventInCache(targetCard.dataset.uid,{iso:newIso,time:newTime,title:newTitle,detail:newDetail});cacheSyncedEvents();showToast('\u2713 Actualizado en Google Calendar','ok',2500);})
+      .catch(err=>{console.warn('sync-back edit:',err);showToast('\u26a0\ufe0f No se pudo actualizar en Google Calendar','error',3500);});
+  }
   closeEditModal();autoSave();announce('Evento actualizado');
 }
 
