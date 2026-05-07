@@ -4,13 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Tablero Rö — Planificador semanal personal con Google Calendar, Bullet Journal y sync bidireccional." />
-    <meta name="version" content="1.3.0" />
-    <title>TABLERO — Rö · v1.3.0</title>
+    <meta name="version" content="1.4.0" />
+    <title>TABLERO — Rö · v1.4.0</title>
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#7c3aed" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <link rel="stylesheet" href="css/styles.css?v=1.2.2" />
+    <link rel="stylesheet" href="css/styles.css?v=1.4.0" />
     <script src="https://accounts.google.com/gsi/client" async defer></script>
   </head>
 
@@ -68,6 +68,121 @@
     </nav>
 
     <div class="sr-live" id="sr-live" aria-live="polite" aria-atomic="true"></div>
+
+    <!-- ONBOARDING MODAL -->
+    <div class="modal-overlay" id="ob-modal" role="dialog" aria-modal="true" aria-labelledby="ob-title" style="z-index:9000;">
+      <div class="modal-box ob-box">
+        <div class="ob-progress-track">
+          <div class="ob-progress-fill" id="ob-progress-fill"></div>
+        </div>
+        <div class="ob-header">
+          <div class="ob-step-label" id="ob-step-label">Paso 1 de 5</div>
+          <div class="ob-xp" id="ob-xp">⚡ 0 XP</div>
+        </div>
+        <div class="ob-content">
+          <!-- Paso 1: Bienvenida -->
+          <div class="ob-step active" id="ob-step-1">
+            <div class="ob-emoji">👋</div>
+            <div class="ob-title" id="ob-title">¡Bienvenido/a a Tablero Rö!</div>
+            <div class="ob-sub">Tu planificador semanal personal. Vamos a mostrarte lo esencial en 5 pasos rápidos.</div>
+            <div class="mfield" style="margin-top:8px">
+              <label>¿Cómo te llamas?</label>
+              <input type="text" id="ob-name-input" placeholder="Tu nombre..." autocomplete="given-name" oninput="obUpdateName(this.value)" />
+            </div>
+            <div class="ob-badge-row">
+              <span class="ob-badge">🚀 Iniciado</span>
+              <span class="ob-badge-xp">+20 XP</span>
+            </div>
+          </div>
+          <!-- Paso 2: Tour del tablero -->
+          <div class="ob-step" id="ob-step-2">
+            <div class="ob-emoji">🗂</div>
+            <div class="ob-title">Tu semana, de un vistazo</div>
+            <div class="ob-sub">El tablero organiza cada día en columnas. Arrastra tarjetas para reorganizarlas.</div>
+            <ul class="ob-feature-list">
+              <li>
+                📅
+                <strong>7 columnas</strong>
+                — una por cada día de la semana
+              </li>
+              <li>
+                🎛
+                <strong>Filtros</strong>
+                — filtra por categoría: Personal, Camila, Trabajo…
+              </li>
+              <li>
+                🔄
+                <strong>Sync</strong>
+                — sincroniza con Google Calendar e ICS
+              </li>
+              <li>
+                💾
+                <strong>Guardar</strong>
+                —
+                <kbd>Ctrl+S</kbd>
+                o el botón Guardar
+              </li>
+            </ul>
+            <div class="ob-badge-row">
+              <span class="ob-badge">🗺 Explorador</span>
+              <span class="ob-badge-xp">+30 XP</span>
+            </div>
+          </div>
+          <!-- Paso 3: Primera acción -->
+          <div class="ob-step" id="ob-step-3">
+            <div class="ob-emoji">🎯</div>
+            <div class="ob-title">Crea tu primera tarea</div>
+            <div class="ob-sub" id="ob-step3-sub">Agrega algo concreto al tablero: una cita, una tarea pendiente o un plan.</div>
+            <button class="btn btn-p" style="width:100%;justify-content:center;margin-top:10px" onclick="obOpenAdd()">＋ Añadir primera tarea</button>
+            <div style="font-size:.6rem;color:var(--mut);text-align:center;margin-top:6px">Al agregar la tarea continuarás automáticamente →</div>
+          </div>
+          <!-- Paso 4: Recompensa -->
+          <div class="ob-step" id="ob-step-4">
+            <div class="ob-emoji ob-emoji-celebrate">🏆</div>
+            <div class="ob-title">¡Logro desbloqueado!</div>
+            <div class="ob-sub" id="ob-reward-msg">¡Excelente! Ya tienes tu primera tarea en el tablero.</div>
+            <div class="ob-reward-box" id="ob-task-reward">
+              <span class="ob-badge">🎯 Primera tarea</span>
+              <span class="ob-badge-xp ob-xp-big">+50 XP</span>
+            </div>
+            <div class="ob-total-xp" id="ob-total-xp">Total: 100 XP ⚡</div>
+          </div>
+          <!-- Paso 5: Perfil listo -->
+          <div class="ob-step" id="ob-step-5">
+            <div class="ob-emoji">🌟</div>
+            <div class="ob-title" id="ob-final-title">¡Todo listo!</div>
+            <div class="ob-sub">Ya conoces lo esencial. Cuando quieras explorar más:</div>
+            <ul class="ob-checklist">
+              <li class="ob-check done">
+                <span>✅</span>
+                Primera tarea creada
+              </li>
+              <li class="ob-check">
+                <span>🔄</span>
+                Sincronizar un calendario
+                <button class="ob-mini-btn" onclick="obLinkSync()">Abrir →</button>
+              </li>
+              <li class="ob-check">
+                <span>📓</span>
+                Explorar Bullet Journal
+                <button class="ob-mini-btn" onclick="obLinkBujo()">Abrir →</button>
+              </li>
+            </ul>
+            <div class="ob-reward-box" style="margin-top:8px">
+              <span class="ob-badge">🌟 Perfil listo</span>
+              <span class="ob-badge-xp">+20 XP</span>
+            </div>
+          </div>
+        </div>
+        <div class="ob-nav">
+          <button class="btn btn-g ob-skip" onclick="skipOnboarding()">Saltar tutorial</button>
+          <div class="ob-nav-right">
+            <button class="btn btn-g" id="ob-prev-btn" style="display:none" onclick="obStep(-1)">← Anterior</button>
+            <button class="btn btn-p" id="ob-next-btn" onclick="obStep(1)">Siguiente →</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- QUICK-ADD MODAL -->
     <div class="modal-overlay" id="add-modal" role="dialog" aria-modal="true" aria-labelledby="add-modal-title" onclick="if(event.target===this)closeAddModal()">
@@ -369,8 +484,11 @@
           </div>
           <div class="adm-danger">
             <div style="font-size:.7rem;font-weight:800;color:#F87171;margin-bottom:5px;">⚠️ Zona de peligro</div>
-            <button class="btn" style="background:rgba(248,113,113,.15);color:#F87171;border:1px solid rgba(248,113,113,.3);font-size:.66rem" onclick="clearSavedState()">🗑 Limpiar estado guardado</button>
-            <div style="font-size:.58rem;color:var(--mut);margin-top:4px;">Elimina cards manuales y estados en localStorage.</div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button class="btn" style="background:rgba(248,113,113,.15);color:#F87171;border:1px solid rgba(248,113,113,.3);font-size:.66rem" onclick="clearSavedState()">🗑 Limpiar estado guardado</button>
+              <button class="btn" style="background:rgba(124,58,237,.15);color:#a78bfa;border:1px solid rgba(124,58,237,.3);font-size:.66rem" onclick="resetOnboarding()">🎮 Reiniciar tutorial</button>
+            </div>
+            <div style="font-size:.58rem;color:var(--mut);margin-top:4px;">Elimina cards manuales y estados en localStorage. Reiniciar tutorial vuelve a mostrar el onboarding.</div>
           </div>
         </div>
         <div class="tab-pane" id="tab-permisos">
@@ -612,7 +730,7 @@
       </div>
     </div>
 
-    <script src="js/app.js?v=1.2.0" defer></script>
+    <script src="js/app.js?v=1.4.0" defer></script>
     <script>
       if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
     </script>
