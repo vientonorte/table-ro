@@ -80,6 +80,7 @@ js/app.js        → toda la lógica (datos, render, sync, IA, storage)
 - **Cuenta personal:** `gaete.gaona@gmail.com`
 - **Calendario Camila:** `c.camilapalma@gmail.com`
 - **Finanzas gcalId:** `9616f51a807e24559b4df624c70d7fe1d81de62f9aa8baf44c1190db5887b12f@group.calendar.google.com`
+- **Trello Espacio Seguro (boardId):** `69c558a7d79162569df9a98a`
 
 ---
 
@@ -89,7 +90,7 @@ js/app.js        → toda la lógica (datos, render, sync, IA, storage)
 2. **JS va en `js/app.js`** — no agregar `<script>` inline en index.html
 3. **Mantener simbología BuJo** — Camila=verde, Vínculos=morado, Personal/Bienestar=rosa, Trabajo/Finanzas=naranja
 4. **Sin dependencias externas nuevas** — solo Google Fonts y GIS (ya incluidos)
-5. **localStorage keys:** `tablero_states_ro`, `tablero_extra_ro`, `gcal_client_id`, `gcal_sura_id`, `ics_*`
+5. **localStorage keys:** `tablero_states_ro`, `tablero_extra_ro`, `gcal_client_id`, `gcal_sura_id`, `ics_*`, `trello_api_key`, `trello_api_token`, `trello_espacio_seguro`
 6. **Zona horaria:** siempre `America/Santiago`
 7. **Al agregar eventos al array EVENTS:** formato `{iso:'YYYY-MM-DD', title:'...', cal:'categoría', time:'HH:MM'}` o `allDay:true`
 
@@ -112,6 +113,9 @@ Editar el array `BUJO_INIT` en `js/app.js` con los nuevos items.
 
 ### Agregar nueva fuente de calendario
 Agregar objeto al array `SOURCES` en `js/app.js` con `id`, `name`, `cal`, `color`, `icon`, `gcalId`, `icsUrl`, `lsKey`.
+
+### Agregar fuente Trello
+Agregar objeto al array `SOURCES` con `type: 'trello'`, `trelloBoardId`, y `cal` correspondiente. Las credenciales (API Key + Token) se configuran en ⚙️ Admin → Trello. Solo tarjetas con fecha de vencimiento se sincronizan al tablero.
 
 ### Agregar estilos nuevos
 Añadir al final de la sección correspondiente en `css/styles.css`.

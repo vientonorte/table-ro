@@ -4,6 +4,29 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.4.0] — 2026-05-07
+
+### 🎮 Onboarding gamificado para nuevos usuarios
+
+- Se agregó un flujo de onboarding de 5 pasos que aparece únicamente en la primera sesión.
+- **Bienvenida personalizada**: ingresa tu nombre para recibir mensajes personalizados en todo el flujo.
+- **Tour del tablero**: resumen visual de las funciones principales (columnas, filtros, sync, guardado).
+- **Primera acción asistida**: botón que abre el modal de nueva tarea y detecta automáticamente cuándo se crea la primera tarea para avanzar al paso de recompensa.
+- **Sistema de XP**: 20 XP al iniciar, 30 XP al completar el tour, 50 XP al crear la primera tarea, 20 XP al terminar. Total máximo: 120 XP.
+- **Recompensa con badge**: paso 4 muestra badge animado y total de XP acumulado.
+- **Checklist de perfil listo**: paso 5 con accesos directos a Sync y Bullet Journal.
+- **Saltar y retomar**: opción "Saltar tutorial" disponible en todo momento; se puede reiniciar desde ⚙️ Admin → Zona de peligro → Reiniciar tutorial.
+- **Persistencia inteligente**: estado guardado en localStorage `tablero_onboarding_ro`; no vuelve a mostrarse si ya fue completado o omitido.
+
+## [1.3.1] — 2026-05-07
+
+### 🐛 Fix — duplicados de eventos sincronizados
+
+- Se agregó un guard de sincronización por fuente (`SYNC_IN_FLIGHT`) para evitar corridas concurrentes de `syncSource()` sobre la misma fuente.
+- Se corrigió la limpieza previa a sync para eliminar eventos sincronizados por `srcId`/`cal` aunque no tengan `uid`.
+- Se agregó deduplicación defensiva de eventos sincronizados (`dedupeSyncedEvents()`), aplicada después de sync y al cargar caché (`loadSyncedCache`).
+- Resultado esperado: no se duplican tarjetas por re-sync solapado ni por arrastre de caché histórica.
+
 ## [1.2.2] — 2026-04-05
 
 ### 🔧 Interacciones y manejo de estado

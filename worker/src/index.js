@@ -1,15 +1,23 @@
 /**
- * table-ro AI Proxy — Cloudflare Worker
- * Routes: POST /api/claude, POST /api/openai, POST /api/gemini
+ * table-ro AI & ICS Proxy — Cloudflare Worker
+ * Routes: POST /api/claude, POST /api/openai, POST /api/gemini, GET /api/ics
  * Secrets: CLAUDE_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY
  */
 
 const CORS_HEADERS = origin => ({
     'Access-Control-Allow-Origin': origin,
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Max-Age': '86400',
 });
+
+const ALLOWED_ICS_HOSTS = [
+    'calendar.google.com',
+    'outlook.office365.com',
+    'outlook.live.com',
+    'trello.com',
+    'p73-caldav.icloud.com',
+];
 
 function isAllowedOrigin(request, env) {
     const origin = request.headers.get('Origin') || '';
@@ -31,12 +39,35 @@ export default {
             return new Response(null, { status: 204, headers: cors });
         }
 
+        const url = new URL(request.url);
+        const path = url.pathname;
+
+        // ICS proxy: GET /api/ics?url=<ics_url>
+        if (path === '/api/ics' && request.method === 'GET') {
+            const icsUrl = url.searchParams.get('url');
+            if (!icsUrl) return jsonError('Missing url parameter', 400, cors);
+            try {
+                const parsed = new URL(icsUrl);
+                if (!ALLOWED_ICS_HOSTS.some(h => parsed.hostname === h || parsed.hostname.endsWith('.' + h))) {
+                    return jsonError('Host not allowed', 403, cors);
+                }
+                const upstream = await fetch(icsUrl, {
+                    headers: { 'Accept': 'text/calendar, text/plain, */*' },
+                });
+                if (!upstream.ok) return jsonError(`Upstream ${upstream.status}`, upstream.status, cors);
+                const body = await upstream.text();
+                return new Response(body, {
+                    status: 200,
+                    headers: { ...cors, 'Content-Type': 'text/calendar; charset=utf-8' },
+                });
+            } catch (err) {
+                return jsonError(err.message || 'ICS fetch failed', 502, cors);
+            }
+        }
+
         if (request.method !== 'POST') {
             return new Response('Method Not Allowed', { status: 405, headers: cors });
         }
-
-        const url = new URL(request.url);
-        const path = url.pathname;
 
         try {
             let body = await request.json();
@@ -81,7 +112,7 @@ export default {
             const data = await upstream.text();
             return new Response(data, {
                 status: upstream.status,
-                headers: {...cors, 'Content-Type': 'application/json' },
+                headers: { ...cors, 'Content-Type': 'application/json' },
             });
         } catch (err) {
             return jsonError(err.message || 'Internal error', 500, cors);
@@ -92,6 +123,6 @@ export default {
 function jsonError(message, status, cors) {
     return new Response(JSON.stringify({ error: { message } }), {
         status,
-        headers: {...cors, 'Content-Type': 'application/json' },
+        headers: { ...cors, 'Content-Type': 'application/json' },
     });
 }

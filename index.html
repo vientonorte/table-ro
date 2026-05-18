@@ -1,17 +1,17 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Tablero Rö — Planificador semanal personal con Google Calendar, Bullet Journal y sync bidireccional.">
-    <meta name="version" content="1.2.0">
-    <title>TABLERO — Rö · v1.2.0</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#7c3aed">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="stylesheet" href="css/styles.css?v=1.2.1">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Tablero Rö — Planificador semanal personal con Google Calendar, Bullet Journal y sync bidireccional." />
+    <meta name="version" content="1.4.0" />
+    <title>TABLERO — Rö · v1.4.0</title>
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#7c3aed" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="stylesheet" href="css/styles.css?v=1.4.0" />
     <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 
@@ -21,7 +21,7 @@
     <!-- TOPBAR -->
     <nav class="topbar" aria-label="Barra de herramientas">
         <div class="topbar-main">
-            <h1>ABRIL 2026</h1>
+            <h1 id="month-label">ABRIL 2026</h1>
             <span class="layer-chip">Uso diario</span>
             <div class="topbar-sep"></div>
             <div class="wnav-group" aria-label="Navegación semanal">
@@ -34,9 +34,9 @@
         <div class="daily-actions">
             <button class="sec-btn" onclick="openAddModal()" aria-label="Agregar manualmente">＋ Añadir</button>
             <button class="bujo-btn" id="bujo-btn" onclick="openDrawer()" aria-label="Abrir captura Bullet Journal" aria-expanded="false" aria-controls="drawer">
-      📓 Bullet Journal
-      <span class="badge" id="bj-badge">0</span>
-    </button>
+          📓 Bullet Journal
+          <span class="badge" id="bj-badge">0</span>
+        </button>
             <button class="sec-btn" id="filter-toggle-btn" onclick="toggleLegend()" aria-expanded="false" aria-controls="legend-panel">🎛 Filtros</button>
             <div class="tool-menu-wrap">
                 <button class="sec-btn" id="tools-btn" onclick="toggleToolsMenu(event)" aria-expanded="false" aria-controls="tool-menu">☰ Más</button>
@@ -50,38 +50,165 @@
         </div>
         <div class="legend" id="legend-panel" hidden>
             <button class="leg" data-cat="personal" aria-label="Filtrar categoría Personal" aria-pressed="true">
-                <div class="ldot" style="background:#EC4899"></div>Personal</button>
+          <div class="ldot" style="background:#EC4899"></div>
+          Personal
+        </button>
             <button class="leg" data-cat="vinculos" aria-label="Filtrar categoría Vínculos" aria-pressed="true">
-                <div class="ldot" style="background:#7C3AED"></div>Vínculos</button>
+          <div class="ldot" style="background:#7C3AED"></div>
+          Vínculos
+        </button>
             <button class="leg" data-cat="camila" aria-label="Filtrar categoría Camila" aria-pressed="true">
-                <div class="ldot" style="background:#10B981"></div>Camila</button>
+          <div class="ldot" style="background:#10B981"></div>
+          Camila
+        </button>
             <button class="leg" data-cat="trabajo" aria-label="Filtrar categoría Trabajo" aria-pressed="true">
-                <div class="ldot" style="background:#F97316"></div>Trabajo</button>
+          <div class="ldot" style="background:#F97316"></div>
+          Trabajo
+        </button>
         </div>
     </nav>
 
     <div class="sr-live" id="sr-live" aria-live="polite" aria-atomic="true"></div>
 
+    <!-- ONBOARDING MODAL -->
+    <div class="modal-overlay" id="ob-modal" role="dialog" aria-modal="true" aria-labelledby="ob-title" style="z-index:9000;">
+        <div class="modal-box ob-box">
+            <div class="ob-progress-track">
+                <div class="ob-progress-fill" id="ob-progress-fill"></div>
+            </div>
+            <div class="ob-header">
+                <div class="ob-step-label" id="ob-step-label">Paso 1 de 5</div>
+                <div class="ob-xp" id="ob-xp">⚡ 0 XP</div>
+            </div>
+            <div class="ob-content">
+                <!-- Paso 1: Bienvenida -->
+                <div class="ob-step active" id="ob-step-1">
+                    <div class="ob-emoji">👋</div>
+                    <div class="ob-title" id="ob-title">¡Bienvenido/a a Tablero Rö!</div>
+                    <div class="ob-sub">Tu planificador semanal personal. Vamos a mostrarte lo esencial en 5 pasos rápidos.</div>
+                    <div class="mfield" style="margin-top:8px">
+                        <label>¿Cómo te llamas?</label>
+                        <input type="text" id="ob-name-input" placeholder="Tu nombre..." autocomplete="given-name" oninput="obUpdateName(this.value)" />
+                    </div>
+                    <div class="ob-badge-row">
+                        <span class="ob-badge">🚀 Iniciado</span>
+                        <span class="ob-badge-xp">+20 XP</span>
+                    </div>
+                </div>
+                <!-- Paso 2: Tour del tablero -->
+                <div class="ob-step" id="ob-step-2">
+                    <div class="ob-emoji">🗂</div>
+                    <div class="ob-title">Tu semana, de un vistazo</div>
+                    <div class="ob-sub">El tablero organiza cada día en columnas. Arrastra tarjetas para reorganizarlas.</div>
+                    <ul class="ob-feature-list">
+                        <li>
+                            📅
+                            <strong>7 columnas</strong> — una por cada día de la semana
+                        </li>
+                        <li>
+                            🎛
+                            <strong>Filtros</strong> — filtra por categoría: Personal, Camila, Trabajo…
+                        </li>
+                        <li>
+                            🔄
+                            <strong>Sync</strong> — sincroniza con Google Calendar e ICS
+                        </li>
+                        <li>
+                            💾
+                            <strong>Guardar</strong> —
+                            <kbd>Ctrl+S</kbd> o el botón Guardar
+                        </li>
+                    </ul>
+                    <div class="ob-badge-row">
+                        <span class="ob-badge">🗺 Explorador</span>
+                        <span class="ob-badge-xp">+30 XP</span>
+                    </div>
+                </div>
+                <!-- Paso 3: Primera acción -->
+                <div class="ob-step" id="ob-step-3">
+                    <div class="ob-emoji">🎯</div>
+                    <div class="ob-title">Crea tu primera tarea</div>
+                    <div class="ob-sub" id="ob-step3-sub">Agrega algo concreto al tablero: una cita, una tarea pendiente o un plan.</div>
+                    <button class="btn btn-p" style="width:100%;justify-content:center;margin-top:10px" onclick="obOpenAdd()">＋ Añadir primera tarea</button>
+                    <div style="font-size:.6rem;color:var(--mut);text-align:center;margin-top:6px">Al agregar la tarea continuarás automáticamente →</div>
+                </div>
+                <!-- Paso 4: Recompensa -->
+                <div class="ob-step" id="ob-step-4">
+                    <div class="ob-emoji ob-emoji-celebrate">🏆</div>
+                    <div class="ob-title">¡Logro desbloqueado!</div>
+                    <div class="ob-sub" id="ob-reward-msg">¡Excelente! Ya tienes tu primera tarea en el tablero.</div>
+                    <div class="ob-reward-box" id="ob-task-reward">
+                        <span class="ob-badge">🎯 Primera tarea</span>
+                        <span class="ob-badge-xp ob-xp-big">+50 XP</span>
+                    </div>
+                    <div class="ob-total-xp" id="ob-total-xp">Total: 100 XP ⚡</div>
+                </div>
+                <!-- Paso 5: Perfil listo -->
+                <div class="ob-step" id="ob-step-5">
+                    <div class="ob-emoji">🌟</div>
+                    <div class="ob-title" id="ob-final-title">¡Todo listo!</div>
+                    <div class="ob-sub">Ya conoces lo esencial. Cuando quieras explorar más:</div>
+                    <ul class="ob-checklist">
+                        <li class="ob-check done">
+                            <span>✅</span> Primera tarea creada
+                        </li>
+                        <li class="ob-check">
+                            <span>🔄</span> Sincronizar un calendario
+                            <button class="ob-mini-btn" onclick="obLinkSync()">Abrir →</button>
+                        </li>
+                        <li class="ob-check">
+                            <span>📓</span> Explorar Bullet Journal
+                            <button class="ob-mini-btn" onclick="obLinkBujo()">Abrir →</button>
+                        </li>
+                    </ul>
+                    <div class="ob-reward-box" style="margin-top:8px">
+                        <span class="ob-badge">🌟 Perfil listo</span>
+                        <span class="ob-badge-xp">+20 XP</span>
+                    </div>
+                </div>
+            </div>
+            <div class="ob-nav">
+                <button class="btn btn-g ob-skip" onclick="skipOnboarding()">Saltar tutorial</button>
+                <div class="ob-nav-right">
+                    <button class="btn btn-g" id="ob-prev-btn" style="display:none" onclick="obStep(-1)">← Anterior</button>
+                    <button class="btn btn-p" id="ob-next-btn" onclick="obStep(1)">Siguiente →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- QUICK-ADD MODAL -->
     <div class="modal-overlay" id="add-modal" role="dialog" aria-modal="true" aria-labelledby="add-modal-title" onclick="if(event.target===this)closeAddModal()">
         <div class="modal-box">
             <div class="modal-title" id="add-modal-title">＋ Nueva Tarea</div>
-            <div class="mfield"><label for="add-title">Título</label><input type="text" id="add-title" placeholder="¿Qué tienes que hacer?" autocomplete="off"></div>
+            <div class="mfield">
+                <label>Título</label>
+                <input type="text" id="add-title" placeholder="¿Qué tienes que hacer?" autocomplete="off" />
+            </div>
             <div class="mrow">
-                <div class="mfield"><label for="add-day">Día</label><select id="add-day"></select></div>
-                <div class="mfield"><label for="add-time">Hora (opcional)</label><input type="time" id="add-time"></div>
+                <div class="mfield">
+                    <label>Día</label>
+                    <select id="add-day"></select>
+                </div>
+                <div class="mfield">
+                    <label>Hora (opcional)</label>
+                    <input type="time" id="add-time" />
+                </div>
             </div>
             <div class="mfield">
-                <label for="add-cat">Categoría</label>
+                <label>Categoría</label>
                 <select id="add-cat">
-        <option value="personal">Personal</option>
-        <option value="vinculos">Vínculos</option>
-        <option value="camila">Camila</option>
-        <option value="trabajo">Trabajo · Sura</option>
-        <option value="fin">Finanzas</option>
-      </select>
+            <option value="personal">Personal</option>
+            <option value="vinculos">Vínculos</option>
+            <option value="camila">Camila</option>
+            <option value="trabajo">Trabajo · Sura</option>
+            <option value="fin">Finanzas</option>
+          </select>
             </div>
-            <div class="mfield"><label for="add-detail">Detalles (opcional)</label><textarea id="add-detail" rows="2" placeholder="Notas..."></textarea></div>
+            <div class="mfield">
+                <label>Detalles (opcional)</label>
+                <textarea id="add-detail" rows="2" placeholder="Notas..."></textarea>
+            </div>
             <div class="modal-actions">
                 <button class="btn btn-g" onclick="closeAddModal()">Cancelar</button>
                 <button class="btn btn-p" onclick="submitAdd()">＋ Agregar</button>
@@ -93,22 +220,34 @@
     <div class="modal-overlay" id="edit-modal" role="dialog" aria-modal="true" aria-labelledby="edit-modal-title" onclick="if(event.target===this)closeEditModal()">
         <div class="modal-box">
             <div class="modal-title" id="edit-modal-title">✏️ Editar Evento</div>
-            <div class="mfield"><label for="edit-title">Título</label><input type="text" id="edit-title" autocomplete="off"></div>
+            <div class="mfield">
+                <label>Título</label>
+                <input type="text" id="edit-title" autocomplete="off" />
+            </div>
             <div class="mrow">
-                <div class="mfield"><label for="edit-day">Día</label><select id="edit-day"></select></div>
-                <div class="mfield"><label for="edit-time">Hora (opcional)</label><input type="time" id="edit-time"></div>
+                <div class="mfield">
+                    <label>Día</label>
+                    <select id="edit-day"></select>
+                </div>
+                <div class="mfield">
+                    <label>Hora (opcional)</label>
+                    <input type="time" id="edit-time" />
+                </div>
             </div>
             <div class="mfield">
-                <label for="edit-cat">Categoría</label>
+                <label>Categoría</label>
                 <select id="edit-cat">
-                    <option value="personal">Personal</option>
-                    <option value="vinculos">Vínculos</option>
-                    <option value="camila">Camila</option>
-                    <option value="trabajo">Trabajo · Sura</option>
-                    <option value="fin">Finanzas</option>
-                </select>
+            <option value="personal">Personal</option>
+            <option value="vinculos">Vínculos</option>
+            <option value="camila">Camila</option>
+            <option value="trabajo">Trabajo · Sura</option>
+            <option value="fin">Finanzas</option>
+          </select>
             </div>
-            <div class="mfield"><label for="edit-detail">Detalles (opcional)</label><textarea id="edit-detail" rows="2" placeholder="Notas..."></textarea></div>
+            <div class="mfield">
+                <label>Detalles (opcional)</label>
+                <textarea id="edit-detail" rows="2" placeholder="Notas..."></textarea>
+            </div>
             <div class="modal-actions">
                 <button class="btn btn-g" onclick="closeEditModal()">Cancelar</button>
                 <button class="btn btn-p" onclick="submitEdit()">💾 Guardar</button>
@@ -142,8 +281,8 @@
             <div id="cal-sources"></div>
             <div class="cal-config-zone" id="cal-config-zone">
                 <div class="mfield">
-                    <label id="cfg-label" for="cfg-url-input">URL iCal privada</label>
-                    <input type="text" id="cfg-url-input" placeholder="https://calendar.google.com/calendar/ical/...">
+                    <label id="cfg-label">URL iCal privada</label>
+                    <input type="text" id="cfg-url-input" placeholder="https://calendar.google.com/calendar/ical/..." />
                     <div style="font-size:.58rem;color:var(--mut);margin-top:3px;">Obtén esta URL en Google Calendar → ⚙️ Configuración → Dirección secreta iCal</div>
                 </div>
                 <div class="modal-actions">
@@ -177,59 +316,141 @@
 
                     <div class="mfield">
                         <label>Proveedor por defecto</label>
-                        <input type="hidden" id="adm-ai-provider" value="auto">
+                        <input type="hidden" id="adm-ai-provider" value="auto" />
                         <div class="ai-pills" id="ai-pills">
                             <button class="ai-pill active" data-val="auto" onclick="selectAIProvider(this)">Auto</button>
                             <button class="ai-pill" data-val="claude" onclick="selectAIProvider(this)">Claude</button>
                             <button class="ai-pill" data-val="openai" onclick="selectAIProvider(this)">GPT</button>
                             <button class="ai-pill" data-val="gemini" onclick="selectAIProvider(this)">Gemini</button>
                         </div>
+                        <div class="ai-auto-hint" id="ai-auto-hint"></div>
                     </div>
 
-                    <div style="display:flex;flex-direction:column;gap:6px;">
-                        <div class="ai-provider-card claude">
-                            <div class="ai-card-head claude">Claude</div>
-                            <div class="mrow">
-                                <div class="mfield"><label for="adm-claude-key">API Key Claude</label><input type="password" id="adm-claude-key" placeholder="sk-ant-..." autocomplete="off"></div>
-                                <div class="mfield"><label for="adm-claude-model">Modelo Claude</label><input type="text" id="adm-claude-model" value="claude-sonnet-4-6"></div>
+                    <div class="ai-provider-list" id="ai-provider-list">
+                        <details class="ai-provider-card claude" id="ai-card-claude" open>
+                            <summary class="ai-card-head claude">
+                                <span class="ai-card-icon">🟣</span> Claude
+                                <span class="ai-status-dot" id="ai-dot-claude"></span>
+                            </summary>
+                            <div class="ai-card-body">
+                                <div class="mfield">
+                                    <label>API Key</label>
+                                    <div class="key-input-wrap">
+                                        <input type="password" id="adm-claude-key" placeholder="sk-ant-..." autocomplete="off" onchange="autoSaveAIAdmin()" />
+                                        <button class="key-toggle" onclick="toggleKeyVis(this)" aria-label="Mostrar/ocultar key" type="button">👁</button>
+                                    </div>
+                                </div>
+                                <div class="mfield">
+                                    <label>Modelo</label>
+                                    <select id="adm-claude-model" onchange="autoSaveAIAdmin()">
+                      <option value="claude-sonnet-4-6">claude-sonnet-4-6</option>
+                      <option value="claude-sonnet-4-5-20250514">claude-sonnet-4-5</option>
+                      <option value="claude-haiku-3-5-20241022">claude-haiku-3.5</option>
+                      <option value="claude-opus-4-0-20250514">claude-opus-4</option>
+                    </select>
+                                </div>
                             </div>
-                        </div>
-                        <div class="ai-provider-card openai">
-                            <div class="ai-card-head openai">OpenAI</div>
-                            <div class="mrow">
-                                <div class="mfield"><label for="adm-openai-key">API Key OpenAI</label><input type="password" id="adm-openai-key" placeholder="sk-..." autocomplete="off"></div>
-                                <div class="mfield"><label for="adm-openai-model">Modelo OpenAI</label><input type="text" id="adm-openai-model" value="gpt-5.4"></div>
+                        </details>
+                        <details class="ai-provider-card openai" id="ai-card-openai">
+                            <summary class="ai-card-head openai">
+                                <span class="ai-card-icon">🟢</span> OpenAI
+                                <span class="ai-status-dot" id="ai-dot-openai"></span>
+                            </summary>
+                            <div class="ai-card-body">
+                                <div class="mfield">
+                                    <label>API Key</label>
+                                    <div class="key-input-wrap">
+                                        <input type="password" id="adm-openai-key" placeholder="sk-..." autocomplete="off" onchange="autoSaveAIAdmin()" />
+                                        <button class="key-toggle" onclick="toggleKeyVis(this)" aria-label="Mostrar/ocultar key" type="button">👁</button>
+                                    </div>
+                                </div>
+                                <div class="mfield">
+                                    <label>Modelo</label>
+                                    <select id="adm-openai-model" onchange="autoSaveAIAdmin()">
+                      <option value="gpt-5.4">gpt-5.4</option>
+                      <option value="gpt-5-mini">gpt-5-mini</option>
+                      <option value="gpt-4.1">gpt-4.1</option>
+                      <option value="o3-mini">o3-mini</option>
+                    </select>
+                                </div>
                             </div>
-                        </div>
-                        <div class="ai-provider-card gemini">
-                            <div class="ai-card-head gemini">Gemini</div>
-                            <div class="mrow">
-                                <div class="mfield"><label for="adm-gemini-key">API Key Gemini</label><input type="password" id="adm-gemini-key" placeholder="AIza..." autocomplete="off"></div>
-                                <div class="mfield"><label for="adm-gemini-model">Modelo Gemini</label><input type="text" id="adm-gemini-model" value="gemini-3.1-pro-preview"></div>
+                        </details>
+                        <details class="ai-provider-card gemini" id="ai-card-gemini">
+                            <summary class="ai-card-head gemini">
+                                <span class="ai-card-icon">🔵</span> Gemini
+                                <span class="ai-status-dot" id="ai-dot-gemini"></span>
+                            </summary>
+                            <div class="ai-card-body">
+                                <div class="mfield">
+                                    <label>API Key</label>
+                                    <div class="key-input-wrap">
+                                        <input type="password" id="adm-gemini-key" placeholder="AIza..." autocomplete="off" onchange="autoSaveAIAdmin()" />
+                                        <button class="key-toggle" onclick="toggleKeyVis(this)" aria-label="Mostrar/ocultar key" type="button">👁</button>
+                                    </div>
+                                </div>
+                                <div class="mfield">
+                                    <label>Modelo</label>
+                                    <select id="adm-gemini-model" onchange="autoSaveAIAdmin()">
+                      <option value="gemini-3.1-pro-preview">gemini-3.1-pro</option>
+                      <option value="gemini-2.5-flash-preview-05-20">gemini-2.5-flash</option>
+                      <option value="gemini-2.5-pro-preview-05-06">gemini-2.5-pro</option>
+                    </select>
+                                </div>
                             </div>
-                        </div>
+                        </details>
                     </div>
 
-                    <div class="btn-row" style="margin-top:6px;">
-                        <button class="btn btn-p" style="flex:1;justify-content:center;" onclick="saveAIAdmin()">💾 Guardar IA</button>
-                    </div>
                     <div class="mfield" style="margin-top:6px;">
-                        <label for="adm-proxy-url">Proxy URL <small style="opacity:.6">(opcional — Cloudflare Worker)</small></label>
-                        <input type="url" id="adm-proxy-url" placeholder="https://table-ro-ai-proxy.tu-cuenta.workers.dev" autocomplete="off" style="font-size:.65rem">
+                        <label>
+                Proxy URL
+                <small style="opacity:.6">(opcional — Cloudflare Worker)</small>
+              </label>
+                        <input type="url" id="adm-proxy-url" placeholder="https://table-ro-ai-proxy.tu-cuenta.workers.dev" autocomplete="off" style="font-size:.65rem" onchange="autoSaveAIAdmin()" />
                     </div>
-                    <div style="font-size:.65rem;color:#f59e0b;background:rgba(245,158,11,.1);border-radius:6px;padding:6px 8px;margin-top:4px;">⚠️ Las API keys se guardan en localStorage (solo este navegador). Configura el proxy para no exponer keys.</div>
+                    <div class="ai-security-note">
+                        <span>🔒</span> Las API keys se guardan en localStorage (solo este navegador).
+                        <strong>Configura el proxy</strong> para no exponer keys directamente al navegador.
+                    </div>
                 </div>
                 <div class="adm-sep"></div>
                 <div>
                     <div class="sec-title" style="font-size:.74rem;">🔑 Google OAuth</div>
                     <div class="mfield">
-                        <label for="adm-client-id">Client ID</label>
+                        <label>Client ID</label>
                         <div style="display:flex;gap:6px;">
-                            <input type="text" id="adm-client-id" value="5033046467-kgd7gl4tekb4fkt90jq32rob4evmgnmn.apps.googleusercontent.com" style="font-size:.61rem;flex:1">
+                            <input type="text" id="adm-client-id" value="5033046467-kgd7gl4tekb4fkt90jq32rob4evmgnmn.apps.googleusercontent.com" style="font-size:.61rem;flex:1" />
                             <button class="res-copy" onclick="saveClientId()">💾</button>
                         </div>
                     </div>
-                    <div class="hint" style="margin-top:5px"><span>⚠️</span> OAuth requiere <code style="background:rgba(0,0,0,.25);padding:1px 5px;border-radius:3px;color:#c084fc">localhost:8080</code> o <code style="background:rgba(0,0,0,.25);padding:1px 5px;border-radius:3px;color:#c084fc">vientonorte.github.io</code></div>
+                    <div class="hint" style="margin-top:5px">
+                        <span>⚠️</span> OAuth requiere
+                        <code style="background:rgba(0,0,0,.25);padding:1px 5px;border-radius:3px;color:#c084fc">localhost:8080</code> o
+                        <code style="background:rgba(0,0,0,.25);padding:1px 5px;border-radius:3px;color:#c084fc">vientonorte.github.io</code>
+                    </div>
+                </div>
+                <div class="adm-sep"></div>
+                <div>
+                    <div class="sec-title" style="font-size:.74rem;">🏠 Trello · Espacio Seguro</div>
+                    <div style="font-size:.62rem;color:var(--mut);margin-bottom:6px;line-height:1.5">
+                        Sync del tablero
+                        <strong style="color:#10B981">Diseño de Espacio Seguro Romila</strong> (tareas domésticas). Las tarjetas con fecha se sincronizan como categoría Camila.
+                    </div>
+                    <div class="mfield">
+                        <label>Trello API Key</label>
+                        <div style="display:flex;gap:6px;">
+                            <input type="password" id="adm-trello-key" placeholder="Tu API Key de Trello" autocomplete="off" style="font-size:.61rem;flex:1" />
+                            <button class="res-copy" onclick="saveTrelloCredentials(this)">💾</button>
+                        </div>
+                    </div>
+                    <div class="mfield">
+                        <label>Trello Token</label>
+                        <input type="password" id="adm-trello-token" placeholder="Token de autorización" autocomplete="off" style="font-size:.61rem" />
+                    </div>
+                    <div class="hint" style="margin-top:5px">
+                        <span>🔑</span> Obtén tu API Key en
+                        <a href="https://developer.atlassian.com/cloud/trello/guides/rest-api/api-introduction/#authentication-and-authorization" target="_blank" style="color:#a78bfa">developer.atlassian.com</a> . Genera el token desde el enlace que aparece
+                        junto a la key.
+                    </div>
                 </div>
                 <div class="adm-sep"></div>
                 <div>
@@ -242,39 +463,82 @@
                     <div class="btn-row">
                         <button class="btn btn-g" onclick="exportBoard()">⬇ Exportar JSON</button>
                         <button class="btn btn-g" onclick="importBoardClick()">⬆ Importar JSON</button>
-                        <input type="file" id="import-file" accept=".json" style="display:none" aria-label="Importar archivo JSON" onchange="importBoard(this)">
+                        <input type="file" id="import-file" accept=".json" style="display:none" aria-label="Importar archivo JSON" onchange="importBoard(this)" />
                     </div>
                 </div>
                 <div class="adm-danger">
                     <div style="font-size:.7rem;font-weight:800;color:#F87171;margin-bottom:5px;">⚠️ Zona de peligro</div>
-                    <button class="btn" style="background:rgba(248,113,113,.15);color:#F87171;border:1px solid rgba(248,113,113,.3);font-size:.66rem" onclick="clearSavedState()">🗑 Limpiar estado guardado</button>
-                    <div style="font-size:.58rem;color:var(--mut);margin-top:4px;">Elimina cards manuales y estados en localStorage.</div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                        <button class="btn" style="background:rgba(248,113,113,.15);color:#F87171;border:1px solid rgba(248,113,113,.3);font-size:.66rem" onclick="clearSavedState()">🗑 Limpiar estado guardado</button>
+                        <button class="btn" style="background:rgba(124,58,237,.15);color:#a78bfa;border:1px solid rgba(124,58,237,.3);font-size:.66rem" onclick="resetOnboarding()">🎮 Reiniciar tutorial</button>
+                    </div>
+                    <div style="font-size:.58rem;color:var(--mut);margin-top:4px;">Elimina cards manuales y estados en localStorage. Reiniciar tutorial vuelve a mostrar el onboarding.</div>
                 </div>
             </div>
             <div class="tab-pane" id="tab-permisos">
                 <div style="font-size:.68rem;color:var(--mut);line-height:1.6;">Control de acceso por fuente de calendario. Los cambios se aplican en el próximo sync.</div>
                 <div id="perm-list"></div>
-                <div class="hint"><span>🔐</span> <strong style="color:#a78bfa">Sura Investments</strong> requiere permiso de admin para mostrar eventos. Solo lectura — no se pueden empujar eventos a este calendario. <strong style="color:#60A5FA">Camila</strong> es consulta:
-                    requiere que ella haya compartido su calendario contigo.</div>
+                <div class="hint">
+                    <span>🔐</span>
+                    <strong style="color:#a78bfa">Sura Investments</strong> requiere permiso de admin para mostrar eventos. Solo lectura — no se pueden empujar eventos a este calendario.
+                    <strong style="color:#60A5FA">Camila</strong> es consulta: requiere que ella haya compartido su calendario contigo.
+                    <strong style="color:#10B981">Espacio Seguro</strong> sincroniza tareas domésticas desde Trello (requiere API Key).
+                </div>
             </div>
             <div class="tab-pane" id="tab-faq">
                 <div class="faq-item">
-                    <div class="faq-q" onclick="toggleFaq(this)">¿Cómo funciona la extracción automática de BuJo con IA? <span class="faq-chevron">▼</span></div>
-                    <div class="faq-a">1. Ve a <strong>📓 Bullet Journal</strong> → sube una foto de tu BuJo físico.<br>2. Configura tu proveedor y API Key en ⚙️ Admin → Motor IA.<br>3. Haz clic en <strong>🤖 Analizar Bullet</strong>.<br>4. El resultado se parsea en JSON
-                        y se transforma en ítems BuJo.<br>5. Selecciona los que quieres y pulsa <strong>＋ Agregar al tablero</strong>.</div>
+                    <div class="faq-q" onclick="toggleFaq(this)">
+                        ¿Cómo funciona la extracción automática de BuJo con IA?
+                        <span class="faq-chevron">▼</span>
+                    </div>
+                    <div class="faq-a">
+                        1. Ve a
+                        <strong>📓 Bullet Journal</strong> → sube una foto o escribe texto manualmente.
+                        <br /> 2. Pulsa
+                        <strong>Analizar y revisar →</strong> . La IA extrae los ítems automáticamente.
+                        <br /> 3. Revisa, selecciona los que quieres y pulsa
+                        <strong>＋ Agregar al tablero</strong> .
+                        <br />
+                        <br /> Configura tu API Key en ⚙️ Admin → Motor IA. Sin key, el texto manual se procesa igualmente.
+                    </div>
                 </div>
                 <div class="faq-item">
-                    <div class="faq-q" onclick="toggleFaq(this)">¿Por qué sale Error 400 al conectar Google? <span class="faq-chevron">▼</span></div>
-                    <div class="faq-a">Google OAuth no permite <code>file://</code> como origen. Debes servir el tablero desde localhost:<br><br>1. Terminal → navega a la carpeta<br>2. Ejecuta: <code>python3 -m http.server 8080</code><br>3. Abre <a href="http://localhost:8080/index.html"
-                            target="_blank">http://localhost:8080/index.html</a><br>4. Agrega <code>http://localhost:8080</code> en <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Authorized JS Origins ↗</a></div>
+                    <div class="faq-q" onclick="toggleFaq(this)">
+                        ¿Por qué sale Error 400 al conectar Google?
+                        <span class="faq-chevron">▼</span>
+                    </div>
+                    <div class="faq-a">
+                        Google OAuth no permite
+                        <code>file://</code> como origen. Debes servir el tablero desde localhost:
+                        <br />
+                        <br /> 1. Terminal → navega a la carpeta
+                        <br /> 2. Ejecuta:
+                        <code>python3 -m http.server 8080</code>
+                        <br /> 3. Abre
+                        <a href="http://localhost:8080/index.html" target="_blank">http://localhost:8080/index.html</a>
+                        <br /> 4. Agrega
+                        <code>http://localhost:8080</code> en
+                        <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Authorized JS Origins ↗</a>
+                    </div>
                 </div>
                 <div class="faq-item">
-                    <div class="faq-q" onclick="toggleFaq(this)">¿Cómo sincronizar Sura Investments (Outlook)? <span class="faq-chevron">▼</span></div>
-                    <div class="faq-a"><strong style="color:#a78bfa">Opción A:</strong> Suscribe el calendario Outlook dentro de Google Calendar. <br><br><strong style="color:#a78bfa">Opción B:</strong> En 🔄 Sync → ⚙️ junto a Sura → pega la URL ICS directamente. Requiere
-                        <span class="perm-badge perm-admin" style="display:inline">admin</span> habilitado.</div>
+                    <div class="faq-q" onclick="toggleFaq(this)">
+                        ¿Cómo sincronizar Sura Investments (Outlook)?
+                        <span class="faq-chevron">▼</span>
+                    </div>
+                    <div class="faq-a">
+                        <strong style="color:#a78bfa">Opción A:</strong> Suscribe el calendario Outlook dentro de Google Calendar.
+                        <br />
+                        <br />
+                        <strong style="color:#a78bfa">Opción B:</strong> En 🔄 Sync → ⚙️ junto a Sura → pega la URL ICS directamente. Requiere
+                        <span class="perm-badge perm-admin" style="display:inline">admin</span> habilitado.
+                    </div>
                 </div>
                 <div class="faq-item">
-                    <div class="faq-q" onclick="toggleFaq(this)">¿Los cambios se sincronizan automáticamente? <span class="faq-chevron">▼</span></div>
+                    <div class="faq-q" onclick="toggleFaq(this)">
+                        ¿Los cambios se sincronizan automáticamente?
+                        <span class="faq-chevron">▼</span>
+                    </div>
                     <div class="faq-a">El sync es manual: usa 🔄 Sync para traer eventos, 💾 Guardar para persistir el estado local, y 📤 Enviar a Calendarios para empujar todas las tarjetas locales a Google Calendar según su categoría.</div>
                 </div>
             </div>
@@ -288,8 +552,20 @@
                     </div>
                 </a>
                 <div class="res-section-title" style="margin-top:4px;">Google</div>
-                <a class="res-card" href="https://calendar.google.com" target="_blank"><span class="res-icon">📅</span><div class="res-info"><div class="res-name">Google Calendar</div><div class="res-url">calendar.google.com</div></div></a>
-                <a class="res-card" href="https://console.cloud.google.com/apis/credentials" target="_blank"><span class="res-icon">🔑</span><div class="res-info"><div class="res-name">Google Cloud Console — Credentials</div><div class="res-url">console.cloud.google.com/apis/credentials</div></div></a>
+                <a class="res-card" href="https://calendar.google.com" target="_blank">
+                    <span class="res-icon">📅</span>
+                    <div class="res-info">
+                        <div class="res-name">Google Calendar</div>
+                        <div class="res-url">calendar.google.com</div>
+                    </div>
+                </a>
+                <a class="res-card" href="https://console.cloud.google.com/apis/credentials" target="_blank">
+                    <span class="res-icon">🔑</span>
+                    <div class="res-info">
+                        <div class="res-name">Google Cloud Console — Credentials</div>
+                        <div class="res-url">console.cloud.google.com/apis/credentials</div>
+                    </div>
+                </a>
                 <div class="res-section-title" style="margin-top:4px;">Credenciales</div>
                 <div id="res-credentials-list"></div>
                 <div class="res-section-title" style="margin-top:4px;">URLs iCal</div>
@@ -309,10 +585,9 @@
             <button class="drawer-close" onclick="closeDrawer()" aria-label="Cerrar captura BuJo">✕</button>
         </div>
         <div class="drawer-body">
-            <div class="pipeline" id="bujo-pipeline" role="tablist" aria-label="Pasos de extracción BuJo">
+            <div class="pipeline" id="bujo-pipeline" role="tablist" aria-label="Pasos de captura BuJo">
                 <button class="step-pill active" id="step-pill-1" onclick="setBujoStep(1)" role="tab" aria-selected="true" aria-controls="step-panel-1">1 Capturar</button>
-                <button class="step-pill" id="step-pill-2" onclick="setBujoStep(2)" role="tab" aria-selected="false" aria-controls="step-panel-2">2 Analizar</button>
-                <button class="step-pill" id="step-pill-3" onclick="setBujoStep(3)" role="tab" aria-selected="false" aria-controls="step-panel-3">3 Agregar</button>
+                <button class="step-pill" id="step-pill-2" onclick="setBujoStep(2)" role="tab" aria-selected="false" aria-controls="step-panel-2">2 Revisar y agregar</button>
             </div>
 
             <div class="summary-grid" aria-live="polite">
@@ -330,12 +605,12 @@
                 </div>
             </div>
 
-            <!-- PASO 1: CAPTURAR (fusión de subir fotos + texto manual) -->
+            <!-- PASO 1: CAPTURAR (subir fotos + texto manual) -->
             <div class="step-panel active" id="step-panel-1" role="tabpanel" aria-labelledby="step-pill-1">
                 <div class="ai-zone">
-                    <div class="ai-zone-title">📸 Paso 1 · Capturar BuJo</div>
+                    <div class="ai-zone-title">📸 Capturar BuJo</div>
                     <div class="upload-zone" id="upzone" aria-label="Subir imágenes del bullet journal">
-                        <input type="file" id="bj-input" accept="image/*" multiple aria-label="Seleccionar fotos del Bullet Journal">
+                        <input type="file" id="bj-input" accept="image/*" multiple aria-label="Seleccionar fotos del Bullet Journal" />
                         <span class="upload-icon">📷</span>
                         <div class="upload-big">Sube foto de tu BuJo</div>
                         <div class="upload-sub">JPG · PNG · HEIC · varias páginas</div>
@@ -350,29 +625,23 @@
                     <textarea class="paste-area" id="paste-area" placeholder="● Tarea pendiente&#10;◆ Evento / cita&#10;— Nota / reflexión&#10;○ Personal / salud / hábito&#10;* Trabajo&#10;> Camila&#10;$ Finanzas" aria-label="Texto manual del Bullet Journal"></textarea>
 
                     <div class="btn-row" style="margin-top:4px;">
-                        <button class="btn btn-p" id="goto-analyze-btn" onclick="goToAnalyze()" style="flex:1;justify-content:center;">Continuar a análisis →</button>
+                        <button class="btn btn-p" id="goto-analyze-btn" onclick="goToAnalyze()" style="flex:1;justify-content:center;">Analizar y revisar →</button>
                     </div>
                 </div>
             </div>
 
-            <!-- PASO 2: ANALIZAR (IA + revisión de resultados) -->
+            <!-- PASO 2: ANALIZAR + REVISAR + AGREGAR (todo junto) -->
             <div class="step-panel" id="step-panel-2" role="tabpanel" aria-labelledby="step-pill-2">
                 <div class="ai-zone">
-                    <div class="ai-zone-title">🤖 Paso 2 · Analizar y revisar</div>
-                    <div class="hint" style="margin-bottom:8px;">
-                        <span>🤖</span> La IA extrae eventos de tus fotos. Si falla o no tienes API key, el texto manual se procesa automáticamente.
-                    </div>
-
-                    <div style="display:flex;align-items:center;gap:8px;">
-                        <span style="font-size:.65rem;color:var(--mut);">Estado:</span>
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
                         <span class="ai-key-status" id="api-key-status">Sin configurar</span>
-                        <button class="btn btn-g" style="padding:3px 8px;font-size:.6rem;margin-left:auto;" onclick="openAdminModal()">⚙️ Configurar</button>
+                        <button class="btn btn-g" style="padding:3px 8px;font-size:.6rem;margin-left:auto;" onclick="openAdminModal()">⚙️ Config IA</button>
                     </div>
 
                     <button class="ai-analyze-btn" id="ai-analyze-btn" onclick="analyzeBujo()" disabled>
-                        <div class="spin"></div>
-                        <span class="btn-label">🤖 Analizar Bullet</span>
-                    </button>
+              <div class="spin"></div>
+              <span class="btn-label">🤖 Analizar Bullet</span>
+            </button>
 
                     <div id="ai-fallback-note" class="hint" style="display:none;">
                         <span>⚠️</span> Sin IA disponible. El texto manual fue procesado.
@@ -385,9 +654,9 @@
                     <div id="ai-result-preview" style="display:none;" aria-live="polite"></div>
                 </div>
 
-                <!-- Revisión inline (antes era paso 3 separado) -->
+                <!-- Revisión + agregar (inline) -->
                 <div id="bj-section" style="display:none;">
-                    <div class="sec-title">✅ Revisar extracción</div>
+                    <div class="sec-title">✅ Revisar y agregar</div>
                     <div class="ftag-row" id="ftags">
                         <div class="ftag on" style="background:rgba(168,85,247,.15);border-color:#A855F7;color:#d8b4fe" onclick="filterBJ('all',this)" role="button" tabindex="0">Todos</div>
                         <div class="ftag" style="background:rgba(236,72,153,.12);border-color:#EC4899;color:#EC4899" onclick="filterBJ('personal',this)" role="button" tabindex="0">Personal</div>
@@ -400,29 +669,26 @@
                     <div class="btn-row" style="margin-top:9px;">
                         <button class="btn btn-g" onclick="selectAllBJ(true)">Seleccionar todos</button>
                         <button class="btn btn-g" onclick="selectAllBJ(false)">Limpiar selección</button>
-                        <button class="btn btn-p" onclick="setBujoStep(3)">Agregar al tablero →</button>
+                        <button class="btn btn-p" onclick="addToBoard()" style="flex:1;">＋ Agregar al tablero</button>
+                    </div>
+                    <div class="btn-row" style="margin-top:4px;">
+                        <button class="btn btn-g" onclick="clearBJ()" style="flex:1;justify-content:center;">🗑 Limpiar todo</button>
                     </div>
                 </div>
             </div>
-
-            <!-- PASO 3: AGREGAR (confirmar y agregar) -->
-            <div class="step-panel" id="step-panel-3" role="tabpanel" aria-labelledby="step-pill-3">
-                <div class="sec-title">📥 Paso 3 · Agregar al tablero</div>
-                <div class="hint" style="margin-bottom:8px;">
-                    <span>💡</span> Se agregarán los ítems seleccionados a la semana visible del tablero.
-                </div>
-                <div class="btn-row" style="margin-top:9px;">
-                    <button class="btn btn-p" onclick="addToBoard()" style="flex:1;justify-content:center;">＋ Agregar al tablero</button>
-                    <button class="btn btn-g" onclick="clearBJ()">🗑 Limpiar</button>
-                </div>
-            </div>
-
         </div>
-        <div class="hint"><span>💡</span> Simbología: <strong style="color:#EC4899">●</strong> Personal &nbsp;<strong style="color:#7C3AED">◆</strong> Vínculos &nbsp;<strong style="color:#EC4899">○</strong> Personal / salud / hábito &nbsp;<strong style="color:#F97316">*</strong>            Trabajo &nbsp;<strong style="color:#10B981">></strong> Camila &nbsp;<strong style="color:#FB923C">$</strong> Finanzas</div>
-    </div>
+        <div class="hint">
+            <span>💡</span> Simbología:
+            <strong style="color:#EC4899">●</strong> Personal &nbsp;
+            <strong style="color:#7C3AED">◆</strong> Vínculos &nbsp;
+            <strong style="color:#EC4899">○</strong> Personal / salud / hábito &nbsp;
+            <strong style="color:#F97316">*</strong> Trabajo &nbsp;
+            <strong style="color:#10B981">></strong> Camila &nbsp;
+            <strong style="color:#FB923C">$</strong> Finanzas
+        </div>
     </div>
 
-    <script src="js/app.js?v=1.2.0" defer></script>
+    <script src="js/app.js?v=1.4.0" defer></script>
     <script>
         if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
     </script>
