@@ -13,6 +13,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="stylesheet" href="css/styles.css?v=1.4.0" />
     <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="js/auth-passkey.js"></script>
 </head>
 
 <body>
@@ -685,6 +686,92 @@
             <strong style="color:#F97316">*</strong> Trabajo &nbsp;
             <strong style="color:#10B981">></strong> Camila &nbsp;
             <strong style="color:#FB923C">$</strong> Finanzas
+        </div>
+    </div>
+
+    <!-- PASSKEY AUTH MODAL -->
+    <div class="modal-overlay open" id="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title" style="z-index:10000;background:rgba(0,0,0,0.85);">
+        <div class="modal-box" style="max-width:400px;">
+            <div class="modal-title" id="auth-modal-title">🔐 Acceso Seguro · Tablero Rö</div>
+            
+            <div id="auth-welcome" class="auth-screen">
+                <div style="text-align:center;margin:15px 0;">
+                    <div style="font-size:3rem;margin-bottom:10px;">🔒</div>
+                    <p style="font-size:.8rem;color:var(--mut);line-height:1.5;margin-bottom:15px;">
+                        Tu tablero personal está protegido con autenticación biométrica (Face ID, Touch ID, Windows Hello o llave de seguridad).
+                    </p>
+                </div>
+                
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <button class="btn btn-p" onclick="showAuthLogin()" style="width:100%;justify-content:center;">
+                        🔓 Iniciar sesión
+                    </button>
+                    <button class="btn btn-g" onclick="showAuthRegister()" style="width:100%;justify-content:center;">
+                        ✨ Registrarse
+                    </button>
+                </div>
+                
+                <div style="margin-top:15px;padding:10px;background:rgba(124,58,237,.1);border-radius:8px;font-size:.65rem;color:var(--mut);line-height:1.5;">
+                    <strong style="color:#7C3AED;">🛡️ Seguridad sin contraseñas</strong><br>
+                    • No necesitas recordar contraseñas<br>
+                    • Usa tu rostro, huella o PIN del dispositivo<br>
+                    • Tus credenciales nunca salen de tu dispositivo
+                </div>
+            </div>
+            
+            <div id="auth-login" class="auth-screen" style="display:none;">
+                <p style="font-size:.75rem;color:var(--mut);margin-bottom:12px;">
+                    Usa tu biometría (Face ID, Touch ID, Windows Hello) para acceder.
+                </p>
+                
+                <div class="mfield">
+                    <label>Nombre de usuario (opcional)</label>
+                    <input type="text" id="login-username" placeholder="Déjalo vacío para ver todos los usuarios" autocomplete="username" />
+                </div>
+                
+                <div id="auth-error" class="hint" style="display:none;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.3);color:#fb923c;margin-bottom:10px;">
+                    <span>⚠️</span>
+                    <span id="auth-error-text"></span>
+                </div>
+                
+                <div class="modal-actions">
+                    <button class="btn btn-g" onclick="showAuthWelcome()">← Volver</button>
+                    <button class="btn btn-p" onclick="handlePasskeyLogin()" id="login-btn">
+                        🔓 Autenticar
+                    </button>
+                </div>
+            </div>
+            
+            <div id="auth-register" class="auth-screen" style="display:none;">
+                <p style="font-size:.75rem;color:var(--mut);margin-bottom:12px;">
+                    Crea tu passkey para acceder de forma segura a tu tablero.
+                </p>
+                
+                <div class="mfield">
+                    <label>Nombre de usuario *</label>
+                    <input type="text" id="register-username" placeholder="Tu nombre o alias" autocomplete="username" required />
+                    <div style="font-size:.62rem;color:var(--mut);margin-top:3px;">
+                        Este nombre te identificará cada vez que inicies sesión.
+                    </div>
+                </div>
+                
+                <div id="auth-error-register" class="hint" style="display:none;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.3);color:#fb923c;margin-bottom:10px;">
+                    <span>⚠️</span>
+                    <span id="auth-error-register-text"></span>
+                </div>
+                
+                <div class="hint" style="margin-bottom:10px;">
+                    <span>ℹ️</span>
+                    <span>Al registrarte, se creará un passkey vinculado a este dispositivo. Puedes usar Face ID, Touch ID, Windows Hello o tu PIN.</span>
+                </div>
+                
+                <div class="modal-actions">
+                    <button class="btn btn-g" onclick="showAuthWelcome()">← Volver</button>
+                    <button class="btn btn-p" onclick="handlePasskeyRegister()" id="register-btn">
+                        ✨ Crear Passkey
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
