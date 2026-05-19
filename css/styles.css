@@ -2705,3 +2705,49 @@ body.sync-simple .src-actions .btn.btn-g {
 .ob-skip:hover {
     opacity: 1;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   PASSKEY AUTH STYLES
+   ═══════════════════════════════════════════════════════════════════ */
+
+#auth-modal {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.auth-screen {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+#auth-error,
+#auth-error-register {
+    display: none;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: .65rem;
+    line-height: 1.5;
+    gap: 6px;
+    align-items: flex-start;
+}
+
+#auth-error span:first-child,
+#auth-error-register span:first-child {
+    flex-shrink: 0;
+}
+
+#passkey-section {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

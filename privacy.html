@@ -14,10 +14,20 @@
 </head>
 <body>
     <h1>Política de Privacidad — TABLERO Rö</h1>
-    <p class="updated">Última actualización: 14 de marzo de 2026</p>
+    <p class="updated">Última actualización: 19 de mayo de 2026</p>
 
     <h2>Qué es TABLERO Rö</h2>
     <p>TABLERO Rö es una aplicación web personal de planificación semanal que integra Google Calendar para visualizar y gestionar eventos. Es de uso exclusivamente personal y no comercial.</p>
+
+    <h2>Autenticación con Passkey</h2>
+    <p>TABLERO Rö implementa autenticación mediante <strong>passkeys (WebAuthn)</strong> para proteger el acceso a tu tablero personal. Los passkeys utilizan:</p>
+    <ul>
+        <li><strong>Autenticación biométrica</strong> (Face ID, Touch ID, Windows Hello) o PIN del dispositivo.</li>
+        <li><strong>Credenciales almacenadas localmente</strong> en el hardware seguro de tu dispositivo (TPM, Secure Enclave).</li>
+        <li><strong>Sin contraseñas</strong>: no se almacenan ni transmiten contraseñas.</li>
+        <li><strong>Vinculación al dominio</strong>: las credenciales solo funcionan en este sitio web, protegiéndote contra phishing.</li>
+    </ul>
+    <p><strong>Datos biométricos:</strong> Tus datos biométricos (huella dactilar, reconocimiento facial) <strong>nunca abandonan tu dispositivo</strong>. Solo se utilizan localmente para desbloquear la clave criptográfica almacenada en tu hardware. La aplicación no tiene acceso a estos datos biométricos.</p>
 
     <h2>Datos que accedemos</h2>
     <p>Al conectar tu cuenta de Google, la aplicación accede a:</p>
@@ -27,16 +37,42 @@
     </ul>
 
     <h2>Almacenamiento</h2>
-    <p>Todos los datos se almacenan <strong>exclusivamente en tu navegador</strong> (localStorage). No tenemos servidores, bases de datos ni backend. No recopilamos, transmitimos ni almacenamos datos personales en ningún servidor externo.</p>
+    <p>Todos los datos se almacenan <strong>exclusivamente en tu navegador</strong> (localStorage y sessionStorage). No tenemos servidores, bases de datos ni backend. No recopilamos, transmitimos ni almacenamos datos personales en ningún servidor externo.</p>
+    
+    <p>Datos almacenados localmente incluyen:</p>
+    <ul>
+        <li><strong>Información de usuario:</strong> nombre de usuario e ID de credencial del passkey.</li>
+        <li><strong>Sesión activa:</strong> timestamp de inicio de sesión (sessionStorage, se elimina al cerrar el navegador).</li>
+        <li><strong>Estados del tablero:</strong> tareas completadas, notas y configuración personal.</li>
+        <li><strong>Configuración de IA:</strong> claves de API para proveedores de IA (Claude, OpenAI, Gemini) si las configuras.</li>
+    </ul>
 
     <h2>Tokens de acceso</h2>
     <p>El token de Google OAuth se mantiene únicamente en la memoria del navegador durante la sesión activa. No se persiste en disco ni se envía a terceros.</p>
 
     <h2>Terceros</h2>
-    <p>No compartimos datos con terceros. Las únicas comunicaciones de red son directamente entre tu navegador y las APIs de Google Calendar.</p>
+    <p>No compartimos datos con terceros. Las únicas comunicaciones de red son directamente entre tu navegador y:</p>
+    <ul>
+        <li>APIs de Google Calendar (para sincronización de eventos)</li>
+        <li>APIs de proveedores de IA (Claude, OpenAI, Gemini) si configuras extracción de Bullet Journal</li>
+    </ul>
+
+    <h2>Seguridad</h2>
+    <p>TABLERO Rö implementa las siguientes medidas de seguridad:</p>
+    <ul>
+        <li><strong>WebAuthn/Passkeys:</strong> estándar FIDO2 para autenticación sin contraseñas.</li>
+        <li><strong>Sesiones temporales:</strong> expiración automática de sesión después de 24 horas de inactividad.</li>
+        <li><strong>Sin almacenamiento de secretos:</strong> las claves de API se almacenan localmente y nunca se transmiten a nuestros servidores (porque no tenemos servidores).</li>
+        <li><strong>HTTPS:</strong> toda la comunicación se realiza a través de conexiones cifradas.</li>
+    </ul>
 
     <h2>Eliminación de datos</h2>
-    <p>Puedes eliminar todos los datos almacenados en cualquier momento desde ⚙️ Admin → "Limpiar estado guardado", o limpiando el localStorage de tu navegador.</p>
+    <p>Puedes eliminar todos los datos almacenados en cualquier momento:</p>
+    <ul>
+        <li><strong>Cerrar sesión:</strong> desde ⚙️ Admin → 🔐 Seguridad · Passkey → 🚪 Cerrar sesión</li>
+        <li><strong>Eliminar passkeys:</strong> desde ⚙️ Admin → 🔐 Seguridad · Passkey → 🔑 Gestionar passkeys</li>
+        <li><strong>Limpiar todo:</strong> desde ⚙️ Admin → "Limpiar estado guardado", o limpiando el localStorage de tu navegador</li>
+    </ul>
 
     <h2>Contacto</h2>
     <p>Para consultas sobre privacidad: <a href="mailto:gaete.gaona@gmail.com">gaete.gaona@gmail.com</a></p>

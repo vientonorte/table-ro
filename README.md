@@ -1,11 +1,11 @@
-# Tablero Rö · v1.2.0
+# Tablero Rö · v1.4.0
 
 ![Tablero Rö v1.0](https://github.com/user-attachments/assets/b353cb36-19c7-42b3-b55c-d0e32a9c1ab8)
 
-Planificador semanal personal con integración Google Calendar, Bullet Journal (BuJo) con IA multimodal (Claude/OpenAI/Gemini), auto-save, undo y accesibilidad. Desplegado en GitHub Pages sin dependencias ni build.
+Planificador semanal personal con autenticación biométrica (passkeys), integración Google Calendar, Bullet Journal (BuJo) con IA multimodal (Claude/OpenAI/Gemini), auto-save, undo y accesibilidad. Desplegado en GitHub Pages sin dependencias ni build.
 
 **Live:** https://vientonorte.github.io/table-ro  
-**Versión:** 1.2.0
+**Versión:** 1.4.0
 
 ---
 
@@ -15,10 +15,68 @@ Planificador semanal personal con integración Google Calendar, Bullet Journal (
 |------|-----------|
 | UI | HTML5 + CSS3 vanilla |
 | Lógica | JavaScript ES6+ (sin framework) |
-| Auth | Google Identity Services (OAuth 2.0) |
+| Auth | WebAuthn (Passkeys) + Google Identity Services (OAuth 2.0) |
 | Sync | Google Calendar API v3 + ICS feeds |
-| Persistencia | `localStorage` |
+| Persistencia | `localStorage` + `sessionStorage` |
 | Deploy | GitHub Pages (main branch, sin build) |
+
+---
+
+## 🔐 Seguridad con Passkeys
+
+TABLERO Rö implementa **autenticación sin contraseñas** mediante passkeys (WebAuthn/FIDO2) para proteger el acceso a tu tablero personal.
+
+### ¿Qué son los passkeys?
+
+Los passkeys son credenciales criptográficas modernas que reemplazan las contraseñas tradicionales:
+
+- **🔒 Más seguras:** Inmunes a phishing, reutilización de contraseñas y ataques de fuerza bruta
+- **😌 Más fáciles:** Usa tu rostro, huella digital, PIN o llave de seguridad
+- **🚀 Más rápidas:** Inicio de sesión en un solo toque
+- **🔐 Privadas:** Tus datos biométricos nunca salen de tu dispositivo
+
+### Compatibilidad
+
+Passkeys funciona en:
+
+- **iOS/iPadOS 16+** — Face ID, Touch ID
+- **macOS 13+** — Touch ID, contraseña del Mac
+- **Android 9+** — Huella digital, reconocimiento facial, PIN
+- **Windows 10+** — Windows Hello (PIN, huella, reconocimiento facial)
+
+Navegadores compatibles:
+- Chrome/Edge 108+
+- Safari 16+
+- Firefox 122+
+
+### Primer uso
+
+1. **Primera vez sin passkey registrado:** Acceso directo al tablero
+2. **Registrar passkey:** Abre ⚙️ Admin → 🔐 Seguridad · Passkey
+3. **Próximas visitas:** Autenticación automática con tu biometría
+
+### Gestión de passkeys
+
+Desde ⚙️ Admin → 🔐 Seguridad · Passkey puedes:
+
+- **Cerrar sesión** — termina tu sesión actual (duración: 24h)
+- **Gestionar passkeys** — ver y eliminar passkeys registrados
+- **Registrar múltiples usuarios** — cada dispositivo/usuario puede tener su propio passkey
+
+### Datos almacenados
+
+La autenticación con passkeys almacena **localmente** en tu navegador:
+
+- Nombre de usuario (el que tú elijas)
+- ID de credencial (identificador público generado por WebAuthn)
+- Fecha de registro
+
+**No se almacenan:**
+- Contraseñas (no existen)
+- Datos biométricos (permanecen en tu dispositivo)
+- Claves privadas (permanecen en el hardware seguro de tu dispositivo)
+
+Ver más en [Política de Privacidad](privacy.html).
 
 ---
 
@@ -30,7 +88,8 @@ table-ro/
 ├── css/
 │   └── styles.css          # Estilos globales (tokens, layout, componentes)
 ├── js/
-│   └── app.js              # Lógica completa (datos, render, sync, IA, storage)
+│   ├── app.js              # Lógica completa (datos, render, sync, IA, storage)
+│   └── auth-passkey.js     # Módulo de autenticación con passkeys (WebAuthn)
 ├── bujo-admin.html         # Panel de administración BuJo (standalone)
 ├── privacy.html            # Política de privacidad
 ├── terms.html              # Términos de uso
@@ -44,6 +103,13 @@ table-ro/
 ---
 
 ## Mapa de funcionalidades
+
+### 0 · Autenticación biométrica 🆕
+- Passkeys (WebAuthn/FIDO2) para login sin contraseñas
+- Soporte para Face ID, Touch ID, Windows Hello, llave de seguridad
+- Sesiones de 24 horas con cierre automático
+- Gestión de múltiples usuarios/dispositivos
+- Primera vez: acceso directo sin registro (opcional)
 
 ### 1 · Tablero semanal
 - Vista de 7 columnas (Lun–Dom) con navegación ← **Hoy** →
@@ -130,6 +196,14 @@ Configuración en ⚙️ Admin → pestaña IA: proveedor, modelo, perfil (speed
 | `gcal_client_id` | OAuth Client ID personalizado |
 | `gcal_sura_id` | Calendar ID de Sura (admin) |
 | `ics_*` | URLs privadas ICS por fuente |
+| `tablero_passkey_users` | 🆕 Lista de usuarios con passkeys registrados |
+| `tablero_current_user` | 🆕 Usuario actualmente autenticado |
+
+**sessionStorage:**
+| Key | Contenido |
+|-----|-----------|
+| `tablero_session_token` | 🆕 Token de sesión (timestamp) |
+| `tablero_session_user` | 🆕 Username del usuario en sesión |
 
 ---
 
@@ -144,6 +218,17 @@ cd table-ro
 python3 -m http.server 8080
 # Abre http://localhost:8080/
 ```
+
+### Probar autenticación con passkeys en local
+
+⚠️ **Importante:** Para que passkeys funcione en desarrollo local, debes usar:
+
+- `http://localhost:8080` (funciona)
+- `http://127.0.0.1:8080` (funciona)
+
+**NO usar:**
+- `file:///` (no soportado por WebAuthn por seguridad)
+- IP local diferente a 127.0.0.1 (puede requerir HTTPS)
 
 ### Configuración OAuth (primera vez)
 
@@ -208,4 +293,30 @@ Todos los eventos usan `America/Santiago`. Las conversiones de timestamps UTC (I
 
 ---
 
-Rö · v1.2.0 · Abril 2026
+## Prácticas de Seguridad
+
+### Para usuarios
+
+1. **Activa passkey en tu primer uso** — protege tu tablero personal con autenticación biométrica
+2. **Cierra sesión en dispositivos compartidos** — desde ⚙️ Admin → Cerrar sesión
+3. **No compartas claves de API** — las claves de IA (Claude, OpenAI, Gemini) son personales
+4. **Revoca passkeys antiguos** — elimina passkeys de dispositivos que ya no uses
+
+### Para desarrolladores
+
+1. **Nunca almacenar secretos en el código** — usar variables de entorno o localStorage (solo client-side)
+2. **Validar origen de WebAuthn** — las credenciales están vinculadas al dominio (protección anti-phishing)
+3. **Expirar sesiones** — la sesión actual expira automáticamente después de 24 horas
+4. **No transmitir tokens** — el token OAuth de Google se mantiene solo en memoria
+5. **HTTPS en producción** — GitHub Pages garantiza HTTPS; WebAuthn requiere contexto seguro
+
+### Reporte de vulnerabilidades
+
+Si encuentras una vulnerabilidad de seguridad, repórtala de forma responsable a:
+📧 [gaete.gaona@gmail.com](mailto:gaete.gaona@gmail.com)
+
+**No** publiques vulnerabilidades como issues públicos.
+
+---
+
+Rö · v1.4.0 · Mayo 2026

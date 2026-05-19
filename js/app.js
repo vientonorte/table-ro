@@ -1650,3 +1650,337 @@ function renderCredentials(){
     cont.appendChild(div);
   });
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   PASSKEY AUTHENTICATION UI CONTROLLERS
+   ═══════════════════════════════════════════════════════════════════ */
+
+/**
+ * Mostrar pantalla de bienvenida
+ */
+function showAuthWelcome() {
+    document.querySelectorAll('.auth-screen').forEach(s => s.style.display = 'none');
+    document.getElementById('auth-welcome').style.display = 'block';
+    hideAuthError();
+}
+
+/**
+ * Mostrar pantalla de login
+ */
+function showAuthLogin() {
+    document.querySelectorAll('.auth-screen').forEach(s => s.style.display = 'none');
+    document.getElementById('auth-login').style.display = 'block';
+    document.getElementById('login-username').value = '';
+    hideAuthError();
+}
+
+/**
+ * Mostrar pantalla de registro
+ */
+function showAuthRegister() {
+    document.querySelectorAll('.auth-screen').forEach(s => s.style.display = 'none');
+    document.getElementById('auth-register').style.display = 'block';
+    document.getElementById('register-username').value = '';
+    hideAuthError();
+}
+
+/**
+ * Ocultar mensaje de error
+ */
+function hideAuthError() {
+    const loginError = document.getElementById('auth-error');
+    const registerError = document.getElementById('auth-error-register');
+    if (loginError) loginError.style.display = 'none';
+    if (registerError) registerError.style.display = 'none';
+}
+
+/**
+ * Mostrar mensaje de error
+ */
+function showAuthError(msg, isRegister = false) {
+    const errorDiv = isRegister ? document.getElementById('auth-error-register') : document.getElementById('auth-error');
+    const errorText = isRegister ? document.getElementById('auth-error-register-text') : document.getElementById('auth-error-text');
+    
+    if (errorDiv && errorText) {
+        errorText.textContent = msg;
+        errorDiv.style.display = 'flex';
+    }
+}
+
+/**
+ * Manejar registro de passkey
+ */
+async function handlePasskeyRegister() {
+    hideAuthError();
+    const username = document.getElementById('register-username').value.trim();
+    const btn = document.getElementById('register-btn');
+    
+    if (!username) {
+        showAuthError('Por favor ingresa un nombre de usuario.', true);
+        return;
+    }
+    
+    // Verificar soporte de passkeys
+    if (!isPasskeySupported()) {
+        showAuthError('Tu navegador no soporta passkeys. Actualiza a la última versión de Chrome, Safari, Edge o Firefox.', true);
+        return;
+    }
+    
+    btn.disabled = true;
+    btn.textContent = '⏳ Creando passkey...';
+    
+    try {
+        const user = await registerPasskey(username);
+        
+        // Registro exitoso, cerrar modal de auth
+        closeAuthModal();
+        showToast(`✅ Passkey creado exitosamente. Bienvenido/a, ${user.username}!`, 'ok', 4000);
+        
+        // Inicializar la aplicación
+        initApp();
+    } catch (error) {
+        console.error('Error al registrar passkey:', error);
+        showAuthError(error.message, true);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '✨ Crear Passkey';
+    }
+}
+
+/**
+ * Manejar login con passkey
+ */
+async function handlePasskeyLogin() {
+    hideAuthError();
+    const username = document.getElementById('login-username').value.trim();
+    const btn = document.getElementById('login-btn');
+    
+    // Verificar soporte de passkeys
+    if (!isPasskeySupported()) {
+        showAuthError('Tu navegador no soporta passkeys.');
+        return;
+    }
+    
+    btn.disabled = true;
+    btn.textContent = '⏳ Autenticando...';
+    
+    try {
+        const user = await authenticatePasskey(username || null);
+        
+        // Login exitoso, cerrar modal de auth
+        closeAuthModal();
+        showToast(`✅ Sesión iniciada. Bienvenido/a de vuelta, ${user.username}!`, 'ok', 3000);
+        
+        // Inicializar la aplicación
+        initApp();
+    } catch (error) {
+        console.error('Error al autenticar:', error);
+        showAuthError(error.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '🔓 Autenticar';
+    }
+}
+
+/**
+ * Cerrar modal de autenticación
+ */
+function closeAuthModal() {
+    const modal = document.getElementById('auth-modal');
+    if (modal) {
+        modal.classList.remove('open');
+        // Permitir scroll del body
+        document.body.style.overflow = '';
+    }
+}
+
+/**
+ * Abrir modal de autenticación
+ */
+function openAuthModal() {
+    const modal = document.getElementById('auth-modal');
+    if (modal) {
+        modal.classList.add('open');
+        showAuthWelcome();
+        // Prevenir scroll del body
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+/**
+ * Logout del usuario actual
+ */
+function handleLogout() {
+    logout();
+    
+    // Ocultar el tablero
+    document.querySelector('.topbar')?.style.setProperty('display', 'none');
+    document.getElementById('wboard')?.style.setProperty('display', 'none');
+    document.getElementById('drawer')?.classList.remove('open');
+    
+    // Mostrar modal de auth
+    openAuthModal();
+    
+    showToast('Sesión cerrada correctamente.', 'info', 2500);
+}
+
+/**
+ * Verificar autenticación al cargar la página
+ */
+function checkAuth() {
+    // Si ya hay sesión activa, no mostrar modal
+    if (isSessionActive()) {
+        const username = getCurrentUser();
+        console.log('Sesión activa:', username);
+        closeAuthModal();
+        return true;
+    }
+    
+    // Si no hay usuarios registrados, permitir acceso directo (primera vez)
+    const users = getRegisteredUsers();
+    if (users.length === 0) {
+        console.log('No hay usuarios registrados. Acceso directo permitido.');
+        closeAuthModal();
+        return true;
+    }
+    
+    // Si hay usuarios pero no sesión, mostrar modal de auth
+    console.log('Requiere autenticación');
+    openAuthModal();
+    
+    // Ocultar el tablero hasta que se autentique
+    document.querySelector('.topbar')?.style.setProperty('display', 'none');
+    document.getElementById('wboard')?.style.setProperty('display', 'none');
+    
+    return false;
+}
+
+/**
+ * Inicializar aplicación (solo después de auth exitosa)
+ */
+function initApp() {
+    // Mostrar el tablero
+    document.querySelector('.topbar')?.style.removeProperty('display');
+    document.getElementById('wboard')?.style.removeProperty('display');
+    
+    // Agregar nombre de usuario en topbar
+    const username = getCurrentUser();
+    if (username) {
+        const chip = document.querySelector('.layer-chip');
+        if (chip) {
+            chip.textContent = `👤 ${username}`;
+        }
+    }
+}
+
+/**
+ * Agregar opción de logout en el menú Admin
+ */
+function addLogoutButton() {
+    // Buscar el tab de Admin para agregar botón de logout
+    const adminTab = document.getElementById('tab-admin');
+    if (!adminTab) return;
+    
+    const users = getRegisteredUsers();
+    if (users.length === 0) return; // No mostrar si no hay usuarios
+    
+    // Verificar si ya existe
+    if (document.getElementById('passkey-section')) return;
+    
+    const section = document.createElement('div');
+    section.id = 'passkey-section';
+    section.style.marginTop = '20px';
+    section.style.paddingTop = '20px';
+    section.style.borderTop = '1px solid rgba(255,255,255,0.1)';
+    
+    const currentUser = getCurrentUser();
+    
+    section.innerHTML = `
+        <div class="sec-title" style="font-size:.74rem;margin-bottom:8px;">🔐 Seguridad · Passkey</div>
+        <div style="font-size:.68rem;color:var(--mut);margin-bottom:10px;">
+            Usuario actual: <strong style="color:#7C3AED;">${currentUser || 'No autenticado'}</strong>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-g" onclick="handleLogout()" style="font-size:.68rem;">
+                🚪 Cerrar sesión
+            </button>
+            <button class="btn btn-g" onclick="showPasskeyManager()" style="font-size:.68rem;">
+                🔑 Gestionar passkeys
+            </button>
+        </div>
+    `;
+    
+    adminTab.insertBefore(section, adminTab.firstChild);
+}
+
+/**
+ * Mostrar gestor de passkeys
+ */
+function showPasskeyManager() {
+    const users = getRegisteredUsers();
+    
+    let html = `
+        <div style="margin-top:10px;">
+            <div style="font-size:.7rem;font-weight:600;margin-bottom:8px;">Usuarios registrados:</div>
+    `;
+    
+    if (users.length === 0) {
+        html += '<div style="font-size:.65rem;color:var(--mut);">No hay passkeys registrados.</div>';
+    } else {
+        users.forEach(user => {
+            const isCurrent = user.username === getCurrentUser();
+            html += `
+                <div style="display:flex;align-items:center;justify-content:space-between;padding:8px;background:rgba(255,255,255,0.05);border-radius:6px;margin-bottom:6px;font-size:.65rem;">
+                    <div>
+                        <div style="font-weight:600;color:${isCurrent ? '#7C3AED' : 'inherit'};">
+                            ${user.username} ${isCurrent ? '(actual)' : ''}
+                        </div>
+                        <div style="color:var(--mut);font-size:.6rem;">
+                            Creado: ${new Date(user.createdAt).toLocaleDateString('es-CL')}
+                        </div>
+                    </div>
+                    ${!isCurrent ? `<button class="btn btn-g" style="font-size:.6rem;padding:4px 8px;" onclick="confirmDeletePasskey('${user.username}')">Eliminar</button>` : ''}
+                </div>
+            `;
+        });
+    }
+    
+    html += '</div>';
+    
+    const section = document.getElementById('passkey-section');
+    if (section) {
+        const managerDiv = section.querySelector('#passkey-manager') || document.createElement('div');
+        managerDiv.id = 'passkey-manager';
+        managerDiv.innerHTML = html;
+        if (!section.contains(managerDiv)) {
+            section.appendChild(managerDiv);
+        }
+    }
+}
+
+/**
+ * Confirmar eliminación de passkey
+ */
+function confirmDeletePasskey(username) {
+    if (confirm(`¿Estás seguro/a de eliminar el passkey de "${username}"?`)) {
+        try {
+            deletePasskeyUser(username);
+            showToast(`Passkey de "${username}" eliminado.`, 'ok', 2500);
+            showPasskeyManager(); // Refrescar lista
+        } catch (error) {
+            alert('Error al eliminar: ' + error.message);
+        }
+    }
+}
+
+// Verificar autenticación al cargar
+document.addEventListener('DOMContentLoaded', function() {
+    checkAuth();
+    
+    // Agregar botón de logout cuando se abra el modal de admin
+    const originalOpenAdmin = window.openAdminModal;
+    window.openAdminModal = function() {
+        if (originalOpenAdmin) originalOpenAdmin();
+        setTimeout(() => addLogoutButton(), 100);
+    };
+});
