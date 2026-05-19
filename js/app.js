@@ -782,7 +782,20 @@ function removeImage(idx){ bjImages.splice(idx,1); renderThumbs(); if(bjImages.l
 
 function buildBujoPrompt(){
   const flags = AI_CFG.flags;
-  return `Eres un extractor multimodal de Bullet Journal de Rö. Analiza imágenes de Bullet Journal y devuelve SOLO JSON válido. No uses markdown. No expliques nada. No agregues texto fuera del JSON.\n\nOBJETIVO\n- Extraer tareas, eventos, notas y hábitos.\n- Respetar la lógica de Bullet Journal.\n- Aplicar corrección mínima.\n- Mantener contenido incompleto o dudoso como [ilegible] si corresponde.\n\nREGLAS\n- Idioma esperado: español.\n- No inventes datos.\n- Si un texto es ambiguo, baja confidence.\n- Si la imagen muestra una semana en columnas o páginas, identifica el día o fecha de cada columna y propaga esa fecha a cada item detectado.\n- Si hay una fecha clara, usa date_text con el formato más útil posible, idealmente "YYYY-MM-DD"; si no es posible, usa algo como "Lun 9" o "14 marzo".\n- Si hay hora clara, usa time_text en formato 24h "HH:MM".\n- Si hay un símbolo o contexto laboral, clasifica "trabajo".\n- Si menciona Camila, clasifica "camila".\n- Si es terapia, salud, ejercicio, descanso o regulación, clasifica "personal".\n- Si es relación, amistad, familia elegida o coordinación con otras personas, clasifica "vinculos".\n- Si es dinero, pagos, transferencias, compras o presupuesto, clasifica "fin".\n- Lo demás: "personal".\n\nPARÁMETROS\n- normalizeSpelling: ${flags.normalizeSpelling}\n- markIllegible: ${flags.markIllegible}\n- inferDates: ${flags.inferDates}\n- inferCategory: ${flags.inferCategory}\n- maxItems: ${AI_CFG.maxItems}\n\nSCHEMA EXACTO\n{\n  "items": [\n    {\n      "text": "string",\n      "type": "personal|vinculos|camila|trabajo|fin",\n      "kind": "task|event|note|habit",\n      "symbol": "●|○|◆|>|*|$|—",\n      "date_text": "string",\n      "time_text": "string",\n      "details": "string",\n      "confidence": 0.0\n    }\n  ],\n  "summary": {\n    "warnings": ["string"]\n  }\n}\n\nRESTRICCIONES\n- Máximo ${AI_CFG.maxItems} items.\n- confidence entre 0 y 1.\n- Si no hay valor para date_text, time_text o details, usa \"\".\n- Devuelve SOLO JSON.`;
+  const pasteText = (document.getElementById('paste-area')?.value || '').trim();
+  const hasImages = bjImages.length > 0;
+  
+  let analysisType = 'texto e imágenes';
+  if (hasImages && !pasteText) analysisType = 'imágenes';
+  else if (!hasImages && pasteText) analysisType = 'texto';
+  
+  let promptText = `Eres un extractor multimodal de Bullet Journal de Rö. Analiza ${analysisType} de Bullet Journal y devuelve SOLO JSON válido. No uses markdown. No expliques nada. No agregues texto fuera del JSON.\n\nOBJETIVO\n- Extraer tareas, eventos, notas y hábitos.\n- Respetar la lógica de Bullet Journal.\n- Aplicar corrección mínima.\n- Mantener contenido incompleto o dudoso como [ilegible] si corresponde.\n\nREGLAS\n- Idioma esperado: español.\n- No inventes datos.\n- Si un texto es ambiguo, baja confidence.\n- Si la imagen muestra una semana en columnas o páginas, identifica el día o fecha de cada columna y propaga esa fecha a cada item detectado.\n- Si hay una fecha clara, usa date_text con el formato más útil posible, idealmente "YYYY-MM-DD"; si no es posible, usa algo como "Lun 9" o "14 marzo".\n- Si hay hora clara, usa time_text en formato 24h "HH:MM".\n- Si hay un símbolo o contexto laboral, clasifica "trabajo".\n- Si menciona Camila, clasifica "camila".\n- Si es terapia, salud, ejercicio, descanso o regulación, clasifica "personal".\n- Si es relación, amistad, familia elegida o coordinación con otras personas, clasifica "vinculos".\n- Si es dinero, pagos, transferencias, compras o presupuesto, clasifica "fin".\n- Lo demás: "personal".\n\nPARÁMETROS\n- normalizeSpelling: ${flags.normalizeSpelling}\n- markIllegible: ${flags.markIllegible}\n- inferDates: ${flags.inferDates}\n- inferCategory: ${flags.inferCategory}\n- maxItems: ${AI_CFG.maxItems}\n\nSCHEMA EXACTO\n{\n  "items": [\n    {\n      "text": "string",\n      "type": "personal|vinculos|camila|trabajo|fin",\n      "kind": "task|event|note|habit",\n      "symbol": "●|○|◆|>|*|$|—",\n      "date_text": "string",\n      "time_text": "string",\n      "details": "string",\n      "confidence": 0.0\n    }\n  ],\n  "summary": {\n    "warnings": ["string"]\n  }\n}\n\nRESTRICCIONES\n- Máximo ${AI_CFG.maxItems} items.\n- confidence entre 0 y 1.\n- Si no hay valor para date_text, time_text o details, usa \"\".\n- Devuelve SOLO JSON.`;
+  
+  if (pasteText) {
+    promptText += `\n\nTEXTO ADICIONAL PROPORCIONADO POR EL USUARIO:\n\`\`\`\n${pasteText}\n\`\`\`\n\nAnaliza también este texto${hasImages ? ' junto con las imágenes' : ''}. Extrae ítems de ${hasImages ? 'ambas fuentes' : 'este texto'} y ${hasImages ? 'combínalos' : 'devuélvelos'} en el resultado JSON.`;
+  }
+  
+  return promptText;
 }
 function extractJsonString(raw){
   const txt = String(raw || '').trim();
@@ -832,11 +845,26 @@ function goToAnalyze(){
   var hasImages = bjImages.length > 0;
   var hasText = (document.getElementById("paste-area")?.value || "").trim().length > 0;
   if(!hasImages && !hasText){ announce("Sube una foto o escribe texto para continuar"); return; }
-  if(hasText) parsePaste();
   setBujoStep(2);
-  if(hasImages && getAvailableAIProviders().length) { analyzeBujo(); }
-  else if(!hasImages) { showBJItems(); announce("Texto procesado. Revisa los ítems extraídos."); }
-  else { updateAIStatus(); }
+  
+  // Si hay imágenes Y proveedores IA disponibles, usar IA (incluirá texto automáticamente)
+  if(hasImages && getAvailableAIProviders().length) { 
+    analyzeBujo(); 
+  }
+  // Si NO hay imágenes pero SÍ hay texto Y proveedores IA disponibles, usar IA
+  else if(!hasImages && hasText && getAvailableAIProviders().length) {
+    analyzeBujo();
+  }
+  // Si solo hay texto pero NO hay IA, parsear manualmente
+  else if(hasText && !hasImages) { 
+    parsePaste();
+    showBJItems(); 
+    announce("Texto procesado. Revisa los ítems extraídos."); 
+  }
+  // Si hay imágenes pero NO hay IA disponible
+  else { 
+    updateAIStatus(); 
+  }
 }
 function continueWithoutAI(){
   setBujoStep(1);
@@ -895,7 +923,8 @@ async function callGemini(prompt){
   return getGeminiText(await res.json());
 }
 async function analyzeBujo(){
-  if(!bjImages.length){ alert('Sube al menos una foto de tu BuJo.'); return; }
+  const hasText = (document.getElementById("paste-area")?.value || "").trim().length > 0;
+  if(!bjImages.length && !hasText){ alert('Sube al menos una foto de tu BuJo o escribe texto.'); return; }
   saveAIForm();
   hideAIFallbackNote();
   const candidates=getProviderCandidates();
