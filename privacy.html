@@ -17,7 +17,7 @@
 </head>
 <body>
     <h1>Política de Privacidad — TABLERO Rö</h1>
-    <p class="updated">Última actualización: 19 de junio de 2026 · Versión app 1.5.0</p>
+    <p class="updated">Última actualización: 19 de junio de 2026 · Versión app 1.6.0</p>
 
     <h2>Qué es TABLERO Rö</h2>
     <p>TABLERO Rö es una aplicación web personal de planificación semanal que integra Google Calendar, feeds ICS, Trello (opcional) y análisis de Bullet Journal con IA multimodal. Es de uso personal y no comercial.</p>
@@ -98,6 +98,7 @@
     <p>Si configuras un <strong>Cloudflare Worker</strong> como proxy:</p>
     <ul>
         <li>Las solicitudes de IA pasan por ese servidor; las API keys residen allí, no en tu navegador (v1.5+ en producción).</li>
+        <li>Las imágenes BuJo se envían al proveedor IA solo para extracción; no se almacenan en disco del Worker ni en GitHub Pages. La lectura crómática Clave A (v1.6) clasifica por color de marcador en el cliente tras la respuesta.</li>
         <li>Las URLs ICS pueden proxearse; el Worker solo reenvía a hosts permitidos.</li>
     </ul>
 

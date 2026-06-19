@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.6.0] — 2026-06-19
+
+### 🎨 Lectura crómática Clave A — BuJo (Sprint A)
+
+- **`buildBujoPrompt()` v2**: bloque Clave A (rosa/gris/verde/naranja/amarillo) cuando hay imágenes.
+- **Schema JSON**: `color_trace`, `source_type` por ítem; warnings de conflicto color/símbolo.
+- **Post-proceso** `normalizeClaveAExtraction()`: prioriza color, amarillo→`note`, anonimización `[INSTITUCIÓN]` en `details`.
+- **UI**: chips de color en revisión BuJo, panel hallazgos cromáticos, filtro «Con color».
+- **Admin**: toggles `chromaticReading` y `prioritizeColor` (+ flags de extracción).
+- **PWA**: service worker `table-ro-v8`.
+
 ## [1.5.0] — 2026-06-19
 
 ### 🚀 Production Hardening (Sprint 2)

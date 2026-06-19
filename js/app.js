@@ -1,7 +1,7 @@
 /**
  * Tablero Rö — Lógica principal
  * ==============================
- * Versión: 1.5.0
+ * Versión: 1.6.0
  * Descripción: Tablero semanal personal con integración Google Calendar,
  *              Bullet Journal (BuJo) y sync bidireccional.
  *
@@ -696,6 +696,14 @@ function closeDrawer(){document.getElementById('drawer').classList.remove('open'
 let bjImages=[];
 const SYM_MAP={'●':'personal','○':'personal','◆':'vinculos','—':'personal','-':'personal','*':'trabajo','>':'camila','$':'fin','•':'personal','✦':'vinculos','⬡':'camila'};
 const BJ_CAL={personal:{c:'#EC4899',l:'Personal'},vinculos:{c:'#7C3AED',l:'Vínculos'},camila:{c:'#10B981',l:'Camila'},trabajo:{c:'#F97316',l:'Trabajo'},fin:{c:'#FB923C',l:'Finanzas'},'espacio-seguro':{c:'#10B981',l:'Espacio Seguro'},bujo:{c:'#C084FC',l:'📓 BuJo'}};
+const CLAVE_A_MAP={
+  rosa:{type:'personal',kind:null,hex:'#EC4899',label:'Rosa'},
+  gris:{type:'vinculos',kind:null,hex:'#6B7280',label:'Gris'},
+  'verde turquesa':{type:'camila',kind:null,hex:'#10B981',label:'Verde turquesa'},
+  naranja:{type:'trabajo',kind:null,hex:'#F97316',label:'Naranja'},
+  amarillo:{type:'personal',kind:'note',hex:'#FBBF24',label:'Amarillo'}
+};
+const COLOR_SOURCE_LABELS={color:'color',symbol:'símbolo',text:'texto',default:'inferencia'};
 
 const AI_CFG_KEY = 'tablero_ai_cfg_ro';
 const AI_DEFAULTS = {
@@ -707,7 +715,9 @@ const AI_DEFAULTS = {
     normalizeSpelling: true,
     markIllegible: true,
     inferDates: true,
-    inferCategory: true
+    inferCategory: true,
+    chromaticReading: true,
+    prioritizeColor: true
   },
   providers: {
     claude: { key: '', model: 'claude-sonnet-4-6' },
@@ -828,6 +838,10 @@ function hydrateAIAdmin(){
   document.querySelectorAll('.ai-dev-only').forEach((el) => {
     el.style.display = IS_PROD_HOST ? 'none' : '';
   });
+  document.querySelectorAll('[data-flag]').forEach(btn => {
+    const flag = btn.dataset.flag;
+    btn.classList.toggle('saved', !!AI_CFG.flags[flag]);
+  });
   updateProviderCardStates();
 }
 function hydrateAIForm(){
@@ -907,16 +921,92 @@ function handleFiles(files){
 }
 function removeImage(idx){ bjImages.splice(idx,1); renderThumbs(); if(bjImages.length===0)document.getElementById('ai-analyze-btn').disabled=true; updateAIStatus(); updateBujoSummary(); }
 
+function resolveClaveAKey(claveA){
+  if(!claveA) return '';
+  const k=String(claveA).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
+  if(CLAVE_A_MAP[k]) return k;
+  if(/rosa|fucsia/.test(k)) return 'rosa';
+  if(/\bgris\b/.test(k)) return 'gris';
+  if(/turquesa|verde/.test(k)) return 'verde turquesa';
+  if(/naranja/.test(k)) return 'naranja';
+  if(/amarillo/.test(k)) return 'amarillo';
+  return '';
+}
+function symbolToType(sym){ return SYM_MAP[String(sym||'').trim()] || ''; }
+function anonymizeDetails(text){
+  return String(text||'')
+    .replace(/\bSura\s+Investments?\b/gi,'[INSTITUCIÓN]')
+    .replace(/\bSURA\b/g,'[INSTITUCIÓN]');
+}
+function isChromaticReadingEnabled(hasImages){
+  return hasImages && AI_CFG.flags.chromaticReading !== false;
+}
+function buildClaveAPromptBlock(){
+  return `\n\nCLAVE A — BULLET RO (solo imágenes del cuaderno dot grid)\nDetecta resaltado con marcador. El matiz importa, no la intensidad de saturación.\n- Rosa/fucsia → type: personal\n- Gris → type: vinculos\n- Verde turquesa → type: camila\n- Naranja → type: trabajo\n- Amarillo → kind: note, type: personal (referencia; no crear categoría nueva)\nSimbología Bullet Ro: ● personal · ○ bienestar · ◆ vínculos · > camila · * trabajo · — nota\nSi color y símbolo discrepan${AI_CFG.flags.prioritizeColor !== false ? ', prioriza color y registra warning en summary.warnings' : ', registra warning pero conserva type del símbolo'}.\nCampo color_trace obligatorio por ítem con imagen:\n- detected: true|false\n- clave_a: rosa|gris|verde turquesa|naranja|amarillo|\"\"\n- hex_approx: aproximación hex del marcador\n- source: color|symbol|text|default\nsource_type del ítem: bullet_ro (imagen) o texto (solo pegado).\nAnonimiza en details (no en text): empleador → [INSTITUCIÓN].\nNO aplicar Clave B (libros académicos) a páginas Bullet Ro.`;
+}
+function normalizeClaveAItem(item, ctx){
+  const out={...item};
+  const hasImages=!!ctx?.hasImages;
+  const warnings=ctx?.warnings || [];
+  const chromatic=isChromaticReadingEnabled(hasImages);
+  const prioritize=AI_CFG.flags.prioritizeColor !== false;
+  let trace=out.color_trace && typeof out.color_trace==='object' ? {...out.color_trace} : {};
+  const claveKey=resolveClaveAKey(trace.clave_a);
+  const mapped=claveKey ? CLAVE_A_MAP[claveKey] : null;
+  if(mapped){
+    trace.detected=true;
+    trace.clave_a=claveKey;
+    if(!trace.hex_approx) trace.hex_approx=mapped.hex;
+    if(!trace.source) trace.source='color';
+  }else if(trace.detected === undefined){
+    trace.detected=false;
+  }
+  if(!trace.source) trace.source=hasImages ? 'default' : 'text';
+  const symbolType=symbolToType(out.symbol);
+  if(chromatic && trace.detected && mapped){
+    const colorType=mapped.type;
+    const prevType=out.type || symbolType || 'personal';
+    if(prioritize || trace.source==='color'){
+      out.type=colorType;
+      if(mapped.kind) out.kind=mapped.kind;
+      if(symbolType && symbolType!==colorType){
+        warnings.push(`Conflicto color/símbolo: "${String(out.text||'').slice(0,48)}" — color ${mapped.label}→${colorType}, símbolo→${symbolType}${prioritize ? '; priorizado color' : ''}.`);
+      }
+    }else if(symbolType){
+      out.type=symbolType;
+    }else{
+      out.type=colorType;
+    }
+    if(claveKey==='amarillo'){ out.kind='note'; out.type='personal'; }
+  }else{
+    if(symbolType && (!out.type || out.type==='personal')) out.type=symbolType;
+    if(!out.type) out.type='personal';
+    if(!trace.detected && symbolType) trace.source='symbol';
+  }
+  if(!out.kind) out.kind='task';
+  out.details=anonymizeDetails(out.details||'');
+  out.color_trace=trace;
+  out.source_type=hasImages ? (out.source_type || 'bullet_ro') : (out.source_type || 'texto');
+  return out;
+}
+function normalizeClaveAExtraction(parsed, hasImages){
+  const warnings=[...(parsed?.summary?.warnings||[])];
+  const items=(parsed?.items||[]).map(item=>normalizeClaveAItem(item,{hasImages,warnings}));
+  return {items,summary:{...(parsed?.summary||{}),warnings}};
+}
+
 function buildBujoPrompt(){
   const flags = AI_CFG.flags;
   const pasteText = (document.getElementById('paste-area')?.value || '').trim();
   const hasImages = bjImages.length > 0;
+  const chromatic = isChromaticReadingEnabled(hasImages);
   
   let analysisType = 'texto e imágenes';
   if (hasImages && !pasteText) analysisType = 'imágenes';
   else if (!hasImages && pasteText) analysisType = 'texto';
   
-  let promptText = `Eres un extractor multimodal de Bullet Journal de Rö. Analiza ${analysisType} de Bullet Journal y devuelve SOLO JSON válido. No uses markdown. No expliques nada. No agregues texto fuera del JSON.\n\nOBJETIVO\n- Extraer tareas, eventos, notas y hábitos.\n- Respetar la lógica de Bullet Journal.\n- Aplicar corrección mínima.\n- Mantener contenido incompleto o dudoso como [ilegible] si corresponde.\n\nREGLAS\n- Idioma esperado: español.\n- No inventes datos.\n- Si un texto es ambiguo, baja confidence.\n- Si la imagen muestra una semana en columnas o páginas, identifica el día o fecha de cada columna y propaga esa fecha a cada item detectado.\n- Si hay una fecha clara, usa date_text con el formato más útil posible, idealmente "YYYY-MM-DD"; si no es posible, usa algo como "Lun 9" o "14 marzo".\n- Si hay hora clara, usa time_text en formato 24h "HH:MM".\n- Si hay un símbolo o contexto laboral, clasifica "trabajo".\n- Si menciona Camila, clasifica "camila".\n- Si es terapia, salud, ejercicio, descanso o regulación, clasifica "personal".\n- Si es relación, amistad, familia elegida o coordinación con otras personas, clasifica "vinculos".\n- Si es dinero, pagos, transferencias, compras o presupuesto, clasifica "fin".\n- Lo demás: "personal".\n\nPARÁMETROS\n- normalizeSpelling: ${flags.normalizeSpelling}\n- markIllegible: ${flags.markIllegible}\n- inferDates: ${flags.inferDates}\n- inferCategory: ${flags.inferCategory}\n- maxItems: ${AI_CFG.maxItems}\n\nSCHEMA EXACTO\n{\n  "items": [\n    {\n      "text": "string",\n      "type": "personal|vinculos|camila|trabajo|fin",\n      "kind": "task|event|note|habit",\n      "symbol": "●|○|◆|>|*|$|—",\n      "date_text": "string",\n      "time_text": "string",\n      "details": "string",\n      "confidence": 0.0\n    }\n  ],\n  "summary": {\n    "warnings": ["string"]\n  }\n}\n\nRESTRICCIONES\n- Máximo ${AI_CFG.maxItems} items.\n- confidence entre 0 y 1.\n- Si no hay valor para date_text, time_text o details, usa \"\".\n- Devuelve SOLO JSON.`;
+  let promptText = `Eres un extractor multimodal de Bullet Journal de Rö. Analiza ${analysisType} de Bullet Journal y devuelve SOLO JSON válido. No uses markdown. No expliques nada. No agregues texto fuera del JSON.\n\nOBJETIVO\n- Extraer tareas, eventos, notas y hábitos.\n- Respetar la lógica de Bullet Journal.\n- Aplicar corrección mínima.\n- Mantener contenido incompleto o dudoso como [ilegible] si corresponde.\n\nREGLAS\n- Idioma esperado: español.\n- No inventes datos.\n- Si un texto es ambiguo, baja confidence.\n- Si la imagen muestra una semana en columnas o páginas, identifica el día o fecha de cada columna y propaga esa fecha a cada item detectado.\n- Si hay una fecha clara, usa date_text con el formato más útil posible, idealmente "YYYY-MM-DD"; si no es posible, usa algo como "Lun 9" o "14 marzo".\n- Si hay hora clara, usa time_text en formato 24h "HH:MM".\n- Si hay un símbolo o contexto laboral, clasifica "trabajo".\n- Si menciona Camila, clasifica "camila".\n- Si es terapia, salud, ejercicio, descanso o regulación, clasifica "personal".\n- Si es relación, amistad, familia elegida o coordinación con otras personas, clasifica "vinculos".\n- Si es dinero, pagos, transferencias, compras o presupuesto, clasifica "fin".\n- Lo demás: "personal".\n\nPARÁMETROS\n- normalizeSpelling: ${flags.normalizeSpelling}\n- markIllegible: ${flags.markIllegible}\n- inferDates: ${flags.inferDates}\n- inferCategory: ${flags.inferCategory}\n- chromaticReading: ${chromatic}\n- prioritizeColor: ${flags.prioritizeColor !== false}\n- maxItems: ${AI_CFG.maxItems}\n\nSCHEMA EXACTO\n{\n  "items": [\n    {\n      "text": "string",\n      "type": "personal|vinculos|camila|trabajo|fin",\n      "kind": "task|event|note|habit",\n      "symbol": "●|○|◆|>|*|$|—",\n      "date_text": "string",\n      "time_text": "string",\n      "details": "string",\n      "confidence": 0.0,\n      "source_type": "bullet_ro|texto|libro",\n      "color_trace": {\n        "detected": false,\n        "clave_a": "rosa|gris|verde turquesa|naranja|amarillo|",\n        "hex_approx": "#RRGGBB",\n        "source": "color|symbol|text|default"\n      }\n    }\n  ],\n  "summary": {\n    "warnings": ["string"]\n  }\n}\n\nRESTRICCIONES\n- Máximo ${AI_CFG.maxItems} items.\n- confidence entre 0 y 1.\n- Si no hay valor para date_text, time_text o details, usa \"\".\n- color_trace obligatorio en cada ítem; si no hay imagen o color visible, detected:false y source:default|symbol|text.\n- Devuelve SOLO JSON.`;
+  if(chromatic) promptText += buildClaveAPromptBlock();
   
   if (pasteText) {
     promptText += `\n\nTEXTO ADICIONAL PROPORCIONADO POR EL USUARIO:\n\`\`\`\n${pasteText}\n\`\`\`\n\nAnaliza también este texto${hasImages ? ' junto con las imágenes' : ''}. Extrae ítems de ${hasImages ? 'ambas fuentes' : 'este texto'} y ${hasImages ? 'combínalos' : 'devuélvelos'} en el resultado JSON.`;
@@ -942,8 +1032,10 @@ function getGeminiText(data){ return (data?.candidates?.[0]?.content?.parts||[])
 function renderAIResult(provider, parsed){
   const target=document.getElementById('ai-result-preview'); if(!target) return;
   const warnings=parsed?.summary?.warnings||[];
+  const chromaticItems=(parsed?.items||[]).filter(i=>i?.color_trace?.detected);
+  const chromaticHtml=chromaticItems.length ? `<div id="chromatic-findings" class="chromatic-findings"><strong>Hallazgos cromáticos (${chromaticItems.length})</strong><br>${chromaticItems.slice(0,8).map(i=>{const t=i.color_trace||{};const src=COLOR_SOURCE_LABELS[t.source]||t.source||'color';return `• ${escapeHtml((i.text||'').slice(0,42))} — ${escapeHtml(t.clave_a||'?')} (${escapeHtml(src)})`;}).join('<br>')}${chromaticItems.length>8?`<br>… +${chromaticItems.length-8} más`:''}</div>` : '';
   target.style.display='block';
-  target.innerHTML=`<div class="ai-result"><strong>${escapeHtml(providerLabel(provider))}</strong> · ${parsed.items.length} ítems${warnings.length ? `<br><br><strong>Warnings:</strong><br>${warnings.map(w => `• ${escapeHtml(w)}`).join('<br>')}` : ''}</div>`;
+  target.innerHTML=`<div class="ai-result"><strong>${escapeHtml(providerLabel(provider))}</strong> · ${parsed.items.length} ítems${chromaticHtml}${warnings.length ? `<br><br><strong>Warnings:</strong><br>${warnings.map(w => `• ${escapeHtml(w)}`).join('<br>')}` : ''}</div>`;
 }
 function showAIFallbackNote(msg='No se pudo analizar con IA. Revisa los ítems o usa texto manual.'){
   const note = document.getElementById('ai-fallback-note');
@@ -1095,13 +1187,13 @@ async function analyzeBujo(){
     }
     if(!raw) throw new Error(lastError || 'No fue posible analizar con IA');
     progressBar.style.width='78%';
-    const parsed=parseExtractionJson(raw);
+    const parsed=normalizeClaveAExtraction(parseExtractionJson(raw), bjImages.length > 0);
     renderAIResult(providerUsed, parsed);
     bjList.innerHTML='';
     let added=0;
     parsed.items.forEach(item=>{
       if(!item?.text?.trim()) return;
-      bjList.appendChild(makeBJItem({text:item.text.trim(),type:item.type||'personal',kind:item.kind||'task',details:item.details||'',timeText:item.time_text||'',dateText:item.date_text||'',confidence:item.confidence ?? 0}));
+      bjList.appendChild(makeBJItem({text:item.text.trim(),type:item.type||'personal',kind:item.kind||'task',details:item.details||'',timeText:item.time_text||'',dateText:item.date_text||'',confidence:item.confidence ?? 0,colorTrace:item.color_trace||{}}));
       added++;
     });
     progressBar.style.width="100%"; showBJItems(); updateBadge(); updateBujoSummary(); announce("Análisis completado"); announce(`Análisis completado con ${added} ítems`);
@@ -1131,12 +1223,19 @@ function updateBujoSummary(){const rows=[...document.querySelectorAll('#bj-list 
 function selectAllBJ(checked){document.querySelectorAll('#bj-list .bj-item input[type=checkbox]').forEach(chk=>{chk.checked=checked;});updateBujoSummary();}
 function makeBJItem(obj){
   const ci = BJ_CAL[obj.type] || BJ_CAL.bujo;
+  const trace = obj.colorTrace && typeof obj.colorTrace==='object' ? obj.colorTrace : {};
   const el = document.createElement('div');
-  el.className='bj-item'; el.dataset.type=obj.type; el.dataset.kind=obj.kind||'task'; el.dataset.detail=obj.details||''; el.dataset.time=obj.timeText||''; el.dataset.date=obj.dateText||''; el.dataset.confidence=String(obj.confidence ?? '');
+  el.className='bj-item'; el.dataset.type=obj.type; el.dataset.kind=obj.kind||'task'; el.dataset.detail=obj.details||''; el.dataset.time=obj.timeText||''; el.dataset.date=obj.dateText||''; el.dataset.confidence=String(obj.confidence ?? ''); el.dataset.colorDetected=trace.detected ? '1' : '0';
   if(Number(obj.confidence ?? 1) < .6) el.classList.add('low-confidence');
   el.style.setProperty('--cc',ci.c);
   const meta=[obj.kind ? obj.kind.toUpperCase() : '', obj.timeText || '', obj.dateText || ''].filter(Boolean).join(' · ');
-  el.innerHTML=`<input type="checkbox"><span class="bj-item-text">${escapeHtml(obj.text)}</span>${meta ? `<span class="bj-item-cat">${escapeHtml(meta)}</span>` : ''}<span class="bj-item-cat" style="color:${ci.c}">${escapeHtml(ci.l)}</span>`;
+  let chipHtml='';
+  if(trace.detected){
+    const src=COLOR_SOURCE_LABELS[trace.source]||trace.source||'color';
+    const aria=`Categoría por ${src}${trace.clave_a ? ', Clave A '+trace.clave_a : ''}`;
+    chipHtml=`<span class="bj-color-chip" style="--chip-color:${trace.hex_approx||ci.c}" role="img" aria-label="${escapeHtml(aria)}" title="${escapeHtml(aria)}"></span>`;
+  }
+  el.innerHTML=`<input type="checkbox">${chipHtml}<span class="bj-item-text">${escapeHtml(obj.text)}</span>${meta ? `<span class="bj-item-cat">${escapeHtml(meta)}</span>` : ''}<span class="bj-item-cat" style="color:${ci.c}">${escapeHtml(ci.l)}</span>`;
   el.querySelector('input')?.addEventListener('change',()=>updateBujoSummary());
   return el;
 }
@@ -1155,7 +1254,7 @@ function parsePaste(){
   });
   document.getElementById('paste-area').value=''; if(added){ showBJItems(); setBujoStep(2); }
 }
-function filterBJ(type,btn){ document.querySelectorAll('#ftags .ftag').forEach(t=>t.classList.remove('on'));btn.classList.add('on'); document.querySelectorAll('#bj-list .bj-item').forEach(el=>{el.style.display=(type==='all'||el.dataset.type===type)?'flex':'none';}); }
+function filterBJ(type,btn){ document.querySelectorAll('#ftags .ftag').forEach(t=>t.classList.remove('on'));btn.classList.add('on'); document.querySelectorAll('#bj-list .bj-item').forEach(el=>{const match=type==='all'||(type==='color'&&el.dataset.colorDetected==='1')||el.dataset.type===type;el.style.display=match?'flex':'none';}); }
 function normalizeHHMM(txt){ const m=String(txt||'').trim().match(/^([01]?\d|2[0-3])[:.]([0-5]\d)$/); if(!m) return ''; return `${String(m[1]).padStart(2,'0')}:${m[2]}`; }
 const BUJO_WEEKDAY_INDEX = {
   lun: 0, lunes: 0,

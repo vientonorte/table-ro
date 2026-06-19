@@ -1083,8 +1083,33 @@ h1 {
     font-size: .68rem;
     line-height: 1.6;
     color: #c4b5fd;
-    max-height: 160px;
+    max-height: 200px;
     overflow-y: auto;
+}
+
+.chromatic-findings {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(168, 85, 247, .2);
+    font-size: .62rem;
+    color: #e9d5ff;
+}
+
+.bj-color-chip {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--chip-color, #a855f7);
+    border: 1px solid rgba(255, 255, 255, .35);
+    flex-shrink: 0;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, .25);
+}
+
+.ai-flag-btn.saved {
+    color: #10B981 !important;
+    border-color: rgba(16, 185, 129, .45) !important;
+    background: rgba(16, 185, 129, .1) !important;
 }
 
 .paste-area {

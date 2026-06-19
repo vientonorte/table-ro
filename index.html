@@ -4,14 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Tablero Rö — Planificador semanal personal con Google Calendar, Bullet Journal y sync bidireccional." />
-    <meta name="version" content="1.5.0" />
-    <title>TABLERO — Rö · v1.5.0</title>
+    <meta name="version" content="1.6.0" />
+    <title>TABLERO — Rö · v1.6.0</title>
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#7c3aed" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://www.googleapis.com https://api.trello.com https://*.workers.dev https://corsproxy.io https://api.allorigins.win; frame-src https://accounts.google.com; base-uri 'self'; form-action 'self';" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <link rel="stylesheet" href="css/styles.css?v=1.5.0" />
+    <link rel="stylesheet" href="css/styles.css?v=1.6.0" />
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="js/auth-passkey.js"></script>
   </head>
@@ -426,6 +426,18 @@
               ·
               <a href="terms.html" style="color:#a78bfa">Términos</a>
             </div>
+            <div class="mfield" style="margin-top:8px;">
+              <label>Extracción BuJo</label>
+              <div class="btn-row" style="flex-wrap:wrap;gap:4px;margin-top:4px;">
+                <button class="sec-btn ai-flag-btn" type="button" onclick="toggleAIFlag('chromaticReading', this)" data-flag="chromaticReading">Lectura Clave A</button>
+                <button class="sec-btn ai-flag-btn" type="button" onclick="toggleAIFlag('prioritizeColor', this)" data-flag="prioritizeColor">Color &gt; símbolo</button>
+                <button class="sec-btn ai-flag-btn" type="button" onclick="toggleAIFlag('normalizeSpelling', this)" data-flag="normalizeSpelling">Ortografía mínima</button>
+                <button class="sec-btn ai-flag-btn" type="button" onclick="toggleAIFlag('markIllegible', this)" data-flag="markIllegible">[ilegible]</button>
+                <button class="sec-btn ai-flag-btn" type="button" onclick="toggleAIFlag('inferDates', this)" data-flag="inferDates">Inferir fechas</button>
+                <button class="sec-btn ai-flag-btn" type="button" onclick="toggleAIFlag('inferCategory', this)" data-flag="inferCategory">Inferir categoría</button>
+              </div>
+              <div style="font-size:.58rem;color:var(--mut);margin-top:4px;line-height:1.45;">Clave A: rosa→personal · gris→vínculos · verde→Camila · naranja→trabajo · amarillo→nota</div>
+            </div>
           </div>
           <div class="adm-sep"></div>
           <div>
@@ -702,6 +714,7 @@
               <div class="ftag" style="background:rgba(16,185,129,.12);border-color:#10B981;color:#10B981" onclick="filterBJ('camila',this)" role="button" tabindex="0">Camila</div>
               <div class="ftag" style="background:rgba(249,115,22,.12);border-color:#F97316;color:#F97316" onclick="filterBJ('trabajo',this)" role="button" tabindex="0">Trabajo</div>
               <div class="ftag" style="background:rgba(251,146,60,.12);border-color:#FB923C;color:#FB923C" onclick="filterBJ('fin',this)" role="button" tabindex="0">Finanzas</div>
+              <div class="ftag" style="background:rgba(168,85,247,.12);border-color:#A855F7;color:#d8b4fe" onclick="filterBJ('color',this)" role="button" tabindex="0">Con color</div>
             </div>
             <div class="bj-list" id="bj-list"></div>
             <div class="btn-row" style="margin-top:9px;">
@@ -817,7 +830,7 @@
       </div>
     </div>
 
-    <script src="js/app.js?v=1.5.0" defer></script>
+    <script src="js/app.js?v=1.6.0" defer></script>
     <script>
       if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
     </script>
