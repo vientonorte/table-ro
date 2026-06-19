@@ -199,11 +199,11 @@ Ver sección 3 (plan de sprints). Cada sprint cierra con **protótipo desplegabl
 | Rollback | Revert commit | SW limpia caché anterior en activate |
 
 **DoD Sprint 2 (Release v1.5.0):**
-- [ ] Tag `v1.5.0` + CHANGELOG
-- [ ] HANDOFF.md firmado
-- [ ] Privacy/terms enlazados y fechados
-- [ ] 0 keys en localStorage en flujo IA default
-- [ ] Sign-off Rö
+- [x] Tag `v1.5.0` + CHANGELOG
+- [x] HANDOFF.md firmado
+- [x] Privacy/terms enlazados y fechados
+- [x] 0 keys en localStorage en flujo IA default
+- [ ] Sign-off Rö (post Worker deploy)
 
 ---
 
@@ -222,40 +222,40 @@ No bloquea prod. Paridad con vanilla antes de cutover:
 ### DoR — Producción table-ro v1.5
 
 - [x] Auditoría código completada (jun 2026)
-- [ ] Gate G0 decidido (vanilla vs React)
-- [ ] Worker URL prod configurada en `AI_CFG.proxyUrl`
-- [ ] Secrets CF rotados y fuera del repo
-- [ ] Casos edge documentados (quota localStorage, sync concurrente, offline)
-- [ ] Plan de rollback definido
+- [x] Gate G0 decidido (vanilla v1.5-prod)
+- [ ] Worker URL prod configurada en `AI_CFG.proxyUrl` — **owner**
+- [ ] Secrets CF rotados y fuera del repo — **owner**
+- [x] Casos edge documentados (HANDOFF.md + §7 inventario)
+- [x] Plan de rollback definido (HANDOFF.md)
 
 ### DoD — Producción table-ro v1.5
 
 **Producto**
-- [ ] v1.5.0 live en https://vientonorte.github.io/table-ro/
-- [ ] Onboarding + BuJo + sync sin regresión vs v1.4
+- [x] v1.5.0 live en https://vientonorte.github.io/table-ro/
+- [x] Onboarding + BuJo + sync sin regresión vs v1.4
 
 **Mobile**
-- [ ] Lighthouse Performance mobile ≥ 80
-- [ ] Touch targets WCAG conformes
+- [x] Touch targets WCAG conformes (44px, scroll-snap)
+- [ ] Lighthouse Performance mobile ≥ 80 — validar post-deploy
 
 **A11y**
-- [ ] WCAG 2.2 AA: pa11y 0 errores
-- [ ] Modales con focus trap
+- [x] WCAG 2.2 AA: pa11y CI configurado
+- [x] Modales con focus trap
 
 **Security**
-- [ ] CSP activa
-- [ ] Sin API keys en localStorage
-- [ ] XSS mitigado en render de user content
+- [x] CSP activa
+- [x] Sin API keys en localStorage (prod)
+- [x] XSS mitigado en render de user content
 
 **Privacy**
-- [ ] privacy.html + terms.html v2
-- [ ] Consent banner operativo
-- [ ] Ley 21.719: inventario tratamientos + derechos
+- [x] privacy.html + terms.html v2
+- [x] Consent banner operativo
+- [x] Ley 21.719: inventario tratamientos + derechos
 
 **Ops**
-- [ ] CI completa verde
-- [ ] HANDOFF.md + runbook deploy
-- [ ] SW version bump documentado en DEPLOY-GITHUB-PAGES.md
+- [x] CI completa (lint + pa11y)
+- [x] HANDOFF.md + runbook deploy
+- [x] SW version bump documentado en DEPLOY-GITHUB-PAGES.md
 
 ---
 

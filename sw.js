@@ -11,6 +11,8 @@ const STATIC_ASSETS = [
     '/table-ro/css/styles.css',
     '/table-ro/js/app.js',
     '/table-ro/manifest.json',
+    '/table-ro/icons/icon.svg',
+    '/table-ro/icons/icon-maskable.svg',
     '/table-ro/fonts/Chillax-Regular.woff2',
     '/table-ro/fonts/Chillax-Semibold.woff2',
     '/table-ro/fonts/Chillax-Bold.woff2',

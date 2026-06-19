@@ -88,7 +88,7 @@
             <div class="ob-title" id="ob-title">¡Bienvenido/a a Tablero Rö!</div>
             <div class="ob-sub">Tu planificador semanal personal. Vamos a mostrarte lo esencial en 5 pasos rápidos.</div>
             <div class="mfield" style="margin-top:8px">
-              <label>¿Cómo te llamas?</label>
+              <label for="ob-name-input">¿Cómo te llamas?</label>
               <input type="text" id="ob-name-input" placeholder="Tu nombre..." autocomplete="given-name" oninput="obUpdateName(this.value)" />
             </div>
             <div class="ob-badge-row">
@@ -191,21 +191,21 @@
       <div class="modal-box">
         <div class="modal-title" id="add-modal-title">＋ Nueva Tarea</div>
         <div class="mfield">
-          <label>Título</label>
+          <label for="add-title">Título</label>
           <input type="text" id="add-title" placeholder="¿Qué tienes que hacer?" autocomplete="off" />
         </div>
         <div class="mrow">
           <div class="mfield">
-            <label>Día</label>
+            <label for="add-day">Día</label>
             <select id="add-day"></select>
           </div>
           <div class="mfield">
-            <label>Hora (opcional)</label>
+            <label for="add-time">Hora (opcional)</label>
             <input type="time" id="add-time" />
           </div>
         </div>
         <div class="mfield">
-          <label>Categoría</label>
+          <label for="add-cat">Categoría</label>
           <select id="add-cat">
             <option value="personal">Personal</option>
             <option value="vinculos">Vínculos</option>
@@ -215,7 +215,7 @@
           </select>
         </div>
         <div class="mfield">
-          <label>Detalles (opcional)</label>
+          <label for="add-detail">Detalles (opcional)</label>
           <textarea id="add-detail" rows="2" placeholder="Notas..."></textarea>
         </div>
         <div class="modal-actions">
@@ -230,21 +230,21 @@
       <div class="modal-box">
         <div class="modal-title" id="edit-modal-title">✏️ Editar Evento</div>
         <div class="mfield">
-          <label>Título</label>
+          <label for="edit-title">Título</label>
           <input type="text" id="edit-title" autocomplete="off" />
         </div>
         <div class="mrow">
           <div class="mfield">
-            <label>Día</label>
+            <label for="edit-day">Día</label>
             <select id="edit-day"></select>
           </div>
           <div class="mfield">
-            <label>Hora (opcional)</label>
+            <label for="edit-time">Hora (opcional)</label>
             <input type="time" id="edit-time" />
           </div>
         </div>
         <div class="mfield">
-          <label>Categoría</label>
+          <label for="edit-cat">Categoría</label>
           <select id="edit-cat">
             <option value="personal">Personal</option>
             <option value="vinculos">Vínculos</option>
@@ -254,7 +254,7 @@
           </select>
         </div>
         <div class="mfield">
-          <label>Detalles (opcional)</label>
+          <label for="edit-detail">Detalles (opcional)</label>
           <textarea id="edit-detail" rows="2" placeholder="Notas..."></textarea>
         </div>
         <div class="modal-actions">
@@ -290,7 +290,7 @@
         <div id="cal-sources"></div>
         <div class="cal-config-zone" id="cal-config-zone">
           <div class="mfield">
-            <label id="cfg-label">URL iCal privada</label>
+            <label id="cfg-label" for="cfg-url-input">URL iCal privada</label>
             <input type="text" id="cfg-url-input" placeholder="https://calendar.google.com/calendar/ical/..." />
             <div style="font-size:.58rem;color:var(--mut);margin-top:3px;">Obtén esta URL en Google Calendar → ⚙️ Configuración → Dirección secreta iCal</div>
           </div>
@@ -344,14 +344,14 @@
                 </summary>
                 <div class="ai-card-body">
                   <div class="mfield ai-dev-only">
-                    <label>API Key <small style="opacity:.6">(solo dev local)</small></label>
+                    <label for="adm-claude-key">API Key <small style="opacity:.6">(solo dev local)</small></label>
                     <div class="key-input-wrap">
                       <input type="password" id="adm-claude-key" placeholder="sk-ant-..." autocomplete="off" onchange="autoSaveAIAdmin()" />
                       <button class="key-toggle" onclick="toggleKeyVis(this)" aria-label="Mostrar/ocultar key" type="button">👁</button>
                     </div>
                   </div>
                   <div class="mfield">
-                    <label>Modelo</label>
+                    <label for="adm-claude-model">Modelo</label>
                     <select id="adm-claude-model" onchange="autoSaveAIAdmin()">
                       <option value="claude-sonnet-4-6">claude-sonnet-4-6</option>
                       <option value="claude-sonnet-4-5-20250514">claude-sonnet-4-5</option>
@@ -369,14 +369,14 @@
                 </summary>
                 <div class="ai-card-body">
                   <div class="mfield ai-dev-only">
-                    <label>API Key <small style="opacity:.6">(solo dev local)</small></label>
+                    <label for="adm-openai-key">API Key <small style="opacity:.6">(solo dev local)</small></label>
                     <div class="key-input-wrap">
                       <input type="password" id="adm-openai-key" placeholder="sk-..." autocomplete="off" onchange="autoSaveAIAdmin()" />
                       <button class="key-toggle" onclick="toggleKeyVis(this)" aria-label="Mostrar/ocultar key" type="button">👁</button>
                     </div>
                   </div>
                   <div class="mfield">
-                    <label>Modelo</label>
+                    <label for="adm-openai-model">Modelo</label>
                     <select id="adm-openai-model" onchange="autoSaveAIAdmin()">
                       <option value="gpt-5.4">gpt-5.4</option>
                       <option value="gpt-5-mini">gpt-5-mini</option>
@@ -394,14 +394,14 @@
                 </summary>
                 <div class="ai-card-body">
                   <div class="mfield ai-dev-only">
-                    <label>API Key <small style="opacity:.6">(solo dev local)</small></label>
+                    <label for="adm-gemini-key">API Key <small style="opacity:.6">(solo dev local)</small></label>
                     <div class="key-input-wrap">
                       <input type="password" id="adm-gemini-key" placeholder="AIza..." autocomplete="off" onchange="autoSaveAIAdmin()" />
                       <button class="key-toggle" onclick="toggleKeyVis(this)" aria-label="Mostrar/ocultar key" type="button">👁</button>
                     </div>
                   </div>
                   <div class="mfield">
-                    <label>Modelo</label>
+                    <label for="adm-gemini-model">Modelo</label>
                     <select id="adm-gemini-model" onchange="autoSaveAIAdmin()">
                       <option value="gemini-3.1-pro-preview">gemini-3.1-pro</option>
                       <option value="gemini-2.5-flash-preview-05-20">gemini-2.5-flash</option>
@@ -431,7 +431,7 @@
           <div>
             <div class="sec-title" style="font-size:.74rem;">🔑 Google OAuth</div>
             <div class="mfield">
-              <label>Client ID</label>
+              <label for="adm-client-id">Client ID</label>
               <div style="display:flex;gap:6px;">
                 <input type="text" id="adm-client-id" value="5033046467-kgd7gl4tekb4fkt90jq32rob4evmgnmn.apps.googleusercontent.com" style="font-size:.61rem;flex:1" />
                 <button class="res-copy" onclick="saveClientId()">💾</button>
@@ -454,14 +454,14 @@
               (tareas domésticas). Las tarjetas con fecha se sincronizan como categoría Camila.
             </div>
             <div class="mfield">
-              <label>Trello API Key</label>
+              <label for="adm-trello-key">Trello API Key</label>
               <div style="display:flex;gap:6px;">
                 <input type="password" id="adm-trello-key" placeholder="Tu API Key de Trello" autocomplete="off" style="font-size:.61rem;flex:1" />
                 <button class="res-copy" onclick="saveTrelloCredentials(this)">💾</button>
               </div>
             </div>
             <div class="mfield">
-              <label>Trello Token</label>
+              <label for="adm-trello-token">Trello Token</label>
               <input type="password" id="adm-trello-token" placeholder="Token de autorización" autocomplete="off" style="font-size:.61rem" />
             </div>
             <div class="hint" style="margin-top:5px">
@@ -764,7 +764,7 @@
           <p style="font-size:.75rem;color:var(--mut);margin-bottom:12px;">Usa tu biometría (Face ID, Touch ID, Windows Hello) para acceder.</p>
 
           <div class="mfield">
-            <label>Nombre de usuario (opcional)</label>
+            <label for="login-username">Nombre de usuario (opcional)</label>
             <input type="text" id="login-username" placeholder="Déjalo vacío para ver todos los usuarios" autocomplete="username" />
           </div>
 
@@ -783,7 +783,7 @@
           <p style="font-size:.75rem;color:var(--mut);margin-bottom:12px;">Crea tu passkey para acceder de forma segura a tu tablero.</p>
 
           <div class="mfield">
-            <label>Nombre de usuario *</label>
+            <label for="register-username">Nombre de usuario *</label>
             <input type="text" id="register-username" placeholder="Tu nombre o alias" autocomplete="username" required />
             <div style="font-size:.62rem;color:var(--mut);margin-top:3px;">Este nombre te identificará cada vez que inicies sesión.</div>
           </div>

@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:a11y": "npx serve . -l 3456 & sleep 2 && npx pa11y-ci --config .pa11yci.json"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",

@@ -35,3 +35,23 @@ jobs:
 
       - name: Check SW syntax
         run: node --check sw.js
+
+  a11y:
+    name: Accessibility (pa11y)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install pa11y-ci and serve
+        run: npm install --no-save pa11y-ci@3 serve@14
+
+      - name: Run pa11y WCAG2AA
+        run: |
+          npx serve . -l 3456 &
+          sleep 3
+          npx pa11y-ci --config .pa11yci.json

@@ -6,6 +6,14 @@ All notable changes to this project will be documented in this file.
 
 ## [1.5.0] — 2026-06-19
 
+### 🚀 Production Hardening (Sprint 2)
+
+- **CI a11y**: job `pa11y-ci` WCAG2AA en `index.html`, `privacy.html`, `terms.html`.
+- **PWA icons**: `icons/icon.svg` + `icons/icon-maskable.svg` en manifest.
+- **HANDOFF.md**: runbook deploy, Worker, rollback, checklist release.
+- **DEPLOY-GITHUB-PAGES.md**: bump SW version, Worker, tag release.
+- **DESIGN-SPRINT.md**: plan end-to-end design thinking → producción.
+
 ### 🔒 Security & Privacy by Design (Sprint 0)
 
 - **API keys IA**: ya no se persisten en `localStorage` en producción; migración automática borra keys legacy.

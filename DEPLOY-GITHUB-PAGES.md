@@ -1,80 +1,97 @@
 # Deploy — GitHub Pages · Tablero Rö
 
 **Repo:** https://github.com/vientonorte/table-ro  
-**URL live:** https://vientonorte.github.io/table-ro
+**URL live:** https://vientonorte.github.io/table-ro  
+**Versión actual:** v1.5.0
 
 ---
 
-## Paso 1 — Push inicial (desde Codespace o local)
+## Paso 1 — Push a main
 
 ```bash
-git add index.html README.md CLAUDE-PROJECT-INSTRUCTIONS.md DEPLOY-GITHUB-PAGES.md
-git commit -m "Initial commit — Tablero Rö"
-git branch -M main
-git push -u origin main
+git add .
+git commit -m "Release v1.5.0 — descripción"
+git push origin main
 ```
 
-> En GitHub Codespaces el push HTTPS funciona automáticamente con tu sesión.  
-> En local sin SSH: usa HTTPS + Personal Access Token (no contraseña).
+GitHub Pages redespliega automáticamente (~2 min).
 
 ---
 
-## Paso 2 — Activar GitHub Pages
+## Paso 2 — Version bump (obligatorio en cada release)
 
-`github.com/vientonorte/table-ro` → **Settings** → **Pages**  
-→ Source: **Deploy from branch**  
-→ Branch: `main / (root)`  
-→ **Save**
+Actualizar en sincronía:
 
-Espera ~2 minutos. URL: `https://vientonorte.github.io/table-ro`
+| Archivo | Campo |
+|---------|-------|
+| `index.html` | `meta name="version"`, `<title>`, `?v=` en css/js |
+| `sw.js` | `CACHE_NAME` (ej. `table-ro-v7` → `v8`) |
+| `CHANGELOG.md` | Entrada nueva versión |
+
+Sin bump de `CACHE_NAME`, usuarios pueden ver assets stale del service worker.
 
 ---
 
-## Paso 3 — Google Cloud Console
+## Paso 3 — Google Cloud Console (OAuth)
 
-`console.cloud.google.com/apis/credentials` → tu OAuth Client ID → **Editar**
+`console.cloud.google.com/apis/credentials` → OAuth Client ID → **Editar**
 
-**Authorized JavaScript origins** — agregar:
+**Authorized JavaScript origins:**
 ```
 https://vientonorte.github.io
+http://localhost:8080
 ```
 
-**Authorized redirect URIs** — agregar:
+**Authorized redirect URIs:**
 ```
 https://vientonorte.github.io/table-ro
 https://vientonorte.github.io/table-ro/index.html
 ```
 
-→ **Guardar** (puede tardar hasta 5 min en propagarse)
-
 ---
 
-## Paso 4 — Verificar
-
-Abre `https://vientonorte.github.io/table-ro`  
-→ Si ves pantalla en blanco: F12 → Console → busca errores CORS o 404  
-→ Si sale Error 400 OAuth: verifica que los Authorized Origins estén guardados  
-
----
-
-## Updates futuros
-
-Cualquier push a `main` redespliega automáticamente:
+## Paso 4 — Cloudflare Worker (IA + ICS proxy)
 
 ```bash
-git add index.html
-git commit -m "Update — descripción del cambio"
-git push
+cd worker
+npm install
+wrangler secret put CLAUDE_API_KEY
+wrangler secret put OPENAI_API_KEY
+wrangler secret put GEMINI_API_KEY
+wrangler deploy
 ```
 
+Configurar en app: **⚙️ Admin → Proxy Worker** → pegar URL `*.workers.dev`
+
+En producción las API keys **no** se guardan en localStorage.
+
 ---
 
-## Uso local (OAuth activo)
+## Paso 5 — Verificar deploy
+
+1. Abrir https://vientonorte.github.io/table-ro/
+2. Título debe mostrar versión correcta (ej. v1.5.0)
+3. F12 → Application → Service Workers → confirmar SW activo
+4. Flujo: consent banner → tablero → ＋ Añadir → persist reload
+
+Si pantalla en blanco: Console → buscar 404 en js/css o violations CSP.
+
+---
+
+## Uso local
 
 ```bash
-# En la carpeta del proyecto:
 python3 -m http.server 8080
-# Abre: http://localhost:8080/index.html
+# http://localhost:8080/index.html
 ```
 
-Asegúrate de que `http://localhost:8080` esté en **Authorized JavaScript Origins**.
+En local puedes usar API keys directas (solo dev) o el mismo Worker proxy.
+
+---
+
+## Tag release
+
+```bash
+git tag -a v1.5.0 -m "table-ro v1.5.0 — security & privacy by design"
+git push origin v1.5.0
+```

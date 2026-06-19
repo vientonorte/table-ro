@@ -1,0 +1,15 @@
+{
+  "defaults": {
+    "timeout": 30000,
+    "standard": "WCAG2AA",
+    "runners": ["htmlcs"],
+    "chromeLaunchConfig": {
+      "args": ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"]
+    }
+  },
+  "urls": [
+    "http://127.0.0.1:3456/index.html",
+    "http://127.0.0.1:3456/privacy.html",
+    "http://127.0.0.1:3456/terms.html"
+  ]
+}
