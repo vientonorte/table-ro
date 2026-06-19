@@ -14,29 +14,37 @@
 </head>
 <body>
     <h1>Condiciones del Servicio — TABLERO Rö</h1>
-    <p class="updated">Última actualización: 14 de marzo de 2026</p>
+    <p class="updated">Última actualización: 19 de junio de 2026 · Versión app 1.5.0</p>
 
     <h2>Descripción del servicio</h2>
-    <p>TABLERO Rö es una aplicación web personal de planificación semanal que integra Google Calendar para visualizar y gestionar eventos. Es de uso exclusivamente personal y no comercial. No tiene backend ni servidores propios.</p>
+    <p>TABLERO Rö es una aplicación web personal de planificación semanal. Integra Google Calendar, feeds ICS, Trello (opcional) y análisis de Bullet Journal con IA. El frontend se sirve desde GitHub Pages; el procesamiento de IA puede delegarse a un Cloudflare Worker que tú o el operador configuran.</p>
 
     <h2>Uso aceptable</h2>
-    <p>Esta aplicación está diseñada para uso personal. Al utilizarla, aceptas no emplearla para fines ilegales, abusivos o que violen los términos de servicio de Google.</p>
+    <p>Uso personal y no comercial. No emplear la app para fines ilegales ni violar los términos de Google, Atlassian, Anthropic, OpenAI u otros proveedores conectados.</p>
 
-    <h2>Cuentas de Google</h2>
-    <p>La conexión con Google Calendar es opcional. Al conectar tu cuenta de Google, autorizas a la aplicación a leer tus eventos y crear nuevos eventos cuando tú lo solicites explícitamente. Puedes revocar este acceso en cualquier momento desde <a href="https://myaccount.google.com/permissions">tu cuenta de Google</a>.</p>
+    <h2>Cuentas y autorizaciones</h2>
+    <ul>
+        <li><strong>Google Calendar</strong> — conexión opcional; lectura de eventos y escritura solo cuando tú lo solicitas (botón 📅 o sync).</li>
+        <li><strong>IA multimodal</strong> — opcional; requiere proxy Worker en producción. Tú decides cuándo enviar fotos o texto del BuJo.</li>
+        <li><strong>Trello</strong> — opcional; requiere API Key y Token que tú proporcionas.</li>
+    </ul>
+    <p>Puedes revocar acceso a Google en <a href="https://myaccount.google.com/permissions">tu cuenta de Google</a>.</p>
 
-    <h2>Almacenamiento y datos</h2>
-    <p>Todos los datos se almacenan exclusivamente en tu navegador (localStorage). No recopilamos, transmitimos ni almacenamos datos en servidores externos. Consulta nuestra <a href="privacy.html">Política de Privacidad</a> para más detalles.</p>
+    <h2>Datos y privacidad</h2>
+    <p>Consulta la <a href="privacy.html">Política de Privacidad</a> para el detalle de tratamientos, bases legales y derechos bajo la Ley 21.719 (Chile).</p>
 
-    <h2>Sin garantías</h2>
-    <p>La aplicación se proporciona "tal cual", sin garantías de ningún tipo. No nos responsabilizamos por pérdida de datos, interrupciones del servicio o incompatibilidades con tu navegador o cuenta de Google.</p>
+    <h2>Disponibilidad y garantías</h2>
+    <p>El servicio se ofrece «tal cual», sin garantías de disponibilidad continua. No nos responsabilizamos por pérdida de datos locales, cambios en APIs de terceros ni incompatibilidades de navegador. Exporta tu estado (JSON) periódicamente desde ⚙️ Admin.</p>
+
+    <h2>Propiedad intelectual</h2>
+    <p>El código y diseño de table-ro pertenecen a su autor. Los contenidos que tú creas (tareas, notas, fotos) son tuyos.</p>
 
     <h2>Modificaciones</h2>
-    <p>Estas condiciones pueden actualizarse en cualquier momento. La fecha de última actualización se indica al inicio de esta página.</p>
+    <p>Estas condiciones pueden actualizarse; la fecha vigente aparece al inicio. El uso continuado tras cambios implica aceptación.</p>
 
     <h2>Contacto</h2>
-    <p>Para consultas: <a href="mailto:gaete.gaona@gmail.com">gaete.gaona@gmail.com</a></p>
+    <p><a href="mailto:gaete.gaona@gmail.com">gaete.gaona@gmail.com</a></p>
 
-    <p style="margin-top:40px;"><a href="index.html">← Volver al tablero</a></p>
+    <p style="margin-top:40px;"><a href="index.html">← Volver al tablero</a> · <a href="privacy.html">Política de privacidad</a></p>
 </body>
 </html>

@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.5.0] — 2026-06-19
+
+### 🔒 Security & Privacy by Design (Sprint 0)
+
+- **API keys IA**: ya no se persisten en `localStorage` en producción; migración automática borra keys legacy.
+- **Proxy Worker**: flujo IA en prod requiere URL de Cloudflare Worker; keys directas solo en dev local.
+- **XSS**: `escapeHtml()` en cards, ítems BuJo, errores sync y mensajes IA.
+- **CSP**: Content-Security-Policy en `index.html` (script GSI, connect-src acotado).
+- **Privacidad**: `privacy.html` y `terms.html` v2 — IA, BuJo, Worker, Ley 21.719 Chile.
+- **Consent banner**: aviso primera visita (`tablero_consent_ro`).
+- **A11y modales**: focus trap + Escape + restore de foco.
+- **PWA**: service worker `table-ro-v7`.
+
 ## [1.4.0] — 2026-05-07
 
 ### 🎮 Onboarding gamificado para nuevos usuarios

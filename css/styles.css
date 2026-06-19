@@ -2751,3 +2751,52 @@ body.sync-simple .src-actions .btn.btn-g {
         transform: translateY(0);
     }
 }
+
+/* ── Consent banner (privacy by design) ── */
+.consent-banner {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9500;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    background: rgba(13, 13, 26, 0.96);
+    border-top: 1px solid rgba(124, 58, 237, 0.35);
+    backdrop-filter: blur(8px);
+}
+
+.consent-banner.show {
+    display: block;
+}
+
+.consent-inner {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    justify-content: space-between;
+}
+
+.consent-inner p {
+    margin: 0;
+    font-size: 0.72rem;
+    color: var(--mut);
+    line-height: 1.55;
+    flex: 1;
+    min-width: 200px;
+}
+
+.consent-inner a {
+    color: #a78bfa;
+}
+
+@media (max-width: 720px) {
+    .consent-inner .btn {
+        width: 100%;
+        justify-content: center;
+        min-height: 44px;
+    }
+}

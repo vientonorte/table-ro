@@ -4,13 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Tablero Rö — Planificador semanal personal con Google Calendar, Bullet Journal y sync bidireccional." />
-    <meta name="version" content="1.4.0" />
-    <title>TABLERO — Rö · v1.4.0</title>
+    <meta name="version" content="1.5.0" />
+    <title>TABLERO — Rö · v1.5.0</title>
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#7c3aed" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://www.googleapis.com https://api.trello.com https://*.workers.dev https://corsproxy.io https://api.allorigins.win; frame-src https://accounts.google.com; base-uri 'self'; form-action 'self';" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <link rel="stylesheet" href="css/styles.css?v=1.4.0" />
+    <link rel="stylesheet" href="css/styles.css?v=1.5.0" />
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="js/auth-passkey.js"></script>
   </head>
@@ -342,8 +343,8 @@
                   <span class="ai-status-dot" id="ai-dot-claude"></span>
                 </summary>
                 <div class="ai-card-body">
-                  <div class="mfield">
-                    <label>API Key</label>
+                  <div class="mfield ai-dev-only">
+                    <label>API Key <small style="opacity:.6">(solo dev local)</small></label>
                     <div class="key-input-wrap">
                       <input type="password" id="adm-claude-key" placeholder="sk-ant-..." autocomplete="off" onchange="autoSaveAIAdmin()" />
                       <button class="key-toggle" onclick="toggleKeyVis(this)" aria-label="Mostrar/ocultar key" type="button">👁</button>
@@ -367,8 +368,8 @@
                   <span class="ai-status-dot" id="ai-dot-openai"></span>
                 </summary>
                 <div class="ai-card-body">
-                  <div class="mfield">
-                    <label>API Key</label>
+                  <div class="mfield ai-dev-only">
+                    <label>API Key <small style="opacity:.6">(solo dev local)</small></label>
                     <div class="key-input-wrap">
                       <input type="password" id="adm-openai-key" placeholder="sk-..." autocomplete="off" onchange="autoSaveAIAdmin()" />
                       <button class="key-toggle" onclick="toggleKeyVis(this)" aria-label="Mostrar/ocultar key" type="button">👁</button>
@@ -392,8 +393,8 @@
                   <span class="ai-status-dot" id="ai-dot-gemini"></span>
                 </summary>
                 <div class="ai-card-body">
-                  <div class="mfield">
-                    <label>API Key</label>
+                  <div class="mfield ai-dev-only">
+                    <label>API Key <small style="opacity:.6">(solo dev local)</small></label>
                     <div class="key-input-wrap">
                       <input type="password" id="adm-gemini-key" placeholder="AIza..." autocomplete="off" onchange="autoSaveAIAdmin()" />
                       <button class="key-toggle" onclick="toggleKeyVis(this)" aria-label="Mostrar/ocultar key" type="button">👁</button>
@@ -412,17 +413,18 @@
             </div>
 
             <div class="mfield" style="margin-top:6px;">
-              <label>
-                Proxy URL
-                <small style="opacity:.6">(opcional — Cloudflare Worker)</small>
+              <label for="adm-proxy-url">
+                Proxy Worker
+                <small style="opacity:.6">(requerido en producción)</small>
               </label>
               <input type="url" id="adm-proxy-url" placeholder="https://table-ro-ai-proxy.tu-cuenta.workers.dev" autocomplete="off" style="font-size:.65rem" onchange="autoSaveAIAdmin()" />
             </div>
             <div class="ai-security-note">
               <span>🔒</span>
-              Las API keys se guardan en localStorage (solo este navegador).
-              <strong>Configura el proxy</strong>
-              para no exponer keys directamente al navegador.
+              Las API keys viven en el Worker (Cloudflare), no en este navegador.
+              <a href="privacy.html" style="color:#a78bfa">Privacidad</a>
+              ·
+              <a href="terms.html" style="color:#a78bfa">Términos</a>
             </div>
           </div>
           <div class="adm-sep"></div>
@@ -804,7 +806,18 @@
       </div>
     </div>
 
-    <script src="js/app.js?v=1.4.0" defer></script>
+    <div id="consent-banner" class="consent-banner" role="dialog" aria-labelledby="consent-title" aria-modal="true">
+      <div class="consent-inner">
+        <p id="consent-title">
+          <strong>Datos y privacidad</strong>
+          — table-ro guarda tu planificación en este navegador. Las fotos BuJo solo se envían a IA si configuras el proxy y lo usas explícitamente.
+          <a href="privacy.html">Política de privacidad</a>
+        </p>
+        <button class="btn btn-p" type="button" onclick="acceptConsent()">Entendido</button>
+      </div>
+    </div>
+
+    <script src="js/app.js?v=1.5.0" defer></script>
     <script>
       if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
     </script>

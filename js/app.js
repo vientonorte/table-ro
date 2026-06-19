@@ -1,7 +1,7 @@
 /**
  * Tablero Rö — Lógica principal
  * ==============================
- * Versión: 1.4.0
+ * Versión: 1.5.0
  * Descripción: Tablero semanal personal con integración Google Calendar,
  *              Bullet Journal (BuJo) y sync bidireccional.
  *
@@ -94,6 +94,102 @@ const CAL = {
     'espacio-seguro': { c: '#10B981', bg: 'rgba(16,185,129,.16)', l: 'Espacio Seguro' },
     bujo: { c: '#C084FC', bg: 'rgba(192,132,252,.16)', l: '📓 BuJo' },
 };
+
+const IS_PROD_HOST = location.hostname === 'vientonorte.github.io';
+const CONSENT_KEY = 'tablero_consent_ro';
+const AI_PROXY_DEFAULT = '';
+
+function escapeHtml(str) {
+    return String(str ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function getProxyUrl() {
+    return (AI_CFG?.proxyUrl || AI_PROXY_DEFAULT || '').trim().replace(/\/+$/, '');
+}
+
+function sanitizeAICfgForStorage(cfg) {
+    const out = structuredClone(cfg);
+    ['claude', 'openai', 'gemini'].forEach((p) => {
+        if (out.providers?.[p]) out.providers[p].key = '';
+    });
+    return out;
+}
+
+let _modalTrigger = null;
+let _modalKeyHandler = null;
+
+function getFocusable(root) {
+    return [...root.querySelectorAll(
+        'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )].filter((n) => !n.closest('[hidden]') && n.getAttribute('aria-hidden') !== 'true');
+}
+
+function closeTopModal() {
+    const m = document.querySelector('.modal-overlay.open');
+    if (!m) return;
+    const id = m.id;
+    if (id === 'add-modal') closeAddModal();
+    else if (id === 'edit-modal') closeEditModal();
+    else if (id === 'cal-modal') closeCalModal();
+    else if (id === 'admin-modal') closeAdminModal();
+    else if (id === 'ob-modal') skipOnboarding();
+}
+
+function activateModalFocusTrap(modalId, triggerEl) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    deactivateModalFocusTrap();
+    _modalTrigger = triggerEl || document.activeElement;
+    _modalKeyHandler = (e) => {
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            closeTopModal();
+            return;
+        }
+        if (e.key !== 'Tab') return;
+        const focusables = getFocusable(modal);
+        if (!focusables.length) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+            e.preventDefault();
+            last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+            e.preventDefault();
+            first.focus();
+        }
+    };
+    document.addEventListener('keydown', _modalKeyHandler);
+}
+
+function deactivateModalFocusTrap() {
+    if (_modalKeyHandler) document.removeEventListener('keydown', _modalKeyHandler);
+    _modalKeyHandler = null;
+    if (_modalTrigger && typeof _modalTrigger.focus === 'function') {
+        try { _modalTrigger.focus(); } catch (_) { /* noop */ }
+    }
+    _modalTrigger = null;
+}
+
+function initConsent() {
+    try {
+        if (localStorage.getItem(CONSENT_KEY)) return;
+    } catch (_) { /* noop */ }
+    document.getElementById('consent-banner')?.classList.add('show');
+}
+
+function acceptConsent() {
+    try {
+        localStorage.setItem(CONSENT_KEY, JSON.stringify({ accepted: true, at: new Date().toISOString(), v: '1.5' }));
+    } catch (_) { /* noop */ }
+    document.getElementById('consent-banner')?.classList.remove('show');
+    announce('Preferencias de privacidad guardadas');
+}
 
 /* ── Recurring event templates: day 0=Mon … 6=Sun ── */
 const RECURRING_WEEKLY = [
@@ -488,9 +584,11 @@ function makeCard(ev) {
     const readonly = !!ev.readonly || ev.fromCal;
     const syncBtn = `<button class="sync-btn" title="Sync a calendario (Ctrl·S guarda)" aria-label="Sincronizar esta tarjeta con Google Calendar" onclick="syncToGCal(event,this)">📅</button>`;
     const detailContent = ev.detail ?
-        `<div class="card-detail show"><textarea class="det-area" rows="2" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${ev.detail}</textarea></div>` :
+        `<div class="card-detail show"><textarea class="det-area" rows="2" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()"></textarea></div>` :
         `<div class="card-detail"><textarea class="det-area" rows="2" placeholder="Notas..." onclick="event.stopPropagation()" onmousedown="event.stopPropagation()" onblur="autoSave()"></textarea></div>`;
-    el.innerHTML = `<div class="card-row"><div class="chk" aria-hidden="true"></div><div style="flex:1;min-width:0"><div class="ct">${ev.title}</div>${tStr?`<div class="ctime">⏰ ${tStr}</div>`:''}<div class="card-meta"><span class="ctag" style="color:${ci.c};cursor:pointer" onclick="changeCat(event,this)" title="Cambiar categoría">${ci.l}</span><span class="kind-badge">${KIND_LABELS[kind]||'Tarea'}</span><span class="src-badge ${src}${readonly?' readonly':''}">${sourceLabel(src)}</span></div></div><div class="card-actions">${syncBtn}<button class="det-btn${ev.detail?' open':''}" title="Detalles" aria-label="Editar detalles" onclick="toggleDetail(event,this)">···</button></div></div>${detailContent}`;
+    el.innerHTML = `<div class="card-row"><div class="chk" aria-hidden="true"></div><div style="flex:1;min-width:0"><div class="ct">${escapeHtml(ev.title)}</div>${tStr?`<div class="ctime">⏰ ${escapeHtml(tStr)}</div>`:''}<div class="card-meta"><span class="ctag" style="color:${ci.c};cursor:pointer" onclick="changeCat(event,this)" title="Cambiar categoría">${escapeHtml(ci.l)}</span><span class="kind-badge">${escapeHtml(KIND_LABELS[kind]||'Tarea')}</span><span class="src-badge ${src}${readonly?' readonly':''}">${escapeHtml(sourceLabel(src))}</span></div></div><div class="card-actions">${syncBtn}<button class="det-btn${ev.detail?' open':''}" title="Detalles" aria-label="Editar detalles" onclick="toggleDetail(event,this)">···</button></div></div>${detailContent}`;
+  const detArea = el.querySelector('.det-area');
+  if (detArea && ev.detail) detArea.value = ev.detail;
   el.classList.toggle('is-readonly',readonly);el.setAttribute('tabindex','0');el.setAttribute('role','group');el.setAttribute('aria-label',`${KIND_LABELS[kind]||'Tarea'}: ${ev.title}`);
   el.querySelector('.chk').addEventListener('click',e=>{e.stopPropagation();pushUndo('done',el,el.classList.contains('done'));el.classList.toggle('done');announce(el.classList.contains('done')?'Tarjeta marcada como completada':'Tarjeta marcada como pendiente');autoSave();});
   el.addEventListener('keydown',e=>{if(e.key===' '||e.key==='Enter'){e.preventDefault();el.querySelector('.chk')?.click();}});
@@ -592,7 +690,7 @@ function renderWeek(){
   applyCardStates();
 }
 
-function openDrawer(){document.getElementById('drawer').classList.add('open');document.getElementById('overlay').classList.add('open');const btn=document.getElementById('bujo-btn');if(btn)btn.setAttribute('aria-expanded','true');setBujoStep(1);updateAIStatus();if(!getAvailableAIProviders().length){showAIFallbackNote('Configura una API key en ⚙️ Ajustes para activar análisis IA.');}else{hideAIFallbackNote();}announce('Captura de Bullet Journal abierta');}
+function openDrawer(){document.getElementById('drawer').classList.add('open');document.getElementById('overlay').classList.add('open');const btn=document.getElementById('bujo-btn');if(btn)btn.setAttribute('aria-expanded','true');setBujoStep(1);updateAIStatus();if(!getAvailableAIProviders().length){showAIFallbackNote(IS_PROD_HOST?'Configura el Proxy Worker en ⚙️ Admin para activar análisis IA.':'Configura el Proxy Worker o una API key (solo dev local) en ⚙️ Admin.');}else{hideAIFallbackNote();}announce('Captura de Bullet Journal abierta');}
 function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('overlay').classList.remove('open');const btn=document.getElementById('bujo-btn');if(btn)btn.setAttribute('aria-expanded','false');announce('Captura de Bullet Journal cerrada');}
 
 let bjImages=[];
@@ -632,10 +730,19 @@ function deepMerge(base, patch){
 }
 let AI_CFG = loadAICfg();
 function loadAICfg(){
-  try{ return deepMerge(AI_DEFAULTS, JSON.parse(localStorage.getItem(AI_CFG_KEY) || '{}')); }
+  try{
+    const raw = JSON.parse(localStorage.getItem(AI_CFG_KEY) || '{}');
+    let migrated = false;
+    ['claude','openai','gemini'].forEach((p) => {
+      if (raw.providers?.[p]?.key) { raw.providers[p].key = ''; migrated = true; }
+    });
+    const cfg = deepMerge(AI_DEFAULTS, raw);
+    if (migrated) localStorage.setItem(AI_CFG_KEY, JSON.stringify(sanitizeAICfgForStorage(cfg)));
+    return cfg;
+  }
   catch{ return structuredClone(AI_DEFAULTS); }
 }
-function saveAICfg(){ localStorage.setItem(AI_CFG_KEY, JSON.stringify(AI_CFG)); updateAIStatus(); }
+function saveAICfg(){ localStorage.setItem(AI_CFG_KEY, JSON.stringify(sanitizeAICfgForStorage(AI_CFG))); updateAIStatus(); }
 function saveAIForm(){
   AI_CFG.provider = document.getElementById('ai-provider')?.value || 'auto';
   AI_CFG.profile = document.getElementById('ai-profile')?.value || 'balanced';
@@ -644,15 +751,20 @@ function saveAIForm(){
   saveAICfg();
 }
 function saveAIAdmin(){
-  // TODO SECURITY: almacenar API keys en localStorage es riesgoso ante XSS; mover secretos a backend seguro.
   AI_CFG.provider = document.getElementById('adm-ai-provider')?.value || AI_CFG.provider;
-  AI_CFG.providers.claude.key = (document.getElementById('adm-claude-key')?.value || '').trim();
   AI_CFG.providers.claude.model = (document.getElementById('adm-claude-model')?.value || 'claude-sonnet-4-6').trim();
-  AI_CFG.providers.openai.key = (document.getElementById('adm-openai-key')?.value || '').trim();
   AI_CFG.providers.openai.model = (document.getElementById('adm-openai-model')?.value || 'gpt-5.4').trim();
-  AI_CFG.providers.gemini.key = (document.getElementById('adm-gemini-key')?.value || '').trim();
   AI_CFG.providers.gemini.model = (document.getElementById('adm-gemini-model')?.value || 'gemini-3.1-pro-preview').trim();
   AI_CFG.proxyUrl = (document.getElementById('adm-proxy-url')?.value || '').trim().replace(/\/+$/,'');
+  if (!IS_PROD_HOST) {
+    AI_CFG.providers.claude.key = (document.getElementById('adm-claude-key')?.value || '').trim();
+    AI_CFG.providers.openai.key = (document.getElementById('adm-openai-key')?.value || '').trim();
+    AI_CFG.providers.gemini.key = (document.getElementById('adm-gemini-key')?.value || '').trim();
+  } else {
+    AI_CFG.providers.claude.key = '';
+    AI_CFG.providers.openai.key = '';
+    AI_CFG.providers.gemini.key = '';
+  }
   saveAICfg();
   updateProviderCardStates();
 }
@@ -663,7 +775,7 @@ function updateProviderCardStates(){
   ['claude','openai','gemini'].forEach(p=>{
     const card=document.getElementById('ai-card-'+p);
     const dot=document.getElementById('ai-dot-'+p);
-    const hasKey=!!getActiveKey(p) || !!AI_CFG.proxyUrl;
+    const hasKey=!!getActiveKey(p) || !!getProxyUrl();
     if(card) card.classList.toggle('configured', hasKey);
     if(dot){ dot.className='ai-status-dot '+(hasKey?'ok':'none'); }
   });
@@ -688,12 +800,20 @@ function selectAIProvider(btn){
 function hydrateAIAdmin(){
   const ids = {
     'adm-ai-provider': AI_CFG.provider,
-    'adm-claude-key': AI_CFG.providers.claude.key,
-    'adm-openai-key': AI_CFG.providers.openai.key,
-    'adm-gemini-key': AI_CFG.providers.gemini.key,
     'adm-proxy-url': AI_CFG.proxyUrl || ''
   };
   Object.entries(ids).forEach(([id, value]) => { const el = document.getElementById(id); if(el) el.value = value; });
+  if (!IS_PROD_HOST) {
+    ['claude','openai','gemini'].forEach((p) => {
+      const el = document.getElementById('adm-'+p+'-key');
+      if (el) el.value = AI_CFG.providers[p]?.key || '';
+    });
+  } else {
+    ['claude','openai','gemini'].forEach((p) => {
+      const el = document.getElementById('adm-'+p+'-key');
+      if (el) { el.value = ''; el.disabled = true; }
+    });
+  }
   // For model selects: set value or add custom option if not in list
   ['claude','openai','gemini'].forEach(p=>{
     const sel=document.getElementById('adm-'+p+'-model');
@@ -705,6 +825,9 @@ function hydrateAIAdmin(){
   });
   const pv = AI_CFG.provider || 'auto';
   document.querySelectorAll('#ai-pills .ai-pill').forEach(b=>b.classList.toggle('active', b.dataset.val===pv));
+  document.querySelectorAll('.ai-dev-only').forEach((el) => {
+    el.style.display = IS_PROD_HOST ? 'none' : '';
+  });
   updateProviderCardStates();
 }
 function hydrateAIForm(){
@@ -728,9 +851,13 @@ function resolveProvider(){
   if (bjImages.length >= 3 || AI_CFG.profile === 'speed') return 'gemini';
   return 'claude';
 }
-function getActiveKey(provider){ return AI_CFG.providers?.[provider]?.key || ''; }
+function getActiveKey(provider){ if (IS_PROD_HOST) return ''; return AI_CFG.providers?.[provider]?.key || ''; }
 function getActiveModel(provider){ return AI_CFG.providers?.[provider]?.model || ''; }
-function getAvailableAIProviders(){ if(AI_CFG.proxyUrl) return ['claude','openai','gemini']; return ['claude', 'openai', 'gemini'].filter(p => !!getActiveKey(p)); }
+function getAvailableAIProviders(){
+  if (getProxyUrl()) return ['claude','openai','gemini'];
+  if (!IS_PROD_HOST) return ['claude', 'openai', 'gemini'].filter(p => !!getActiveKey(p));
+  return [];
+}
 function getProviderCandidates(){
   const available = getAvailableAIProviders();
   if(!available.length) return [];
@@ -816,13 +943,13 @@ function renderAIResult(provider, parsed){
   const target=document.getElementById('ai-result-preview'); if(!target) return;
   const warnings=parsed?.summary?.warnings||[];
   target.style.display='block';
-  target.innerHTML=`<div class="ai-result"><strong>${providerLabel(provider)}</strong> · ${parsed.items.length} ítems${warnings.length ? `<br><br><strong>Warnings:</strong><br>${warnings.map(w => `• ${w}`).join('<br>')}` : ''}</div>`;
+  target.innerHTML=`<div class="ai-result"><strong>${escapeHtml(providerLabel(provider))}</strong> · ${parsed.items.length} ítems${warnings.length ? `<br><br><strong>Warnings:</strong><br>${warnings.map(w => `• ${escapeHtml(w)}`).join('<br>')}` : ''}</div>`;
 }
 function showAIFallbackNote(msg='No se pudo analizar con IA. Revisa los ítems o usa texto manual.'){
   const note = document.getElementById('ai-fallback-note');
   if(!note) return;
   note.style.display = 'block';
-  note.innerHTML = `<span>⚠️</span> ${msg}`;
+  note.innerHTML = `<span>⚠️</span> ${escapeHtml(msg)}`;
 }
 function hideAIFallbackNote(){
   const note = document.getElementById('ai-fallback-note');
@@ -875,8 +1002,9 @@ async function callClaude(prompt){
   const model=getActiveModel('claude');
   const content=[...bjImages.map(img=>({type:'image',source:{type:'base64',media_type:img.mimeType,data:img.base64}})),{type:'text',text:prompt}];
   const payload={model,max_tokens:2200,temperature:0,messages:[{role:'user',content}]};
-  if(AI_CFG.proxyUrl){
-    const res=await fetch(AI_CFG.proxyUrl+'/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  const proxy=getProxyUrl();
+  if(proxy){
+    const res=await fetch(proxy+'/api/claude',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     if(!res.ok){ const err=await res.json().catch(()=>({})); throw new Error(err?.error?.message || `Claude proxy ${res.status}`); }
     return getClaudeText(await res.json());
   }
@@ -890,10 +1018,11 @@ async function callClaude(prompt){
 }
 async function callOpenAI(prompt){
   const model=getActiveModel('openai');
+  const proxy=getProxyUrl();
   const content=[...bjImages.map(img=>({type:'input_image',image_url:`data:${img.mimeType};base64,${img.base64}`,detail:AI_CFG.profile==='quality'?'high':'auto'})),{type:'input_text',text:prompt}];
   const payload={model,max_output_tokens:2200,input:[{role:'developer',content:[{type:'input_text',text:'Devuelve únicamente JSON válido y sin markdown.'}]},{role:'user',content}]};
-  if(AI_CFG.proxyUrl){
-    const res=await fetch(AI_CFG.proxyUrl+'/api/openai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+  if(proxy){
+    const res=await fetch(proxy+'/api/openai',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     if(!res.ok){ const err=await res.json().catch(()=>({})); throw new Error(err?.error?.message || `OpenAI proxy ${res.status}`); }
     return getOpenAIText(await res.json());
   }
@@ -909,9 +1038,10 @@ async function callGemini(prompt){
   const model=getActiveModel('gemini');
   const parts=[...bjImages.map(img=>({inlineData:{mimeType:img.mimeType,data:img.base64}})),{text:prompt}];
   const payload={contents:[{parts}],generationConfig:{temperature:0,topP:0.95}};
-  if(AI_CFG.proxyUrl){
+  const proxy=getProxyUrl();
+  if(proxy){
     payload._model=model;
-    const res=await fetch(AI_CFG.proxyUrl+'/api/gemini',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const res=await fetch(proxy+'/api/gemini',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     if(!res.ok){ const err=await res.json().catch(()=>({})); throw new Error(err?.error?.message || `Gemini proxy ${res.status}`); }
     return getGeminiText(await res.json());
   }
@@ -1006,7 +1136,7 @@ function makeBJItem(obj){
   if(Number(obj.confidence ?? 1) < .6) el.classList.add('low-confidence');
   el.style.setProperty('--cc',ci.c);
   const meta=[obj.kind ? obj.kind.toUpperCase() : '', obj.timeText || '', obj.dateText || ''].filter(Boolean).join(' · ');
-  el.innerHTML=`<input type="checkbox"><span class="bj-item-text">${obj.text}</span>${meta ? `<span class="bj-item-cat">${meta}</span>` : ''}<span class="bj-item-cat" style="color:${ci.c}">${ci.l}</span>`;
+  el.innerHTML=`<input type="checkbox"><span class="bj-item-text">${escapeHtml(obj.text)}</span>${meta ? `<span class="bj-item-cat">${escapeHtml(meta)}</span>` : ''}<span class="bj-item-cat" style="color:${ci.c}">${escapeHtml(ci.l)}</span>`;
   el.querySelector('input')?.addEventListener('change',()=>updateBujoSummary());
   return el;
 }
@@ -1265,7 +1395,8 @@ async function syncSource(srcId,btn){
       catch(corsErr){
         // Try worker proxy if configured
         const proxyUrls=[];
-        if(AI_CFG.proxyUrl) proxyUrls.push(AI_CFG.proxyUrl+'/api/ics?url='+encodeURIComponent(url));
+        const proxy=getProxyUrl();
+        if(proxy) proxyUrls.push(proxy+'/api/ics?url='+encodeURIComponent(url));
         proxyUrls.push('https://corsproxy.io/?url='+encodeURIComponent(url));
         proxyUrls.push('https://api.allorigins.win/raw?url='+encodeURIComponent(url));
         for(const proxyUrl of proxyUrls){
@@ -1304,7 +1435,7 @@ function setSourceStatus(id,state,count=0,err=''){
   const t=new Date().toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}); const st2=SYNC_STATUS[id]||{}; const viaBadge=st2.via?` <span style="font-size:.48rem;background:rgba(16,185,129,.18);color:#10B981;padding:1px 4px;border-radius:3px;">${st2.via}</span>`:'';
   if(state==='loading')el.innerHTML=`<span style="color:#a78bfa">⏳ Conectando...</span>`;
   else if(state==='ok')el.innerHTML=`<span style="color:#10B981">✓ ${count} evento${count!==1?'s':''} · ${t}</span>${viaBadge}`;
-  else if(state==='error'){ const src=SOURCES.find(s=>s.id===id);const hasCfg=src&&src.lsKey; el.innerHTML=`<span style="color:#F87171">⚠️ ${err.slice(0,44)}</span>${hasCfg?` <a href="#" style="color:#FB923C;font-size:.58rem" onclick="startConfig('${id}',event)">Configurar →</a>`:''}`; }
+  else if(state==='error'){ const src=SOURCES.find(s=>s.id===id);const hasCfg=src&&src.lsKey; el.innerHTML=`<span style="color:#F87171">⚠️ ${escapeHtml(err.slice(0,44))}</span>${hasCfg?` <a href="#" style="color:#FB923C;font-size:.58rem" onclick="startConfig('${id}',event)">Configurar →</a>`:''}`; }
 }
 function startConfig(srcId,e){ if(e)e.preventDefault(); const src=SOURCES.find(s=>s.id===srcId);if(!src||!src.lsKey)return; if(src.type==='trello'){ closeCalModal(); openAdminModal(); return; } _cfgSrcId=srcId; document.getElementById('cfg-label').textContent=`URL iCal — ${src.name}`; document.getElementById('cfg-url-input').value=localStorage.getItem(src.lsKey)||''; document.getElementById('cfg-url-input').placeholder='https://calendar.google.com/calendar/ical/...'; document.getElementById('cal-config-zone').classList.add('show'); document.getElementById('cal-main-actions').style.display='none'; setTimeout(()=>document.getElementById('cfg-url-input').focus(),80); }
 function cancelConfig(){ _cfgSrcId=null; document.getElementById('cal-config-zone').classList.remove('show'); document.getElementById('cal-main-actions').style.display='flex'; }
@@ -1334,8 +1465,8 @@ function renderCalSources(){
     cont.appendChild(card);
   });
 }
-function openCalModal(){setSyncView(false);renderCalSources();document.getElementById('cal-modal').classList.add('open');announce('Panel de sincronización abierto en vista simple');}
-function closeCalModal(){document.getElementById('cal-modal').classList.remove('open');cancelConfig();}
+function openCalModal(){setSyncView(false);renderCalSources();document.getElementById('cal-modal').classList.add('open');activateModalFocusTrap('cal-modal');announce('Panel de sincronización abierto en vista simple');}
+function closeCalModal(){document.getElementById('cal-modal').classList.remove('open');deactivateModalFocusTrap();cancelConfig();}
 
 const GCAL_API='https://www.googleapis.com/calendar/v3';
 const GCAL_SCOPES='https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly';
@@ -1466,9 +1597,9 @@ function openAddModal(){
   const sel=document.getElementById('add-day');sel.innerHTML='';
   Array.from({length:7},(_,i)=>addDays(weekStart,i)).forEach(d=>{const iso=isoOf(d);const opt=document.createElement('option');opt.value=iso;opt.textContent=FDAYS[d.getDay()]+' '+d.getDate();sel.appendChild(opt);});
   document.getElementById('add-title').value='';document.getElementById('add-time').value='';document.getElementById('add-detail').value='';
-  document.getElementById('add-modal').classList.add('open');setTimeout(()=>document.getElementById('add-title').focus(),120);
+  document.getElementById('add-modal').classList.add('open');activateModalFocusTrap('add-modal');setTimeout(()=>document.getElementById('add-title').focus(),120);
 }
-function closeAddModal(){document.getElementById('add-modal').classList.remove('open');}
+function closeAddModal(){document.getElementById('add-modal').classList.remove('open');deactivateModalFocusTrap();}
 function submitAdd(){
   const title=document.getElementById('add-title').value.trim();if(!title){document.getElementById('add-title').focus();return;}
   const iso=document.getElementById('add-day').value;const time=document.getElementById('add-time').value; const cat=document.getElementById('add-cat').value;const detail=document.getElementById('add-detail').value.trim();
@@ -1477,8 +1608,8 @@ function submitAdd(){
   closeAddModal();
   if(OB_WAITING_TASK){OB_WAITING_TASK=false;OB_STATE.firstTask=true;obEarnXP('task');document.getElementById('ob-modal').classList.add('open');obApplyStep(4);}
 }
-function openAdminModal(){ renderAdmCalUrls(); renderResIcal(); renderCredentials(); renderPermList(); hydrateAIAdmin(); hydrateTrelloAdmin(); document.getElementById('admin-modal').classList.add('open'); announce('Panel de administración abierto'); }
-function closeAdminModal(){document.getElementById('admin-modal').classList.remove('open');}
+function openAdminModal(){ renderAdmCalUrls(); renderResIcal(); renderCredentials(); renderPermList(); hydrateAIAdmin(); hydrateTrelloAdmin(); document.getElementById('admin-modal').classList.add('open'); activateModalFocusTrap('admin-modal'); announce('Panel de administración abierto'); }
+function closeAdminModal(){document.getElementById('admin-modal').classList.remove('open'); deactivateModalFocusTrap();}
 function switchTab(id,btn){ document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active')); btn.classList.add('active');document.getElementById('tab-'+id).classList.add('active'); if(id==='permisos')renderPermList(); }
 function toggleFaq(q){const a=q.nextElementSibling;const isOpen=q.classList.contains('open');document.querySelectorAll('.faq-q.open').forEach(x=>{x.classList.remove('open');x.nextElementSibling.classList.remove('open');});if(!isOpen){q.classList.add('open');a.classList.add('open');}}
 function saveClientId(){const val=document.getElementById('adm-client-id')?.value?.trim();if(!val)return;localStorage.setItem('gcal_client_id',val);const btn=event.target;btn.textContent='✓';btn.style.color='#10B981';setTimeout(()=>{btn.textContent='💾';btn.style.color='';},1800);}
@@ -1489,9 +1620,9 @@ function renderAdmCalUrls(){
   SOURCES.filter(src=>src.type!=='trello').forEach(src=>{ const custom=src.lsKey?localStorage.getItem(src.lsKey)||'':'';const url=custom||src.icsUrl||'';const div=document.createElement('div');div.className='mfield';div.style='margin-bottom:5px'; div.innerHTML=`<label style="display:flex;gap:5px;align-items:center"><span style="background:${src.color};width:6px;height:6px;border-radius:50%;display:inline-block"></span>${src.name}${src.gcalId?' <span style="font-size:.48rem;background:rgba(16,185,129,.18);color:#10B981;padding:1px 4px;border-radius:3px">API ✓</span>':''}</label><div style="display:flex;gap:5px;align-items:center"><input type="text" value="${url}" placeholder="URL iCal..." style="font-size:.59rem;flex:1" data-src="${src.id}">${src.lsKey?`<button class="res-copy" onclick="saveCalUrl('${src.id}',this)">💾</button>`:'<span style="font-size:.58rem;color:var(--mut)">no config</span>'}</div>`; cont.appendChild(div); });
 }
 function saveCalUrl(srcId,btn){const src=SOURCES.find(s=>s.id===srcId);if(!src||!src.lsKey)return;const input=btn.previousElementSibling;const url=input?.value?.trim();if(!url)return;localStorage.setItem(src.lsKey,url);btn.textContent='✓';btn.style.color='#10B981';setTimeout(()=>{btn.textContent='💾';btn.style.color='';},1800);}
-function exportBoard(){const data={states:JSON.parse(localStorage.getItem('tablero_states_ro')||'{}'),extra:JSON.parse(localStorage.getItem('tablero_extra_ro')||'[]'),synced:JSON.parse(localStorage.getItem('tablero_synced_ro')||'[]'),perms:PERMS,ai:AI_CFG,exported:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`tablero-ro-${isoOf(new Date())}.json`;a.click();URL.revokeObjectURL(a.href);}
+function exportBoard(){const data={states:JSON.parse(localStorage.getItem('tablero_states_ro')||'{}'),extra:JSON.parse(localStorage.getItem('tablero_extra_ro')||'[]'),synced:JSON.parse(localStorage.getItem('tablero_synced_ro')||'[]'),perms:PERMS,ai:sanitizeAICfgForStorage(AI_CFG),exported:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`tablero-ro-${isoOf(new Date())}.json`;a.click();URL.revokeObjectURL(a.href);}
 function importBoardClick(){document.getElementById('import-file').click();}
-function importBoard(input){const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const data=JSON.parse(ev.target.result);if(data.states)localStorage.setItem('tablero_states_ro',JSON.stringify(data.states));if(data.extra)localStorage.setItem('tablero_extra_ro',JSON.stringify(data.extra));if(data.synced)localStorage.setItem('tablero_synced_ro',JSON.stringify(data.synced));if(data.perms){PERMS=data.perms;savePerms();} if(data.ai){AI_CFG=deepMerge(AI_DEFAULTS,data.ai); saveAICfg(); hydrateAIForm(); hydrateAIAdmin();} loadBoard();renderWeek();closeAdminModal();alert('✓ Estado importado correctamente.');}catch(e){alert('Error al importar: '+e.message);}};r.readAsText(f);}
+function importBoard(input){const f=input.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{const data=JSON.parse(ev.target.result);if(data.states)localStorage.setItem('tablero_states_ro',JSON.stringify(data.states));if(data.extra)localStorage.setItem('tablero_extra_ro',JSON.stringify(data.extra));if(data.synced)localStorage.setItem('tablero_synced_ro',JSON.stringify(data.synced));if(data.perms){PERMS=data.perms;savePerms();} if(data.ai){AI_CFG=deepMerge(AI_DEFAULTS,sanitizeAICfgForStorage(data.ai)); saveAICfg(); hydrateAIForm(); hydrateAIAdmin();} loadBoard();renderWeek();closeAdminModal();alert('✓ Estado importado correctamente.');}catch(e){alert('Error al importar: '+e.message);}};r.readAsText(f);}
 function clearSavedState(){if(!confirm('¿Eliminar todos los estados guardados?'))return;localStorage.removeItem('tablero_states_ro');localStorage.removeItem('tablero_extra_ro');localStorage.removeItem('tablero_synced_ro');CARD_STATES={};EXTRA_EVENTS=[];renderWeek();closeAdminModal();}
 function renderResIcal(){const cont=document.getElementById('res-ical-list');if(!cont)return;cont.innerHTML='';SOURCES.forEach(src=>{const url=src.icsUrl||'';if(!url)return;const div=document.createElement('div');div.className='res-card';div.style='margin-bottom:4px;cursor:default';div.innerHTML=`<span class="res-icon" style="font-size:.9rem">${src.icon}</span><div class="res-info"><div class="res-name">${src.name}</div><div class="res-url">${url.slice(0,52)}…</div></div><button class="res-copy" onclick="copyText('${url}',this)">Copiar</button>`;cont.appendChild(div);});}
 function copyText(text,btn){navigator.clipboard.writeText(text).then(()=>{const orig=btn.textContent;btn.textContent='✓';btn.style.color='#10B981';setTimeout(()=>{btn.textContent=orig;btn.style.color='';},1800);}).catch(()=>{alert('Copia manual:\n'+text);});}
@@ -1571,9 +1702,10 @@ function openEditModal(card){
   const modal=document.getElementById('edit-modal');
   modal.dataset.cardIso=iso;modal.dataset.cardTitle=title;modal.dataset.cardCal=cal;
   modal.classList.add('open');
+  activateModalFocusTrap('edit-modal', card);
   setTimeout(()=>document.getElementById('edit-title').focus(),120);
 }
-function closeEditModal(){document.getElementById('edit-modal').classList.remove('open');}
+function closeEditModal(){document.getElementById('edit-modal').classList.remove('open');deactivateModalFocusTrap();}
 function submitEdit(){
   const modal=document.getElementById('edit-modal');
   const oldIso=modal.dataset.cardIso,oldTitle=modal.dataset.cardTitle,oldCal=modal.dataset.cardCal;
@@ -1629,7 +1761,7 @@ function obLoadState(){try{const s=JSON.parse(localStorage.getItem(OB_KEY)||'nul
 function obSaveState(){try{localStorage.setItem(OB_KEY,JSON.stringify(OB_STATE));}catch(e){}}
 function obEarnXP(key){if(OB_STATE.earned[key])return;OB_STATE.earned[key]=true;OB_STATE.xp+=OB_XP[key]||0;obSaveState();}
 function initOnboarding(){obLoadState();if(OB_STATE.completed||OB_STATE.skipped)return;if(!OB_STATE.started){OB_STATE.started=new Date().toISOString();obSaveState();}showOnboarding();}
-function showOnboarding(){const m=document.getElementById('ob-modal');if(!m)return;m.classList.add('open');obApplyStep(OB_STATE.step);}
+function showOnboarding(){const m=document.getElementById('ob-modal');if(!m)return;m.classList.add('open');activateModalFocusTrap('ob-modal');obApplyStep(OB_STATE.step);}
 function obApplyStep(n){
   OB_STATE.step=n;
   const total=5;
@@ -1656,12 +1788,13 @@ function obUpdateName(val){OB_STATE.name=val.trim();const t=document.getElementB
 function obOpenAdd(){OB_WAITING_TASK=true;document.getElementById('ob-modal').classList.remove('open');openAddModal();}
 function obLinkSync(){completeOnboarding();openCalModal();}
 function obLinkBujo(){completeOnboarding();openDrawer();}
-function skipOnboarding(){OB_STATE.skipped=true;obSaveState();document.getElementById('ob-modal').classList.remove('open');showToast('Tutorial omitido. Puedes retomarlo en ⚙️ Admin → Reiniciar tutorial.','info',4500);}
-function completeOnboarding(){obEarnXP('done');OB_STATE.completed=true;obSaveState();document.getElementById('ob-modal').classList.remove('open');showToast(`🌟 ¡Onboarding completado! Total: ${OB_STATE.xp} XP ⚡`,'ok',4000);}
+function skipOnboarding(){OB_STATE.skipped=true;obSaveState();document.getElementById('ob-modal').classList.remove('open');deactivateModalFocusTrap();showToast('Tutorial omitido. Puedes retomarlo en ⚙️ Admin → Reiniciar tutorial.','info',4500);}
+function completeOnboarding(){obEarnXP('done');OB_STATE.completed=true;obSaveState();document.getElementById('ob-modal').classList.remove('open');deactivateModalFocusTrap();showToast(`🌟 ¡Onboarding completado! Total: ${OB_STATE.xp} XP ⚡`,'ok',4000);}
 function resetOnboarding(){localStorage.removeItem(OB_KEY);OB_STATE=obDefaultState();closeAdminModal();showOnboarding();}
 
 (function restoreSura(){const sid=localStorage.getItem('gcal_sura_id');if(sid){const s=SOURCES.find(x=>x.id==='trabajo');if(s&&!s.gcalId)s.gcalId=sid;}})();
 loadPerms(); loadBoard(); renderWeek(); initGAuthUI(); hydrateAIForm(); hydrateAIAdmin(); updateAIStatus(); updateBujoSummary(); setSyncView(false);
+initConsent();
 initOnboarding();
 /* ── Auto-sync on page load: refresh cached events in background ── */
 setTimeout(()=>{syncAll().then(()=>renderWeek()).catch(err=>console.warn('Auto-sync:',err));},1500);

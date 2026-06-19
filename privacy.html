@@ -10,73 +10,129 @@
         h2 { color: #c084fc; font-size: 1.1rem; margin-top: 28px; }
         a { color: #a78bfa; }
         .updated { font-size: .85rem; color: #64748B; }
+        table { width: 100%; border-collapse: collapse; font-size: .9rem; margin: 12px 0; }
+        th, td { border: 1px solid rgba(148,163,184,.25); padding: 8px 10px; text-align: left; vertical-align: top; }
+        th { color: #c084fc; }
     </style>
 </head>
 <body>
     <h1>Política de Privacidad — TABLERO Rö</h1>
-    <p class="updated">Última actualización: 19 de mayo de 2026</p>
+    <p class="updated">Última actualización: 19 de junio de 2026 · Versión app 1.5.0</p>
 
     <h2>Qué es TABLERO Rö</h2>
-    <p>TABLERO Rö es una aplicación web personal de planificación semanal que integra Google Calendar para visualizar y gestionar eventos. Es de uso exclusivamente personal y no comercial.</p>
+    <p>TABLERO Rö es una aplicación web personal de planificación semanal que integra Google Calendar, feeds ICS, Trello (opcional) y análisis de Bullet Journal con IA multimodal. Es de uso personal y no comercial.</p>
+
+    <h2>Responsable del tratamiento</h2>
+    <p>Rö Gaete Gaona — contacto: <a href="mailto:gaete.gaona@gmail.com">gaete.gaona@gmail.com</a></p>
 
     <h2>Autenticación con Passkey</h2>
-    <p>TABLERO Rö implementa autenticación mediante <strong>passkeys (WebAuthn)</strong> para proteger el acceso a tu tablero personal. Los passkeys utilizan:</p>
+    <p>TABLERO Rö puede proteger el acceso mediante <strong>passkeys (WebAuthn)</strong>:</p>
     <ul>
         <li><strong>Autenticación biométrica</strong> (Face ID, Touch ID, Windows Hello) o PIN del dispositivo.</li>
-        <li><strong>Credenciales almacenadas localmente</strong> en el hardware seguro de tu dispositivo (TPM, Secure Enclave).</li>
-        <li><strong>Sin contraseñas</strong>: no se almacenan ni transmiten contraseñas.</li>
-        <li><strong>Vinculación al dominio</strong>: las credenciales solo funcionan en este sitio web, protegiéndote contra phishing.</li>
+        <li><strong>Credenciales en hardware seguro</strong> (TPM, Secure Enclave) — no contraseñas.</li>
+        <li><strong>Vinculación al dominio</strong> — resistente a phishing.</li>
     </ul>
-    <p><strong>Datos biométricos:</strong> Tus datos biométricos (huella dactilar, reconocimiento facial) <strong>nunca abandonan tu dispositivo</strong>. Solo se utilizan localmente para desbloquear la clave criptográfica almacenada en tu hardware. La aplicación no tiene acceso a estos datos biométricos.</p>
+    <p><strong>Datos biométricos:</strong> nunca abandonan tu dispositivo; la app no accede a huella ni rostro.</p>
 
-    <h2>Datos que accedemos</h2>
-    <p>Al conectar tu cuenta de Google, la aplicación accede a:</p>
+    <h2>Datos que tratamos</h2>
+    <table>
+        <thead>
+            <tr><th>Dato</th><th>Finalidad</th><th>Base legal (Ley 21.719)</th><th>Retención</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Passkey (username, credentialId)</td>
+                <td>Autenticación al tablero</td>
+                <td>Consentimiento / ejecución del servicio</td>
+                <td>localStorage hasta que elimines passkeys</td>
+            </tr>
+            <tr>
+                <td>Sesión passkey</td>
+                <td>Mantener login</td>
+                <td>Ejecución del servicio</td>
+                <td>sessionStorage · expira a 24 h</td>
+            </tr>
+            <tr>
+                <td>Eventos de calendario (GCal, ICS)</td>
+                <td>Mostrar y gestionar tu semana</td>
+                <td>Consentimiento (OAuth / URL que tú configuras)</td>
+                <td>localStorage hasta borrado</td>
+            </tr>
+            <tr>
+                <td>Tareas y notas del tablero</td>
+                <td>Planificación personal</td>
+                <td>Ejecución del servicio</td>
+                <td>localStorage</td>
+            </tr>
+            <tr>
+                <td>Fotos BuJo (memoria)</td>
+                <td>Extracción con IA (solo si tú lo activas)</td>
+                <td>Consentimiento explícito</td>
+                <td>No persisten; se eliminan al limpiar captura</td>
+            </tr>
+            <tr>
+                <td>Token OAuth Google</td>
+                <td>Sync Calendar</td>
+                <td>Consentimiento OAuth</td>
+                <td>Solo memoria de sesión</td>
+            </tr>
+            <tr>
+                <td>Credenciales Trello (opcional)</td>
+                <td>Sync Espacio Seguro</td>
+                <td>Consentimiento al configurarlas</td>
+                <td>localStorage (migración a proxy planificada)</td>
+            </tr>
+            <tr>
+                <td>Preferencia de consentimiento</td>
+                <td>Registro de aviso legal</td>
+                <td>Interés legítimo / cumplimiento</td>
+                <td>localStorage <code>tablero_consent_ro</code></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Almacenamiento local</h2>
+    <p>La mayoría de los datos viven <strong>en tu navegador</strong>. No operamos base de datos propia ni vendemos datos.</p>
+
+    <h2>Procesamiento en servidor (proxy)</h2>
+    <p>Si configuras un <strong>Cloudflare Worker</strong> como proxy:</p>
     <ul>
-        <li><strong>Eventos de Google Calendar</strong> (lectura): para mostrar tus eventos en el tablero semanal.</li>
-        <li><strong>Creación de eventos</strong> (escritura): solo cuando tú explícitamente envías una tarea al calendario con el botón 📅.</li>
+        <li>Las solicitudes de IA pasan por ese servidor; las API keys residen allí, no en tu navegador (v1.5+ en producción).</li>
+        <li>Las URLs ICS pueden proxearse; el Worker solo reenvía a hosts permitidos.</li>
     </ul>
-
-    <h2>Almacenamiento</h2>
-    <p>Todos los datos se almacenan <strong>exclusivamente en tu navegador</strong> (localStorage y sessionStorage). No tenemos servidores, bases de datos ni backend. No recopilamos, transmitimos ni almacenamos datos personales en ningún servidor externo.</p>
-    
-    <p>Datos almacenados localmente incluyen:</p>
-    <ul>
-        <li><strong>Información de usuario:</strong> nombre de usuario e ID de credencial del passkey.</li>
-        <li><strong>Sesión activa:</strong> timestamp de inicio de sesión (sessionStorage, se elimina al cerrar el navegador).</li>
-        <li><strong>Estados del tablero:</strong> tareas completadas, notas y configuración personal.</li>
-        <li><strong>Configuración de IA:</strong> claves de API para proveedores de IA (Claude, OpenAI, Gemini) si las configuras.</li>
-    </ul>
-
-    <h2>Tokens de acceso</h2>
-    <p>El token de Google OAuth se mantiene únicamente en la memoria del navegador durante la sesión activa. No se persiste en disco ni se envía a terceros.</p>
 
     <h2>Terceros</h2>
-    <p>No compartimos datos con terceros. Las únicas comunicaciones de red son directamente entre tu navegador y:</p>
     <ul>
-        <li>APIs de Google Calendar (para sincronización de eventos)</li>
-        <li>APIs de proveedores de IA (Claude, OpenAI, Gemini) si configuras extracción de Bullet Journal</li>
+        <li><strong>Google</strong> — Calendar API y OAuth.</li>
+        <li><strong>Anthropic / OpenAI / Google AI</strong> — solo si usas análisis BuJo vía proxy o dev local.</li>
+        <li><strong>Trello / Atlassian</strong> — solo si configuras sync Espacio Seguro.</li>
+        <li><strong>GitHub Pages</strong> — hosting estático (sin acceso a datos locales).</li>
     </ul>
 
     <h2>Seguridad</h2>
-    <p>TABLERO Rö implementa las siguientes medidas de seguridad:</p>
     <ul>
-        <li><strong>WebAuthn/Passkeys:</strong> estándar FIDO2 para autenticación sin contraseñas.</li>
-        <li><strong>Sesiones temporales:</strong> expiración automática de sesión después de 24 horas de inactividad.</li>
-        <li><strong>Sin almacenamiento de secretos:</strong> las claves de API se almacenan localmente y nunca se transmiten a nuestros servidores (porque no tenemos servidores).</li>
-        <li><strong>HTTPS:</strong> toda la comunicación se realiza a través de conexiones cifradas.</li>
+        <li><strong>WebAuthn/Passkeys</strong> — FIDO2 sin contraseñas.</li>
+        <li><strong>API keys IA</strong> — no se persisten en producción; usar proxy Worker.</li>
+        <li><strong>CSP y sanitización</strong> — mitigación XSS en contenido de usuario.</li>
+        <li><strong>HTTPS</strong> — conexiones cifradas.</li>
     </ul>
+
+    <h2>Tus derechos (Chile — Ley 21.719)</h2>
+    <p>Puedes acceder, rectificar, suprimir y oponerte contactando a <a href="mailto:gaete.gaona@gmail.com">gaete.gaona@gmail.com</a>.</p>
 
     <h2>Eliminación de datos</h2>
-    <p>Puedes eliminar todos los datos almacenados en cualquier momento:</p>
     <ul>
-        <li><strong>Cerrar sesión:</strong> desde ⚙️ Admin → 🔐 Seguridad · Passkey → 🚪 Cerrar sesión</li>
-        <li><strong>Eliminar passkeys:</strong> desde ⚙️ Admin → 🔐 Seguridad · Passkey → 🔑 Gestionar passkeys</li>
-        <li><strong>Limpiar todo:</strong> desde ⚙️ Admin → "Limpiar estado guardado", o limpiando el localStorage de tu navegador</li>
+        <li><strong>Cerrar sesión passkey:</strong> ⚙️ Admin → 🔐 Seguridad · Passkey → Cerrar sesión</li>
+        <li><strong>Eliminar passkeys:</strong> ⚙️ Admin → Gestionar passkeys</li>
+        <li><strong>Limpiar tablero:</strong> ⚙️ Admin → Limpiar estado guardado</li>
     </ul>
 
-    <h2>Contacto</h2>
-    <p>Para consultas sobre privacidad: <a href="mailto:gaete.gaona@gmail.com">gaete.gaona@gmail.com</a></p>
+    <h2>Menores</h2>
+    <p>Servicio para uso personal adulto; no recopilamos datos de menores de forma intencional.</p>
 
-    <p style="margin-top:40px;"><a href="index.html">← Volver al tablero</a></p>
+    <h2>Cambios</h2>
+    <p>La fecha de actualización aparece al inicio. El banner de consentimiento puede mostrarse si cambia el tratamiento.</p>
+
+    <p style="margin-top:40px;"><a href="index.html">← Volver al tablero</a> · <a href="terms.html">Términos de uso</a></p>
 </body>
 </html>
