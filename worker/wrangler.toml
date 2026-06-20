@@ -1,6 +1,8 @@
 name = "table-ro-ai-proxy"
 main = "src/index.js"
 compatibility_date = "2024-09-23"
+account_id = "6e96c77c41a11e043c84a7802c6108b8"
+workers_dev = true
 
 [vars]
 ALLOWED_ORIGIN = "https://vientonorte.github.io"
