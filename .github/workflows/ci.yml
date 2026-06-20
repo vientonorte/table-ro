@@ -36,6 +36,15 @@ jobs:
       - name: Check SW syntax
         run: node --check sw.js
 
+      - name: Verify CSP allows inline onclick handlers
+        run: grep -q "script-src-attr 'unsafe-inline'" index.html
+
+      - name: QA smoke (static + buttons)
+        run: |
+          npm install --no-save playwright@1.49
+          npx playwright install chromium
+          node scripts/qa-smoke.mjs
+
   a11y:
     name: Accessibility (pa11y)
     runs-on: ubuntu-latest

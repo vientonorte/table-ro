@@ -1,4 +1,4 @@
-# QA Manual — table-ro v1.5.0
+# QA Manual — table-ro v1.6.1
 
 Checklist para validar prod después del Worker deploy y antes de Sprint Clave A (v1.6).
 
@@ -26,7 +26,8 @@ Checklist para validar prod después del Worker deploy y antes de Sprint Clave A
 
 ## A · Smoke (5 min)
 
-- [ ] **A1** Título muestra `v1.5.0` en pestaña del navegador
+- [ ] **A1** Título muestra `v1.6.1` en pestaña del navegador
+- [ ] **A1b** DevTools Console: sin `Refused to execute inline event handler` (CSP `script-src-attr`)
 - [ ] **A2** Banner consentimiento aparece (primera visita / incógnito) → "Entendido" lo cierra
 - [ ] **A3** Tablero 7 columnas visible; día actual resaltado
 - [ ] **A4** Navegación ← Hoy → cambia semana

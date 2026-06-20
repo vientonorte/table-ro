@@ -1,7 +1,7 @@
 /**
  * Tablero Rö — Lógica principal
  * ==============================
- * Versión: 1.6.0
+ * Versión: 1.6.1
  * Descripción: Tablero semanal personal con integración Google Calendar,
  *              Bullet Journal (BuJo) y sync bidireccional.
  *
@@ -583,9 +583,10 @@ function makeCard(ev) {
     const perm = getPermForCal(ev.cal);
     const readonly = !!ev.readonly || ev.fromCal;
     const syncBtn = `<button class="sync-btn" title="Sync a calendario (Ctrl·S guarda)" aria-label="Sincronizar esta tarjeta con Google Calendar" onclick="syncToGCal(event,this)">📅</button>`;
+    const noteLabel = escapeHtml(`Notas de ${ev.title || 'tarea'}`);
     const detailContent = ev.detail ?
-        `<div class="card-detail show"><textarea class="det-area" rows="2" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()"></textarea></div>` :
-        `<div class="card-detail"><textarea class="det-area" rows="2" placeholder="Notas..." onclick="event.stopPropagation()" onmousedown="event.stopPropagation()" onblur="autoSave()"></textarea></div>`;
+        `<div class="card-detail show"><textarea class="det-area" rows="2" aria-label="${noteLabel}" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()"></textarea></div>` :
+        `<div class="card-detail"><textarea class="det-area" rows="2" placeholder="Notas..." aria-label="${noteLabel}" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()" onblur="autoSave()"></textarea></div>`;
     el.innerHTML = `<div class="card-row"><div class="chk" aria-hidden="true"></div><div style="flex:1;min-width:0"><div class="ct">${escapeHtml(ev.title)}</div>${tStr?`<div class="ctime">⏰ ${escapeHtml(tStr)}</div>`:''}<div class="card-meta"><span class="ctag" style="color:${ci.c};cursor:pointer" onclick="changeCat(event,this)" title="Cambiar categoría">${escapeHtml(ci.l)}</span><span class="kind-badge">${escapeHtml(KIND_LABELS[kind]||'Tarea')}</span><span class="src-badge ${src}${readonly?' readonly':''}">${escapeHtml(sourceLabel(src))}</span></div></div><div class="card-actions">${syncBtn}<button class="det-btn${ev.detail?' open':''}" title="Detalles" aria-label="Editar detalles" onclick="toggleDetail(event,this)">···</button></div></div>${detailContent}`;
   const detArea = el.querySelector('.det-area');
   if (detArea && ev.detail) detArea.value = ev.detail;
@@ -1897,6 +1898,11 @@ initConsent();
 initOnboarding();
 /* ── Auto-sync on page load: refresh cached events in background ── */
 setTimeout(()=>{syncAll().then(()=>renderWeek()).catch(err=>console.warn('Auto-sync:',err));},1500);
+
+if ('serviceWorker' in navigator) {
+    const swPath = location.pathname.indexOf('/table-ro/') === 0 ? '/table-ro/sw.js' : '/sw.js';
+    navigator.serviceWorker.register(swPath).catch((err) => console.warn('SW register:', err));
+}
 function renderCredentials(){
   const cont=document.getElementById('res-credentials-list');if(!cont)return;cont.innerHTML='';
   const clientId=localStorage.getItem('gcal_client_id')||GCAL_CLIENT_ID;
