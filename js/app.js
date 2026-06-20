@@ -97,7 +97,9 @@ const CAL = {
 
 const IS_PROD_HOST = location.hostname === 'vientonorte.github.io';
 const CONSENT_KEY = 'tablero_consent_ro';
-const AI_PROXY_DEFAULT = '';
+const AI_PROXY_DEFAULT = IS_PROD_HOST
+    ? 'https://table-ro-ai-proxy.vientonorte.workers.dev'
+    : '';
 
 function escapeHtml(str) {
     return String(str ?? '')
