@@ -49,10 +49,10 @@ for (const fn of REQUIRED_GLOBALS) {
 }
 ok(`app.js define ${REQUIRED_GLOBALS.length} handlers globales`);
 
-if (!indexHtml.includes('js/app.js?v=1.6.1')) {
-  fail('index.html no referencia app.js v1.6.1 (cache bust)');
+if (!indexHtml.includes('js/app.js?v=1.6.2')) {
+  fail('index.html no referencia app.js v1.6.2 (cache bust)');
 }
-ok('Cache bust app.js v1.6.1');
+ok('Cache bust app.js v1.6.2');
 
 // ── Functional: Playwright opcional ──
 let playwright;

@@ -41,9 +41,14 @@ jobs:
 
       - name: QA smoke (static + buttons)
         run: |
-          npm install --no-save playwright@1.49
+          # Install tools outside repo root to avoid package.json peer/registry resolution
+          mkdir -p /tmp/qa-tools && cd /tmp/qa-tools
+          npm init -y >/dev/null
+          npm install playwright@1.49
           npx playwright install chromium
-          node scripts/qa-smoke.mjs
+          cd "$GITHUB_WORKSPACE"
+          node /tmp/qa-tools/node_modules/playwright/cli.js --version || true
+          PATH="/tmp/qa-tools/node_modules/.bin:$PATH" node scripts/qa-smoke.mjs
 
   a11y:
     name: Accessibility (pa11y)
@@ -56,11 +61,16 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Install pa11y-ci and serve
-        run: npm install --no-save pa11y-ci@3 serve@14
+      - name: Install pa11y-ci and serve (isolated)
+        run: |
+          # Do not npm install in repo root: package.json pulls @vientonorte/* from GitHub Packages (401 without token)
+          mkdir -p /tmp/pa11y-tools && cd /tmp/pa11y-tools
+          npm init -y >/dev/null
+          npm install pa11y-ci@3 serve@14
+          echo "/tmp/pa11y-tools/node_modules/.bin" >> "$GITHUB_PATH"
 
       - name: Run pa11y WCAG2AA
         run: |
-          npx serve . -l 3456 &
+          serve . -l 3456 &
           sleep 3
-          npx pa11y-ci --config .pa11yci.json
+          pa11y-ci --config .pa11yci.json
