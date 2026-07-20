@@ -57,7 +57,7 @@ jobs:
           node-version: "20"
 
       - name: Install pa11y-ci and serve
-        run: npm install --no-save pa11y-ci@3 serve@14
+        run: npm install --no-save --legacy-peer-deps pa11y-ci@3 serve@14
 
       - name: Run pa11y WCAG2AA
         run: |
