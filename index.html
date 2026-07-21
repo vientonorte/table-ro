@@ -4,14 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Tablero Rö — Planificador semanal personal con Google Calendar, Bullet Journal y sync bidireccional." />
-    <meta name="version" content="1.6.4" />
-    <title>TABLERO — Rö · v1.6.4</title>
+    <meta name="version" content="1.6.5" />
+    <title>TABLERO — Rö · v1.6.5</title>
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#7c3aed" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://www.googleapis.com https://api.trello.com https://*.workers.dev https://corsproxy.io https://api.allorigins.win; frame-src https://accounts.google.com; base-uri 'self'; form-action 'self';" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <link rel="stylesheet" href="css/styles.css?v=1.6.4" />
+    <link rel="stylesheet" href="css/styles.css?v=1.6.5" />
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="js/auth-passkey.js"></script>
   </head>
@@ -466,7 +466,7 @@
             </div>
             <div class="hint" style="margin-top:5px">
               <span>⚠️</span>
-              OAuth requiere
+              Si aparece <code>invalid_client</code>, el Client ID viejo ya no existe en Google Cloud. Recréalo (docs/GOOGLE-OAUTH.md). OAuth requiere
               <code style="background:rgba(0,0,0,.25);padding:1px 5px;border-radius:3px;color:#c084fc">localhost:8080</code>
               o
               <code style="background:rgba(0,0,0,.25);padding:1px 5px;border-radius:3px;color:#c084fc">vientonorte.github.io</code>
@@ -845,6 +845,6 @@
       </div>
     </div>
 
-    <script src="js/app.js?v=1.6.4" defer></script>
+    <script src="js/app.js?v=1.6.5" defer></script>
   </body>
 </html>

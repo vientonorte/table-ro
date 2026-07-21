@@ -1,7 +1,7 @@
 /**
  * Tablero Rö — Lógica principal
  * ==============================
- * Versión: 1.6.3
+ * Versión: 1.6.5
  * Descripción: Tablero semanal personal con integración Google Calendar,
  *              Bullet Journal (BuJo) y sync bidireccional.
  *
@@ -1629,7 +1629,7 @@ function initGAuthUI(){
   zone.className='oauth-box disconnected';
   const isLocalhost=location.hostname==='localhost'||location.hostname==='127.0.0.1'||location.hostname==='vientonorte.github.io';
   const originWarning=!isLocalhost?`<div style="margin-top:6px;padding:5px 7px;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.3);border-radius:6px;font-size:.6rem;color:#fb923c;line-height:1.5">⚠️ Requiere <strong>http://localhost</strong>. Ejecuta:<br><code style="background:rgba(0,0,0,.25);padding:1px 5px;border-radius:3px;">python3 -m http.server 8080</code></div>`:`<div style="font-size:.58rem;color:#10B981;margin-top:3px">✓ Origen correcto</div>`;
-  zone.innerHTML=`<div style="font-size:.65rem;color:var(--mut);margin-bottom:5px;line-height:1.5">Sync bidireccional con Google Calendar. Client ID configurado ✓</div><div class="mfield" style="margin-bottom:7px"><label for="gcal-client-id">Google OAuth Client ID</label><input type="text" id="gcal-client-id" value="${savedId}" style="font-size:.6rem;opacity:.75"></div>${originWarning}<button class="btn btn-p" onclick="gSignIn()" style="width:100%;justify-content:center;margin-top:8px">🔑 Conectar con Google</button>`;
+  zone.innerHTML=`<div style="font-size:.65rem;color:var(--mut);margin-bottom:5px;line-height:1.5">Sync API (OAuth). Si ves invalid_client, recrea el Client ID en Google Cloud (cuenta gaete.gaona@gmail.com). ICS público sigue sin OAuth.</div><div class="mfield" style="margin-bottom:7px"><label for="gcal-client-id">Google OAuth Client ID</label><input type="text" id="gcal-client-id" value="${savedId}" style="font-size:.6rem;opacity:.75"></div>${originWarning}<button class="btn btn-p" onclick="gSignIn()" style="width:100%;justify-content:center;margin-top:8px">🔑 Conectar con Google</button>`;
 }
 function gSignIn(){
   const clientId=((document.getElementById('gcal-client-id')?.value||'').trim())||GCAL_CLIENT_ID;
@@ -1637,7 +1637,33 @@ function gSignIn(){
   localStorage.setItem('gcal_client_id',clientId);
   tokenClient=google.accounts.oauth2.initTokenClient({
     client_id:clientId,scope:GCAL_SCOPES,
-    callback:resp=>{if(resp.error){console.error('GIS error:',resp);return;}gToken=resp.access_token;updateAuthConnected();syncAll();}
+    callback:resp=>{
+      if(resp.error){
+        console.error('GIS error:',resp);
+        const err = resp.error;
+        const desc = resp.error_description || resp.details || '';
+        if(err==='invalid_client' || /client/i.test(desc) || /not found/i.test(desc)){
+          alert(
+            'Error 401 invalid_client — OAuth Client ID no existe o no está habilitado.\n\n'+
+            '1) Abre Google Cloud Console → APIs & Services → Credentials\n'+
+            '2) Crea OAuth Client ID tipo "Web application"\n'+
+            '3) Authorized JavaScript origins:\n'+
+            '   https://vientonorte.github.io\n'+
+            '   http://localhost:8080\n'+
+            '4) Pega el nuevo Client ID abajo y vuelve a Conectar\n\n'+
+            'Nota: el ICS público de gaete.gaona@gmail.com sigue funcionando sin OAuth.\n'+
+            'OAuth solo hace falta para sync bidireccional (API).\n\n'+
+            'Guía: docs/GOOGLE-OAUTH.md'
+          );
+          return;
+        }
+        alert('Error de Google OAuth: '+err+(desc?('\n'+desc):''));
+        return;
+      }
+      gToken=resp.access_token;
+      updateAuthConnected();
+      syncAll();
+    }
   });
   tokenClient.requestAccessToken({prompt:'consent'});
 }
