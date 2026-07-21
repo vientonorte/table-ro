@@ -1,131 +1,208 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Política de Privacidad — TABLERO Rö</title>
     <style>
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0D0D1A; color: #E2E8F0; max-width: 680px; margin: 0 auto; padding: 40px 20px; line-height: 1.7; }
-        h1 { color: #a855f7; font-size: 1.5rem; margin-bottom: 8px; }
-        h2 { color: #c084fc; font-size: 1.1rem; margin-top: 28px; }
-        a { color: #a78bfa; }
-        .updated { font-size: .85rem; color: #94a3b8; }
-        table { width: 100%; border-collapse: collapse; font-size: .9rem; margin: 12px 0; }
-        th, td { border: 1px solid rgba(148,163,184,.25); padding: 8px 10px; text-align: left; vertical-align: top; }
-        th { color: #c084fc; }
+      body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0D0D1A; color: #E2E8F0; max-width: 680px; margin: 0 auto; padding: 40px 20px; line-height: 1.7; }
+      h1 { color: #a855f7; font-size: 1.5rem; margin-bottom: 8px; }
+      h2 { color: #c084fc; font-size: 1.1rem; margin-top: 28px; }
+      a { color: #a78bfa; }
+      .updated { font-size: .85rem; color: #94a3b8; }
+      table { width: 100%; border-collapse: collapse; font-size: .9rem; margin: 12px 0; }
+      th, td { border: 1px solid rgba(148,163,184,.25); padding: 8px 10px; text-align: left; vertical-align: top; }
+      th { color: #c084fc; }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Política de Privacidad — TABLERO Rö</h1>
-    <p class="updated">Última actualización: 19 de junio de 2026 · Versión app 1.6.0</p>
+    <p class="updated">Última actualización: 19 de junio de 2026 · Versión app 1.7.9 · 2026-07-21</p>
 
+    <p class="updated">
+      <a href="brand.html">Página de marca / ownership</a>
+      · app
+      <a href="./">table-ro</a>
+    </p>
     <h2>Qué es TABLERO Rö</h2>
     <p>TABLERO Rö es una aplicación web personal de planificación semanal que integra Google Calendar, feeds ICS, Trello (opcional) y análisis de Bullet Journal con IA multimodal. Es de uso personal y no comercial.</p>
 
     <h2>Responsable del tratamiento</h2>
-    <p>Rö Gaete Gaona — contacto: <a href="mailto:gaete.gaona@gmail.com">gaete.gaona@gmail.com</a></p>
+    <p>
+      Rö Gaete Gaona — contacto:
+      <a href="mailto:gaete.gaona@gmail.com">gaete.gaona@gmail.com</a>
+    </p>
 
     <h2>Autenticación con Passkey</h2>
-    <p>TABLERO Rö puede proteger el acceso mediante <strong>passkeys (WebAuthn)</strong>:</p>
+    <p>
+      TABLERO Rö puede proteger el acceso mediante
+      <strong>passkeys (WebAuthn)</strong>
+      :
+    </p>
     <ul>
-        <li><strong>Autenticación biométrica</strong> (Face ID, Touch ID, Windows Hello) o PIN del dispositivo.</li>
-        <li><strong>Credenciales en hardware seguro</strong> (TPM, Secure Enclave) — no contraseñas.</li>
-        <li><strong>Vinculación al dominio</strong> — resistente a phishing.</li>
+      <li>
+        <strong>Autenticación biométrica</strong>
+        (Face ID, Touch ID, Windows Hello) o PIN del dispositivo.
+      </li>
+      <li>
+        <strong>Credenciales en hardware seguro</strong>
+        (TPM, Secure Enclave) — no contraseñas.
+      </li>
+      <li>
+        <strong>Vinculación al dominio</strong>
+        — resistente a phishing.
+      </li>
     </ul>
-    <p><strong>Datos biométricos:</strong> nunca abandonan tu dispositivo; la app no accede a huella ni rostro.</p>
+    <p>
+      <strong>Datos biométricos:</strong>
+      nunca abandonan tu dispositivo; la app no accede a huella ni rostro.
+    </p>
 
     <h2>Datos que tratamos</h2>
     <table>
-        <thead>
-            <tr><th>Dato</th><th>Finalidad</th><th>Base legal (Ley 21.719)</th><th>Retención</th></tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Passkey (username, credentialId)</td>
-                <td>Autenticación al tablero</td>
-                <td>Consentimiento / ejecución del servicio</td>
-                <td>localStorage hasta que elimines passkeys</td>
-            </tr>
-            <tr>
-                <td>Sesión passkey</td>
-                <td>Mantener login</td>
-                <td>Ejecución del servicio</td>
-                <td>sessionStorage · expira a 24 h</td>
-            </tr>
-            <tr>
-                <td>Eventos de calendario (GCal, ICS)</td>
-                <td>Mostrar y gestionar tu semana</td>
-                <td>Consentimiento (OAuth / URL que tú configuras)</td>
-                <td>localStorage hasta borrado</td>
-            </tr>
-            <tr>
-                <td>Tareas y notas del tablero</td>
-                <td>Planificación personal</td>
-                <td>Ejecución del servicio</td>
-                <td>localStorage</td>
-            </tr>
-            <tr>
-                <td>Fotos BuJo (memoria)</td>
-                <td>Extracción con IA (solo si tú lo activas)</td>
-                <td>Consentimiento explícito</td>
-                <td>No persisten; se eliminan al limpiar captura</td>
-            </tr>
-            <tr>
-                <td>Token OAuth Google</td>
-                <td>Sync Calendar</td>
-                <td>Consentimiento OAuth</td>
-                <td>Solo memoria de sesión</td>
-            </tr>
-            <tr>
-                <td>Credenciales Trello (opcional)</td>
-                <td>Sync Espacio Seguro</td>
-                <td>Consentimiento al configurarlas</td>
-                <td>localStorage (migración a proxy planificada)</td>
-            </tr>
-            <tr>
-                <td>Preferencia de consentimiento</td>
-                <td>Registro de aviso legal</td>
-                <td>Interés legítimo / cumplimiento</td>
-                <td>localStorage <code>tablero_consent_ro</code></td>
-            </tr>
-        </tbody>
+      <thead>
+        <tr>
+          <th>Dato</th>
+          <th>Finalidad</th>
+          <th>Base legal (Ley 21.719)</th>
+          <th>Retención</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Passkey (username, credentialId)</td>
+          <td>Autenticación al tablero</td>
+          <td>Consentimiento / ejecución del servicio</td>
+          <td>localStorage hasta que elimines passkeys</td>
+        </tr>
+        <tr>
+          <td>Sesión passkey</td>
+          <td>Mantener login</td>
+          <td>Ejecución del servicio</td>
+          <td>sessionStorage · expira a 24 h</td>
+        </tr>
+        <tr>
+          <td>Eventos de calendario (GCal, ICS)</td>
+          <td>Mostrar y gestionar tu semana</td>
+          <td>Consentimiento (OAuth / URL que tú configuras)</td>
+          <td>localStorage hasta borrado</td>
+        </tr>
+        <tr>
+          <td>Tareas y notas del tablero</td>
+          <td>Planificación personal</td>
+          <td>Ejecución del servicio</td>
+          <td>localStorage</td>
+        </tr>
+        <tr>
+          <td>Fotos BuJo (memoria)</td>
+          <td>Extracción con IA (solo si tú lo activas)</td>
+          <td>Consentimiento explícito</td>
+          <td>No persisten; se eliminan al limpiar captura</td>
+        </tr>
+        <tr>
+          <td>Token OAuth Google</td>
+          <td>Sync Calendar</td>
+          <td>Consentimiento OAuth</td>
+          <td>Solo memoria de sesión</td>
+        </tr>
+        <tr>
+          <td>Credenciales Trello (opcional)</td>
+          <td>Sync Espacio Seguro</td>
+          <td>Consentimiento al configurarlas</td>
+          <td>localStorage (migración a proxy planificada)</td>
+        </tr>
+        <tr>
+          <td>Preferencia de consentimiento</td>
+          <td>Registro de aviso legal</td>
+          <td>Interés legítimo / cumplimiento</td>
+          <td>
+            localStorage
+            <code>tablero_consent_ro</code>
+          </td>
+        </tr>
+      </tbody>
     </table>
 
     <h2>Almacenamiento local</h2>
-    <p>La mayoría de los datos viven <strong>en tu navegador</strong>. No operamos base de datos propia ni vendemos datos.</p>
+    <p>
+      La mayoría de los datos viven
+      <strong>en tu navegador</strong>
+      . No operamos base de datos propia ni vendemos datos.
+    </p>
 
     <h2>Procesamiento en servidor (proxy)</h2>
-    <p>Si configuras un <strong>Cloudflare Worker</strong> como proxy:</p>
+    <p>
+      Si configuras un
+      <strong>Cloudflare Worker</strong>
+      como proxy:
+    </p>
     <ul>
-        <li>Las solicitudes de IA pasan por ese servidor; las API keys residen allí, no en tu navegador (v1.5+ en producción).</li>
-        <li>Las imágenes BuJo se envían al proveedor IA solo para extracción; no se almacenan en disco del Worker ni en GitHub Pages. La lectura crómática Clave A (v1.6) clasifica por color de marcador en el cliente tras la respuesta.</li>
-        <li>Las URLs ICS pueden proxearse; el Worker solo reenvía a hosts permitidos.</li>
+      <li>Las solicitudes de IA pasan por ese servidor; las API keys residen allí, no en tu navegador (v1.5+ en producción).</li>
+      <li>Las imágenes BuJo se envían al proveedor IA solo para extracción; no se almacenan en disco del Worker ni en GitHub Pages. La lectura crómática Clave A (v1.6) clasifica por color de marcador en el cliente tras la respuesta.</li>
+      <li>Las URLs ICS pueden proxearse; el Worker solo reenvía a hosts permitidos.</li>
     </ul>
 
     <h2>Terceros</h2>
     <ul>
-        <li><strong>Google</strong> — Calendar API y OAuth.</li>
-        <li><strong>Anthropic / OpenAI / Google AI</strong> — solo si usas análisis BuJo vía proxy o dev local.</li>
-        <li><strong>Trello / Atlassian</strong> — solo si configuras sync Espacio Seguro.</li>
-        <li><strong>GitHub Pages</strong> — hosting estático (sin acceso a datos locales).</li>
+      <li>
+        <strong>Google</strong>
+        — Calendar API y OAuth.
+      </li>
+      <li>
+        <strong>Anthropic / OpenAI / Google AI</strong>
+        — solo si usas análisis BuJo vía proxy o dev local.
+      </li>
+      <li>
+        <strong>Trello / Atlassian</strong>
+        — solo si configuras sync Espacio Seguro.
+      </li>
+      <li>
+        <strong>GitHub Pages</strong>
+        — hosting estático (sin acceso a datos locales).
+      </li>
     </ul>
 
     <h2>Seguridad</h2>
     <ul>
-        <li><strong>WebAuthn/Passkeys</strong> — FIDO2 sin contraseñas.</li>
-        <li><strong>API keys IA</strong> — no se persisten en producción; usar proxy Worker.</li>
-        <li><strong>CSP y sanitización</strong> — mitigación XSS en contenido de usuario.</li>
-        <li><strong>HTTPS</strong> — conexiones cifradas.</li>
+      <li>
+        <strong>WebAuthn/Passkeys</strong>
+        — FIDO2 sin contraseñas.
+      </li>
+      <li>
+        <strong>API keys IA</strong>
+        — no se persisten en producción; usar proxy Worker.
+      </li>
+      <li>
+        <strong>CSP y sanitización</strong>
+        — mitigación XSS en contenido de usuario.
+      </li>
+      <li>
+        <strong>HTTPS</strong>
+        — conexiones cifradas.
+      </li>
     </ul>
 
     <h2>Tus derechos (Chile — Ley 21.719)</h2>
-    <p>Puedes acceder, rectificar, suprimir y oponerte contactando a <a href="mailto:gaete.gaona@gmail.com">gaete.gaona@gmail.com</a>.</p>
+    <p>
+      Puedes acceder, rectificar, suprimir y oponerte contactando a
+      <a href="mailto:gaete.gaona@gmail.com">gaete.gaona@gmail.com</a>
+      .
+    </p>
 
     <h2>Eliminación de datos</h2>
     <ul>
-        <li><strong>Cerrar sesión passkey:</strong> ⚙️ Admin → 🔐 Seguridad · Passkey → Cerrar sesión</li>
-        <li><strong>Eliminar passkeys:</strong> ⚙️ Admin → Gestionar passkeys</li>
-        <li><strong>Limpiar tablero:</strong> ⚙️ Admin → Limpiar estado guardado</li>
+      <li>
+        <strong>Cerrar sesión passkey:</strong>
+        ⚙️ Admin → 🔐 Seguridad · Passkey → Cerrar sesión
+      </li>
+      <li>
+        <strong>Eliminar passkeys:</strong>
+        ⚙️ Admin → Gestionar passkeys
+      </li>
+      <li>
+        <strong>Limpiar tablero:</strong>
+        ⚙️ Admin → Limpiar estado guardado
+      </li>
     </ul>
 
     <h2>Menores</h2>
@@ -134,6 +211,10 @@
     <h2>Cambios</h2>
     <p>La fecha de actualización aparece al inicio. El banner de consentimiento puede mostrarse si cambia el tratamiento.</p>
 
-    <p style="margin-top:40px;"><a href="index.html">← Volver al tablero</a> · <a href="terms.html">Términos de uso</a></p>
-</body>
+    <p style="margin-top:40px;">
+      <a href="index.html">← Volver al tablero</a>
+      ·
+      <a href="terms.html">Términos de uso</a>
+    </p>
+  </body>
 </html>

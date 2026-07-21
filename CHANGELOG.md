@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.7.9+] — 2026-07-21 (noche)
+
+### OAuth brand / verify prep
+- `brand.html` — ownership + links privacy/terms (homepage consent)
+- `icons/logo-oauth.svg` — marca Viento Norte (viento + norte + TR)
+- `docs/GOOGLE-OAUTH.md` — Ruta A Testing vs Ruta B Publish/GSC
+
 ## [1.7.9] — 2026-07-21
 
 ### OAuth
