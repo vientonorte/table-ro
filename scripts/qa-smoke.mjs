@@ -49,15 +49,23 @@ for (const fn of REQUIRED_GLOBALS) {
 }
 ok(`app.js define ${REQUIRED_GLOBALS.length} handlers globales`);
 
-if (!indexHtml.includes('js/app.js?v=1.7.3')) {
-  fail('index.html no referencia app.js v1.7.3 (cache bust)');
+if (!indexHtml.includes('js/app.js?v=1.7.4')) {
+  fail('index.html no referencia app.js v1.7.4 (cache bust)');
 }
-ok('Cache bust app.js v1.7.3');
+ok('Cache bust app.js v1.7.4');
 
 if (!appJs.includes('function subscribeTrelloIcsToGCal')) {
   fail('falta subscribeTrelloIcsToGCal (capa A)');
 }
 ok('Capa A ICS→GCal one-click');
+
+if (!indexHtml.includes('view-switch') || !indexHtml.includes('ops-embed__shell')) {
+  fail('Ops atomic UI incompleto (view-switch / ops-embed shell)');
+}
+if (!appJs.includes('function setBoardView') || !appJs.includes('OPS_EMBED_URL')) {
+  fail('setBoardView / OPS_EMBED_URL missing');
+}
+ok('Ops embed atomic view switch');
 
 // Trello hub + bridge
 if (!appJs.includes("type: 'trello'") && !appJs.includes('type:"trello"')) {
