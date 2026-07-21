@@ -2862,3 +2862,12 @@ body.sync-simple .src-actions .btn.btn-g {
   border-color: #F97316;
   background: rgba(249, 115, 22, 0.16);
 }
+
+.domain-pill--link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  border-color: #a371f7;
+  color: #d2a8ff;
+}
+.domain-pill--link:hover { background: rgba(163, 113, 247, 0.15); color: #fff; }
