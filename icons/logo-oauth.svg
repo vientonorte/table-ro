@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Tablero Rö · Viento Norte">
+  <!-- Brand mark: wind + north · not generic calendar alone -->
+  <defs>
+    <linearGradient id="vn" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="55%" stop-color="#a855f7"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="#0D0D1A"/>
+  <rect x="24" y="24" width="464" height="464" rx="96" fill="none" stroke="url(#vn)" stroke-width="16"/>
+  <!-- Wind arcs (Viento) -->
+  <path d="M120 200 C200 120 280 120 360 180" fill="none" stroke="#c084fc" stroke-width="28" stroke-linecap="round"/>
+  <path d="M140 260 C220 190 300 190 380 250" fill="none" stroke="#a78bfa" stroke-width="22" stroke-linecap="round" opacity="0.9"/>
+  <path d="M160 320 C240 260 310 260 390 310" fill="none" stroke="#e9d5ff" stroke-width="16" stroke-linecap="round" opacity="0.75"/>
+  <!-- North mark -->
+  <path d="M256 360 L256 420" stroke="#10b981" stroke-width="20" stroke-linecap="round"/>
+  <path d="M256 360 L300 420 L256 400 L212 420 Z" fill="#10b981"/>
+  <!-- Wordmark monogram TR -->
+  <text x="256" y="175" text-anchor="middle" font-family="system-ui,Segoe UI,sans-serif" font-size="72" font-weight="800" fill="#f5f3ff" letter-spacing="4">TR</text>
+</svg>
