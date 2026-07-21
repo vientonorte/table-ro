@@ -1,7 +1,7 @@
 /**
  * Tablero Rö — Lógica principal
  * ==============================
- * Versión: 1.7.6
+ * Versión: 1.7.7
  * Descripción: Tablero semanal · hub único Semana|Ops (journey sin duplicar /ops).
  *
  * Arquitectura (Design Thinking — mapeo de funcionalidades):
@@ -1929,19 +1929,62 @@ function closeCalModal(){document.getElementById('cal-modal').classList.remove('
 
 const GCAL_API='https://www.googleapis.com/calendar/v3';
 const GCAL_SCOPES='https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly';
-const GCAL_CLIENT_ID='5033046467-kgd7gl4tekb4fkt90jq32rob4evmgnmn.apps.googleusercontent.com';
+/** Dead client (deleted in GCP) — never use as live default */
+const GCAL_DEAD_CLIENT_ID='5033046467-kgd7gl4tekb4fkt90jq32rob4evmgnmn.apps.googleusercontent.com';
+/** Empty until you paste a new Web client ID (Admin or Sync modal) */
+const GCAL_CLIENT_ID='';
 let gToken=null;let tokenClient=null;
+
+function purgeDeadGcalClientId(){
+  try{
+    const cur=(localStorage.getItem('gcal_client_id')||'').trim();
+    if(cur===GCAL_DEAD_CLIENT_ID){
+      localStorage.removeItem('gcal_client_id');
+      return true;
+    }
+  }catch(_){}
+  return false;
+}
+function getGcalClientId(){
+  purgeDeadGcalClientId();
+  const fromInput=(document.getElementById('gcal-client-id')?.value||'').trim();
+  const fromAdm=(document.getElementById('adm-client-id')?.value||'').trim();
+  const fromLs=(localStorage.getItem('gcal_client_id')||'').trim();
+  const id=fromInput||fromAdm||fromLs||GCAL_CLIENT_ID;
+  if(id===GCAL_DEAD_CLIENT_ID) return '';
+  return id;
+}
 function initGAuthUI(){
-  const savedId=localStorage.getItem('gcal_client_id')||GCAL_CLIENT_ID;
+  purgeDeadGcalClientId();
+  const savedId=getGcalClientId();
   const zone=document.getElementById('gcal-auth-zone');if(!zone)return;
   zone.className='oauth-box disconnected';
   const isLocalhost=location.hostname==='localhost'||location.hostname==='127.0.0.1'||location.hostname==='vientonorte.github.io';
-  const originWarning=!isLocalhost?`<div style="margin-top:6px;padding:5px 7px;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.3);border-radius:6px;font-size:.6rem;color:#fb923c;line-height:1.5">⚠️ Requiere <strong>http://localhost</strong>. Ejecuta:<br><code style="background:rgba(0,0,0,.25);padding:1px 5px;border-radius:3px;">python3 -m http.server 8080</code></div>`:`<div style="font-size:.58rem;color:#10B981;margin-top:3px">✓ Origen correcto</div>`;
-  zone.innerHTML=`<div style="font-size:.65rem;color:var(--mut);margin-bottom:5px;line-height:1.5">Sync API (OAuth). Si ves invalid_client, recrea el Client ID en Google Cloud (cuenta gaete.gaona@gmail.com). ICS público sigue sin OAuth.</div><div class="mfield" style="margin-bottom:7px"><label for="gcal-client-id">Google OAuth Client ID</label><input type="text" id="gcal-client-id" value="${savedId}" style="font-size:.6rem;opacity:.75"></div>${originWarning}<button class="btn btn-p" onclick="gSignIn()" style="width:100%;justify-content:center;margin-top:8px">🔑 Conectar con Google</button>`;
+  const originWarning=!isLocalhost?`<div style="margin-top:6px;padding:5px 7px;background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.3);border-radius:6px;font-size:.6rem;color:#fb923c;line-height:1.5">⚠️ Requiere <strong>http://localhost</strong>. Ejecuta:<br><code style="background:rgba(0,0,0,.25);padding:1px 5px;border-radius:3px;">python3 -m http.server 8080</code></div>`:`<div style="font-size:.58rem;color:#10B981;margin-top:3px">✓ Origen: ${escapeHtml(location.origin)}</div>`;
+  const deadNote=`<div style="margin-top:6px;padding:6px 8px;background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.35);border-radius:8px;font-size:.6rem;color:#fecaca;line-height:1.5"><strong>Si ves GeneralOAuthFlow / invalid_client:</strong> el Client ID viejo ya no existe. Crea uno nuevo en Google Cloud (Web application) con origin <code>https://vientonorte.github.io</code>, pégalo abajo y conecta. ICS sigue sin OAuth. Guía: docs/GOOGLE-OAUTH.md</div>`;
+  zone.innerHTML=`<div style="font-size:.65rem;color:var(--mut);margin-bottom:5px;line-height:1.5">OAuth = Calendar <strong>API</strong> (push/pull). Sin Client ID nuevo no uses 🔑 — usa Sync ICS.</div><div class="mfield" style="margin-bottom:7px"><label for="gcal-client-id">Google OAuth Client ID (nuevo)</label><input type="text" id="gcal-client-id" value="${escapeHtml(savedId)}" placeholder="xxxxx.apps.googleusercontent.com" style="font-size:.6rem;opacity:.9" autocomplete="off" spellcheck="false"></div>${originWarning}${deadNote}<button class="btn btn-p" onclick="gSignIn()" style="width:100%;justify-content:center;margin-top:8px">🔑 Conectar con Google</button>`;
+  const adm=document.getElementById('adm-client-id');
+  if(adm && (!adm.value||adm.value===GCAL_DEAD_CLIENT_ID)) adm.value=savedId;
+  if(adm && adm.value===GCAL_DEAD_CLIENT_ID) adm.value='';
 }
 function gSignIn(){
-  const clientId=((document.getElementById('gcal-client-id')?.value||'').trim())||GCAL_CLIENT_ID;
-  if(!window.google?.accounts?.oauth2){alert('La librería GIS aún no cargó. Espera un momento.');return;}
+  const clientId=getGcalClientId();
+  if(!clientId){
+    alert(
+      'Falta un OAuth Client ID válido.\n\n'+
+      'Google muestra "GeneralOAuthFlow" / invalid_client cuando el Client ID no existe.\n\n'+
+      '1) console.cloud.google.com → Credentials\n'+
+      '2) Create OAuth client ID → Web application\n'+
+      '3) Authorized JavaScript origins:\n'+
+      '   https://vientonorte.github.io\n'+
+      '   http://localhost:8080\n'+
+      '4) Copia el Client ID (…apps.googleusercontent.com)\n'+
+      '5) Pégalo en el campo de arriba y vuelve a Conectar\n\n'+
+      'Sin OAuth puedes seguir con Sync ICS (solo lectura pública).'
+    );
+    return;
+  }
+  if(!window.google?.accounts?.oauth2){alert('La librería GIS aún no cargó. Espera un momento y reintenta.');return;}
   localStorage.setItem('gcal_client_id',clientId);
   tokenClient=google.accounts.oauth2.initTokenClient({
     client_id:clientId,scope:GCAL_SCOPES,
@@ -1950,19 +1993,18 @@ function gSignIn(){
         console.error('GIS error:',resp);
         const err = resp.error;
         const desc = resp.error_description || resp.details || '';
-        if(err==='invalid_client' || /client/i.test(desc) || /not found/i.test(desc)){
+        if(err==='invalid_client' || /client/i.test(desc) || /not found/i.test(desc) || /GeneralOAuthFlow/i.test(desc)){
+          try{ localStorage.removeItem('gcal_client_id'); }catch(_){}
           alert(
-            'Error 401 invalid_client — OAuth Client ID no existe o no está habilitado.\n\n'+
-            '1) Abre Google Cloud Console → APIs & Services → Credentials\n'+
-            '2) Crea OAuth Client ID tipo "Web application"\n'+
-            '3) Authorized JavaScript origins:\n'+
-            '   https://vientonorte.github.io\n'+
-            '   http://localhost:8080\n'+
-            '4) Pega el nuevo Client ID abajo y vuelve a Conectar\n\n'+
-            'Nota: el ICS público de gaete.gaona@gmail.com sigue funcionando sin OAuth.\n'+
-            'OAuth solo hace falta para sync bidireccional (API).\n\n'+
+            'Google OAuth rechazó el Client ID (invalid_client / GeneralOAuthFlow).\n\n'+
+            'El ID no existe, está en otro proyecto, o el origin no está autorizado.\n\n'+
+            'Origins requeridos en el cliente Web:\n'+
+            '  • https://vientonorte.github.io\n'+
+            '  • http://localhost:8080\n\n'+
+            'Recrea el cliente, pega el ID nuevo y conecta de nuevo.\n'+
             'Guía: docs/GOOGLE-OAUTH.md'
           );
+          initGAuthUI();
           return;
         }
         alert('Error de Google OAuth: '+err+(desc?('\n'+desc):''));
