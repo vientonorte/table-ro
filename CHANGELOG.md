@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.7.4] — 2026-07-21
+
+### Ops embed · atomic + responsive
+
+- Segmented control **Semana | Sprint/Ops (/ops) | Full** (BEM atoms/molecules).
+- Organism `ops-embed`: toolbar, reload, shell + iframe full-height (`dvh`, safe-area).
+- Deep link `?view=ops` · tabs a11y (`role=tablist/tabpanel`).
+
 ## [1.7.3] — 2026-07-21
 
 ### Capa A one-click

@@ -4,14 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Tablero Rö — Planificador semanal personal con Google Calendar, Bullet Journal y sync bidireccional." />
-    <meta name="version" content="1.7.3" />
-    <title>TABLERO — Rö · v1.7.3</title>
+    <meta name="version" content="1.7.4" />
+    <title>TABLERO — Rö · v1.7.4</title>
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#7c3aed" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://www.googleapis.com https://api.trello.com https://*.workers.dev https://corsproxy.io https://api.allorigins.win; frame-src 'self' https://accounts.google.com https://vientonorte.github.io; base-uri 'self'; form-action 'self';" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <link rel="stylesheet" href="css/styles.css?v=1.7.3" />
+    <link rel="stylesheet" href="css/styles.css?v=1.7.4" />
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="js/auth-passkey.js"></script>
   </head>
@@ -67,10 +67,21 @@
           Trabajo
         </button>
       </div>
-      <div class="view-bar" id="view-bar" role="group" aria-label="Vista del tablero">
-        <button type="button" class="view-pill is-active" data-view="semana" aria-pressed="true" title="Semana personal y laboral">📅 Semana</button>
-        <button type="button" class="view-pill" data-view="ops" aria-pressed="false" title="Canvas sprint Vientonorte (una sola visión)">⚡ Sprint / Ops</button>
-        <a class="view-pill view-pill--ext" href="https://vientonorte.github.io/ops/" target="_blank" rel="noopener noreferrer" title="Abrir /ops/ en pestaña completa">↗</a>
+      <!-- Molecule: view-switch · Atoms: view-pill · Organism: ops-embed (below main) -->
+      <div class="view-switch" id="view-bar" role="tablist" aria-label="Vista del tablero · Semana o Ops">
+        <button type="button" class="view-pill is-active" role="tab" id="tab-semana" data-view="semana" aria-selected="true" aria-controls="view-semana" title="Semana personal y laboral">
+          <span class="view-pill__icon" aria-hidden="true">📅</span>
+          <span class="view-pill__label">Semana</span>
+        </button>
+        <button type="button" class="view-pill" role="tab" id="tab-ops" data-view="ops" aria-selected="false" aria-controls="view-ops" title="Canvas sprint · vientonorte.github.io/ops embebido">
+          <span class="view-pill__icon" aria-hidden="true">⚡</span>
+          <span class="view-pill__label">Sprint / Ops</span>
+          <span class="view-pill__badge" aria-hidden="true">/ops</span>
+        </button>
+        <a class="view-pill view-pill--ext" href="https://vientonorte.github.io/ops/" target="_blank" rel="noopener noreferrer" title="Abrir /ops/ en pestaña completa" aria-label="Abrir Ops en pestaña completa">
+          <span class="view-pill__icon" aria-hidden="true">↗</span>
+          <span class="view-pill__label view-pill__label--hide-sm">Full</span>
+        </a>
       </div>
       <div class="domain-bar" id="domain-bar" role="group" aria-label="Dominio Personal o Laboral">
         <button type="button" class="domain-pill is-active" data-domain="all" aria-pressed="true">Todo</button>
@@ -677,17 +688,33 @@
       </div>
     </div>
 
-    <main class="week-wrap" id="view-semana" aria-label="Tablero semanal">
+    <!-- Organism: week board -->
+    <main class="week-wrap" id="view-semana" role="tabpanel" aria-labelledby="tab-semana" aria-label="Tablero semanal">
       <div class="wboard" id="wboard" role="region" aria-label="Columnas de la semana"></div>
     </main>
 
-    <section class="ops-embed" id="view-ops" hidden aria-label="Canvas sprint Vientonorte">
-      <div class="ops-embed__bar">
-        <span class="ops-embed__title">⚡ Una visión · Sprint / Ops</span>
-        <span class="ops-embed__hint">Mismo board que /ops/ · Sync escribe vault · Personal/Laboral arriba en Semana</span>
-        <a class="ops-embed__full" href="https://vientonorte.github.io/ops/" target="_blank" rel="noopener noreferrer">Pantalla completa ↗</a>
+    <!-- Organism: ops canvas embed · same SoT as https://vientonorte.github.io/ops/ -->
+    <section class="ops-embed" id="view-ops" role="tabpanel" aria-labelledby="tab-ops" hidden aria-label="Canvas sprint Vientonorte · ops embebido">
+      <header class="ops-embed__bar">
+        <div class="ops-embed__identity">
+          <span class="ops-embed__mark" aria-hidden="true">⚡</span>
+          <div class="ops-embed__copy">
+            <h2 class="ops-embed__title">Sprint / Ops</h2>
+            <p class="ops-embed__hint">
+              Mismo canvas que
+              <a class="ops-embed__link" href="https://vientonorte.github.io/ops/" target="_blank" rel="noopener noreferrer">vientonorte.github.io/ops</a>
+              · embed compacto · vault via Sync
+            </p>
+          </div>
+        </div>
+        <div class="ops-embed__actions">
+          <button type="button" class="ops-embed__btn" id="ops-reload-btn" title="Recargar canvas">↻</button>
+          <a class="ops-embed__btn ops-embed__btn--primary" href="https://vientonorte.github.io/ops/" target="_blank" rel="noopener noreferrer">Pantalla completa ↗</a>
+        </div>
+      </header>
+      <div class="ops-embed__shell">
+        <iframe id="ops-frame" class="ops-embed__frame" title="Vientonorte Ops Canvas embebido" src="https://vientonorte.github.io/ops/?embed=1" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="clipboard-read; clipboard-write"></iframe>
       </div>
-      <iframe id="ops-frame" class="ops-embed__frame" title="Vientonorte Ops Canvas" src="https://vientonorte.github.io/ops/?embed=1" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
     </section>
 
     <div class="drawer-overlay" id="overlay" onclick="closeDrawer()"></div>
@@ -893,6 +920,6 @@
       </div>
     </div>
 
-    <script src="js/app.js?v=1.7.3" defer></script>
+    <script src="js/app.js?v=1.7.4" defer></script>
   </body>
 </html>
