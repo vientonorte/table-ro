@@ -4,14 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Tablero Rö — Planificador semanal personal con Google Calendar, Bullet Journal y sync bidireccional." />
-    <meta name="version" content="1.7.5" />
-    <title>TABLERO — Rö · v1.7.5</title>
+    <meta name="version" content="1.7.6" />
+    <title>TABLERO — Rö · v1.7.6</title>
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#7c3aed" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://www.googleapis.com https://api.trello.com https://*.workers.dev https://corsproxy.io https://api.allorigins.win; frame-src 'self' https://accounts.google.com https://vientonorte.github.io; base-uri 'self'; form-action 'self';" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <link rel="stylesheet" href="css/styles.css?v=1.7.5" />
+    <link rel="stylesheet" href="css/styles.css?v=1.7.6" />
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="js/auth-passkey.js"></script>
   </head>
@@ -23,7 +23,7 @@
     <nav class="topbar" aria-label="Barra de herramientas">
       <div class="topbar-main">
         <h1 id="month-label">ABRIL 2026</h1>
-        <span class="layer-chip">Uso diario</span>
+        <button type="button" class="layer-chip layer-chip--toggle" id="layer-chip" onclick="setBoardView(document.body.classList.contains('view-ops')?'semana':'ops')" title="Cambiar Semana / Ops">Uso diario</button>
         <div class="topbar-sep"></div>
         <div class="wnav-group" aria-label="Navegación semanal">
           <button class="wnav" onclick="goWeek(-1)" aria-label="Semana anterior">←</button>
@@ -70,21 +70,25 @@
           Trabajo
         </button>
       </div>
-      <!-- Molecule: view-switch · Atoms: view-pill · Organism: ops-embed (below main) -->
-      <div class="view-switch" id="view-bar" role="tablist" aria-label="Vista del tablero · Semana o Ops">
-        <button type="button" class="view-pill is-active" role="tab" id="tab-semana" data-view="semana" aria-selected="true" aria-controls="view-semana" title="Semana personal y laboral">
-          <span class="view-pill__icon" aria-hidden="true">📅</span>
-          <span class="view-pill__label">Semana</span>
-        </button>
-        <button type="button" class="view-pill" role="tab" id="tab-ops" data-view="ops" aria-selected="false" aria-controls="view-ops" title="Canvas sprint · vientonorte.github.io/ops embebido">
-          <span class="view-pill__icon" aria-hidden="true">⚡</span>
-          <span class="view-pill__label">Sprint / Ops</span>
-          <span class="view-pill__badge" aria-hidden="true">/ops</span>
-        </button>
-        <a class="view-pill view-pill--ext" href="https://vientonorte.github.io/ops/" target="_blank" rel="noopener noreferrer" title="Abrir /ops/ en pestaña completa" aria-label="Abrir Ops en pestaña completa">
-          <span class="view-pill__icon" aria-hidden="true">↗</span>
-          <span class="view-pill__label view-pill__label--hide-sm">Full</span>
-        </a>
+      <!-- Primary app nav: full-width, always visible (journey: ONE home = table-ro) -->
+      <div class="app-rail" id="app-rail">
+        <div class="view-switch" id="view-bar" role="tablist" aria-label="Vista principal · Semana o Ops">
+          <button type="button" class="view-pill is-active" role="tab" id="tab-semana" data-view="semana" aria-selected="true" aria-controls="view-semana" title="Semana · vida personal y laboral">
+            <span class="view-pill__icon" aria-hidden="true">📅</span>
+            <span class="view-pill__label">Semana</span>
+          </button>
+          <button type="button" class="view-pill" role="tab" id="tab-ops" data-view="ops" aria-selected="false" aria-controls="view-ops" title="Ops · mismo canvas que vientonorte.github.io/ops (embebido aquí)">
+            <span class="view-pill__icon" aria-hidden="true">⚡</span>
+            <span class="view-pill__label">Ops</span>
+            <span class="view-pill__badge">sprint</span>
+          </button>
+        </div>
+        <p class="app-rail__hint" id="app-rail-hint">
+          <strong>Una app</strong>
+          · dos vistas. Ops embebido aquí =
+          <span class="app-rail__mono">/ops</span>
+          (no es otro producto).
+        </p>
       </div>
       <div class="domain-bar" id="domain-bar" role="group" aria-label="Dominio Personal o Laboral">
         <button type="button" class="domain-pill is-active" data-domain="all" aria-pressed="true">Todo</button>
@@ -990,6 +994,6 @@
       </div>
     </div>
 
-    <script src="js/app.js?v=1.7.5" defer></script>
+    <script src="js/app.js?v=1.7.6" defer></script>
   </body>
 </html>

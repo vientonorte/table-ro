@@ -1,9 +1,8 @@
 /**
  * Tablero Rö — Lógica principal
  * ==============================
- * Versión: 1.7.5
- * Descripción: Tablero semanal personal con integración Google Calendar,
- *              Bullet Journal (BuJo), Trello, Ops embed y deep-links locales.
+ * Versión: 1.7.6
+ * Descripción: Tablero semanal · hub único Semana|Ops (journey sin duplicar /ops).
  *
  * Arquitectura (Design Thinking — mapeo de funcionalidades):
  *
@@ -1468,15 +1467,28 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 const OPS_EMBED_URL = 'https://vientonorte.github.io/ops/?embed=1';
 
-/** Una visión: Semana (vida) | Ops (sprint canvas embebido) — atomic tabs */
+/**
+ * Journey: table-ro is the only home.
+ * - Semana = life board
+ * - Ops = same canvas as /ops/ (embedded) — not a second product
+ * Standalone /ops/ = fullscreen of the same board (optional).
+ */
 function setBoardView(view){
   const mode = view === 'ops' ? 'ops' : 'semana';
   const semana = document.getElementById('view-semana');
   const ops = document.getElementById('view-ops');
   const frame = document.getElementById('ops-frame');
-  const chip = document.querySelector('.layer-chip');
-  if (semana) semana.hidden = mode === 'ops';
-  if (ops) ops.hidden = mode !== 'ops';
+  const chip = document.getElementById('layer-chip') || document.querySelector('.layer-chip');
+  const hint = document.getElementById('app-rail-hint');
+  if (semana) {
+    semana.hidden = mode === 'ops';
+    semana.style.display = mode === 'ops' ? 'none' : '';
+  }
+  if (ops) {
+    ops.hidden = mode !== 'ops';
+    // force visible when ops (beats stale [hidden] + CSS)
+    ops.style.display = mode === 'ops' ? 'flex' : 'none';
+  }
   document.body.classList.toggle('view-ops', mode === 'ops');
   document.querySelectorAll('.view-pill[data-view]').forEach(el=>{
     const on = el.dataset.view === mode;
@@ -1485,24 +1497,35 @@ function setBoardView(view){
     el.setAttribute('aria-pressed', on ? 'true' : 'false');
     el.tabIndex = on ? 0 : -1;
   });
-  // Domain filters only apply to week board
   const domainBar = document.getElementById('domain-bar');
   if (domainBar) domainBar.style.display = mode === 'ops' ? 'none' : '';
   const wnav = document.querySelector('.wnav-group');
-  if (wnav) wnav.style.opacity = mode === 'ops' ? '0.35' : '1';
-  if (chip) chip.textContent = mode === 'ops' ? 'Sprint / Ops' : 'Uso diario';
-  if (mode === 'ops' && frame && !frame.dataset.loaded) {
-    reloadOpsFrame(false);
+  if (wnav) {
+    wnav.style.opacity = mode === 'ops' ? '0.35' : '1';
+    wnav.style.pointerEvents = mode === 'ops' ? 'none' : '';
+  }
+  if (chip) {
+    chip.textContent = mode === 'ops' ? '⚡ Ops · sprint' : '📅 Semana';
+    chip.setAttribute('aria-label', mode === 'ops' ? 'Vista Ops activa · tocar para Semana' : 'Vista Semana activa · tocar para Ops');
+  }
+  if (hint) {
+    hint.innerHTML = mode === 'ops'
+      ? '<strong>Vista Ops</strong> · canvas de sprint embebido (mismo que <span class="app-rail__mono">vientonorte.github.io/ops</span>). Fullscreen solo si lo necesitas ↗'
+      : '<strong>Una app</strong> · dos vistas. Ops embebido aquí = <span class="app-rail__mono">/ops</span> (no es otro producto).';
+  }
+  if (mode === 'ops') {
+    if (frame && !frame.dataset.loaded) reloadOpsFrame(false);
+    try { document.getElementById('app-rail')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch(_){}
   }
   try { localStorage.setItem('tablero_view_ro', mode); } catch(_){}
-  // Keep URL shareable without reload noise
   try {
     const url = new URL(location.href);
     if (mode === 'ops') url.searchParams.set('view', 'ops');
     else url.searchParams.delete('view');
     history.replaceState(null, '', url.pathname + url.search + url.hash);
   } catch(_){}
-  announce(mode === 'ops' ? 'Vista Sprint Ops · canvas /ops embebido' : 'Vista Semana');
+  announce(mode === 'ops' ? 'Vista Ops · canvas de sprint' : 'Vista Semana');
+  showToast(mode === 'ops' ? '⚡ Ops (canvas sprint)' : '📅 Semana','info',1600);
 }
 
 function reloadOpsFrame(force){
