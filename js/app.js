@@ -1,7 +1,7 @@
 /**
  * Tablero Rö — Lógica principal
  * ==============================
- * Versión: 1.6.5
+ * Versión: 1.7.0
  * Descripción: Tablero semanal personal con integración Google Calendar,
  *              Bullet Journal (BuJo) y sync bidireccional.
  *
@@ -1411,7 +1411,48 @@ document.addEventListener('DOMContentLoaded',()=>{
     const saved = localStorage.getItem('tablero_domain_ro');
     if (saved && ['all','personal','laboral'].includes(saved)) setDomain(saved);
   } catch(_){}
+  document.querySelectorAll('.view-pill[data-view]').forEach(btn=>{
+    btn.addEventListener('click',()=>setBoardView(btn.dataset.view));
+  });
+  try {
+    const v = localStorage.getItem('tablero_view_ro');
+    if (v === 'ops' || v === 'semana') setBoardView(v);
+  } catch(_){}
 });
+
+/** Una visión: Semana (vida) | Ops (sprint canvas embebido) */
+function setBoardView(view){
+  const mode = view === 'ops' ? 'ops' : 'semana';
+  const semana = document.getElementById('view-semana');
+  const ops = document.getElementById('view-ops');
+  const frame = document.getElementById('ops-frame');
+  const chip = document.querySelector('.layer-chip');
+  if (semana) semana.hidden = mode === 'ops';
+  if (ops) ops.hidden = mode !== 'ops';
+  document.body.classList.toggle('view-ops', mode === 'ops');
+  document.querySelectorAll('.view-pill[data-view]').forEach(el=>{
+    const on = el.dataset.view === mode;
+    el.classList.toggle('is-active', on);
+    el.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  // Domain filters only apply to week board
+  const domainBar = document.getElementById('domain-bar');
+  if (domainBar) domainBar.style.display = mode === 'ops' ? 'none' : '';
+  const wnav = document.querySelector('.wnav-group');
+  if (wnav) wnav.style.opacity = mode === 'ops' ? '0.35' : '1';
+  if (chip) chip.textContent = mode === 'ops' ? 'Sprint / Ops' : 'Uso diario';
+  if (mode === 'ops' && frame) {
+    // reload snapshot when opening ops view
+    const base = 'https://vientonorte.github.io/ops/?embed=1&t=' + Date.now();
+    if (!frame.dataset.loaded) {
+      frame.src = base;
+      frame.dataset.loaded = '1';
+    }
+  }
+  try { localStorage.setItem('tablero_view_ro', mode); } catch(_){}
+  announce(mode === 'ops' ? 'Vista Sprint Ops' : 'Vista Semana');
+}
+
 
 function changeCat(e,tag){
   e.stopPropagation();

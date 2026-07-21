@@ -2871,3 +2871,84 @@ body.sync-simple .src-actions .btn.btn-g {
   color: #d2a8ff;
 }
 .domain-pill--link:hover { background: rgba(163, 113, 247, 0.15); color: #fff; }
+
+
+/* View switcher: Semana | Sprint Ops (embedded canvas) */
+.view-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.45rem 0.75rem 0.15rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: center;
+}
+.view-pill {
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.45rem 0.95rem;
+  min-height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--border, #30363d);
+  background: transparent;
+  color: var(--mut, #8b949e);
+  cursor: pointer;
+  appearance: none;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+.view-pill:hover { color: #e6edf3; border-color: #484f58; }
+.view-pill.is-active {
+  color: #fff;
+  border-color: #a371f7;
+  background: rgba(163, 113, 247, 0.2);
+}
+.view-pill--ext {
+  min-width: 40px;
+  justify-content: center;
+  padding-inline: 0.65rem;
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.ops-embed {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 120px);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 0.5rem 0.75rem;
+}
+.ops-embed[hidden] { display: none !important; }
+.ops-embed__bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: center;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.78rem;
+  color: var(--mut, #8b949e);
+}
+.ops-embed__title { font-weight: 700; color: #d2a8ff; }
+.ops-embed__hint { flex: 1; min-width: 12rem; }
+.ops-embed__full {
+  color: #79c0ff;
+  text-decoration: none;
+  font-weight: 600;
+}
+.ops-embed__full:hover { text-decoration: underline; }
+.ops-embed__frame {
+  flex: 1;
+  width: 100%;
+  min-height: calc(100vh - 160px);
+  border: 1px solid var(--border, #30363d);
+  border-radius: 12px;
+  background: #0d1117;
+}
+
+body.view-ops .daily-actions .bujo-btn,
+body.view-ops #filter-toggle-btn {
+  opacity: 0.45;
+}
