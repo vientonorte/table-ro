@@ -2825,3 +2825,40 @@ body.sync-simple .src-actions .btn.btn-g {
         min-height: 44px;
     }
 }
+
+
+/* Domain focus: Personal vs Laboral */
+.domain-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem 0.55rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.domain-pill {
+  font-family: inherit;
+  font-size: 0.78rem;
+  padding: 0.4rem 0.85rem;
+  min-height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--border, #30363d);
+  background: transparent;
+  color: var(--mut, #8b949e);
+  cursor: pointer;
+  appearance: none;
+}
+.domain-pill:hover { color: var(--text, #e6edf3); border-color: #484f58; }
+.domain-pill.is-active {
+  color: #fff;
+  border-color: #58a6ff;
+  background: rgba(88, 166, 255, 0.15);
+}
+.domain-pill[data-domain="personal"].is-active {
+  border-color: #EC4899;
+  background: rgba(236, 72, 153, 0.16);
+}
+.domain-pill[data-domain="laboral"].is-active {
+  border-color: #F97316;
+  background: rgba(249, 115, 22, 0.16);
+}
