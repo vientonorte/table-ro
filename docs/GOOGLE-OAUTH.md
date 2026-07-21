@@ -15,7 +15,9 @@ Detalles de la solicitud: flowName=GeneralOAuthFlow
 **Causa:** el Client ID viejo  
 `5033046467-kgd7gl4tekb4fkt90jq32rob4evmgnmn.apps.googleusercontent.com`  
 **ya no existe** (borrado, proyecto deshabilitado, o no visible para `gaete.gaona@gmail.com`).  
-Desde v1.7.7 el default muerto se purga; hay que pegar un **Client ID nuevo**.
+Desde v1.7.9 el default en app es el Client ID live:
+`913158816697-q9ceacnedpeu1sgkoq73hv829dgnlocj.apps.googleusercontent.com`
+(si falla, recrea en GCP y sobrescribe en Admin). El ID muerto `5033046467…` se purga de localStorage.
 
 ## Qué sigue funcionando sin OAuth
 

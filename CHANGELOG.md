@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.7.9] — 2026-07-21
+
+### OAuth
+
+- Default Client ID live: `913158816697-q9ceacnedpeu1sgkoq73hv829dgnlocj…`
+- Still purges dead `5033046467…` from localStorage.
+
 ## [1.7.8] — 2026-07-21
 
 ### OAuth
