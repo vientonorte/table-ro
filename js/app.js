@@ -1,7 +1,7 @@
 /**
  * Tablero Rö — Lógica principal
  * ==============================
- * Versión: 1.7.8
+ * Versión: 1.7.9
  * Descripción: Tablero semanal · hub único Semana|Ops (journey sin duplicar /ops).
  *
  * Arquitectura (Design Thinking — mapeo de funcionalidades):
@@ -1929,10 +1929,10 @@ function closeCalModal(){document.getElementById('cal-modal').classList.remove('
 
 const GCAL_API='https://www.googleapis.com/calendar/v3';
 const GCAL_SCOPES='https://www.googleapis.com/auth/calendar.events https://www.googleapis.com/auth/calendar.readonly';
-/** Dead client (deleted in GCP) — never use as live default */
+/** Dead client (deleted in GCP) — purge from localStorage if present */
 const GCAL_DEAD_CLIENT_ID='5033046467-kgd7gl4tekb4fkt90jq32rob4evmgnmn.apps.googleusercontent.com';
-/** Empty until you paste a new Web client ID (Admin or Sync modal) */
-const GCAL_CLIENT_ID='';
+/** Live Web OAuth client (gaete.gaona · origins: vientonorte.github.io + localhost) */
+const GCAL_CLIENT_ID='913158816697-q9ceacnedpeu1sgkoq73hv829dgnlocj.apps.googleusercontent.com';
 let gToken=null;let tokenClient=null;
 
 function purgeDeadGcalClientId(){
