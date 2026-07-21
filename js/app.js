@@ -1,7 +1,7 @@
 /**
  * Tablero Rö — Lógica principal
  * ==============================
- * Versión: 1.7.7
+ * Versión: 1.7.8
  * Descripción: Tablero semanal · hub único Semana|Ops (journey sin duplicar /ops).
  *
  * Arquitectura (Design Thinking — mapeo de funcionalidades):
@@ -2599,7 +2599,20 @@ setTimeout(()=>{syncAll().then(()=>renderWeek()).catch(err=>console.warn('Auto-s
 
 if ('serviceWorker' in navigator) {
     const swPath = location.pathname.indexOf('/table-ro/') === 0 ? '/table-ro/sw.js' : '/sw.js';
-    navigator.serviceWorker.register(swPath).catch((err) => console.warn('SW register:', err));
+    // updateViaCache: 'none' — always revalidate sw.js (avoids stuck v1.7.x)
+    navigator.serviceWorker
+        .register(swPath, { updateViaCache: 'none' })
+        .then((reg) => {
+            reg.update().catch(() => {});
+            // New SW installed while page open → reload once to pick shell
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (refreshing) return;
+                refreshing = true;
+                location.reload();
+            });
+        })
+        .catch((err) => console.warn('SW register:', err));
 }
 function renderCredentials(){
   const cont=document.getElementById('res-credentials-list');if(!cont)return;cont.innerHTML='';

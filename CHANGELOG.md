@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ---
 
-## [1.7.7] — 2026-07-21
+## [1.7.8] — 2026-07-21
 
 ### OAuth
 

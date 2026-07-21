@@ -49,10 +49,10 @@ for (const fn of REQUIRED_GLOBALS) {
 }
 ok(`app.js define ${REQUIRED_GLOBALS.length} handlers globales`);
 
-if (!indexHtml.includes('js/app.js?v=1.7.7')) {
-  fail('index.html no referencia app.js v1.7.7 (cache bust)');
+if (!indexHtml.includes('js/app.js?v=1.7.8')) {
+  fail('index.html no referencia app.js v1.7.8 (cache bust)');
 }
-ok('Cache bust app.js v1.7.7');
+ok('Cache bust app.js v1.7.8');
 
 if (!appJs.includes('function openLocalTarget') || !appJs.includes('obsidian://open')) {
   fail('faltan deep-links locales (openLocalTarget / obsidian URI)');
