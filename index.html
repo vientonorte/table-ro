@@ -4,14 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Tablero Rö — Planificador semanal personal con Google Calendar, Bullet Journal y sync bidireccional." />
-    <meta name="version" content="1.7.4" />
-    <title>TABLERO — Rö · v1.7.4</title>
+    <meta name="version" content="1.7.5" />
+    <title>TABLERO — Rö · v1.7.5</title>
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#7c3aed" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://www.googleapis.com https://api.trello.com https://*.workers.dev https://corsproxy.io https://api.allorigins.win; frame-src 'self' https://accounts.google.com https://vientonorte.github.io; base-uri 'self'; form-action 'self';" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <link rel="stylesheet" href="css/styles.css?v=1.7.4" />
+    <link rel="stylesheet" href="css/styles.css?v=1.7.5" />
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="js/auth-passkey.js"></script>
   </head>
@@ -45,6 +45,9 @@
             <button class="sec-btn save-btn" id="save-btn" onclick="saveBoard()" role="menuitem" title="Guardar estado (Ctrl+S)">💾 Guardar</button>
             <button class="sec-btn sync-topbtn" id="sync-topbtn" onclick="openCalModal()" role="menuitem">🔄 Sync</button>
             <button class="sec-btn" id="push-all-btn" onclick="syncAllToGCal()" role="menuitem">📤 Enviar a Calendarios</button>
+            <button class="sec-btn" onclick="openLocalTarget('obsidian')" role="menuitem" title="Abrir vault en Obsidian (URI)">📓 Obsidian</button>
+            <button class="sec-btn" onclick="openLocalTarget('editor')" role="menuitem" title="Abrir carpeta vault en editor (VS Code / Cursor)">📂 Editor local</button>
+            <button class="sec-btn" onclick="copyLocalPath('vault')" role="menuitem" title="Copiar ruta del vault">📋 Ruta vault</button>
             <button class="sec-btn" onclick="openAdminModal()" role="menuitem">⚙️ Admin</button>
           </div>
         </div>
@@ -550,6 +553,71 @@
           </div>
           <div class="adm-sep"></div>
           <div>
+            <div class="sec-title" style="font-size:.74rem;">📂 Local · vault y apps</div>
+            <div style="font-size:.62rem;color:var(--mut);margin-bottom:6px;line-height:1.5">
+              Desde
+              <strong>https</strong>
+              el browser
+              <strong>no puede</strong>
+              abrir
+              <code style="font-size:.55rem">file://</code>
+              . Best practice: URI de app (
+              <code style="font-size:.55rem">obsidian://</code>
+              ,
+              <code style="font-size:.55rem">vscode://</code>
+              ,
+              <code style="font-size:.55rem">cursor://</code>
+              ) o copiar ruta para Terminal/Finder.
+            </div>
+            <div id="adm-local-status" style="font-size:.6rem;line-height:1.55;margin-bottom:8px;padding:6px 8px;border-radius:8px;background:rgba(163,113,247,.08);border:1px solid rgba(163,113,247,.22);color:var(--mut)">Cargando…</div>
+            <div class="mfield">
+              <label for="adm-local-vault-name">Nombre vault Obsidian</label>
+              <input type="text" id="adm-local-vault-name" placeholder="Vientonorte" style="font-size:.61rem" autocomplete="off" />
+            </div>
+            <div class="mfield">
+              <label for="adm-local-vault-path">Ruta carpeta vault</label>
+              <input type="text" id="adm-local-vault-path" placeholder="/Users/ro/Developer/viento-norte/Vientonorte" style="font-size:.61rem" autocomplete="off" spellcheck="false" />
+            </div>
+            <div class="mfield">
+              <label for="adm-local-worktrees">Ruta worktrees</label>
+              <input type="text" id="adm-local-worktrees" placeholder="/Users/ro/Developer/viento-norte/worktrees" style="font-size:.61rem" autocomplete="off" spellcheck="false" />
+            </div>
+            <div class="mfield">
+              <label for="adm-local-ops-file">Nota ops (relativa al vault)</label>
+              <input type="text" id="adm-local-ops-file" placeholder="40-ops/canvas-operativo" style="font-size:.61rem" autocomplete="off" spellcheck="false" />
+            </div>
+            <div class="mfield">
+              <label for="adm-local-editor">Editor local (carpeta)</label>
+              <select id="adm-local-editor" style="font-size:.61rem">
+                <option value="vscode">VS Code (vscode://file/…)</option>
+                <option value="cursor">Cursor (cursor://file/…)</option>
+                <option value="none">Solo copiar ruta</option>
+              </select>
+            </div>
+            <div class="btn-row" style="margin-top:6px;flex-wrap:wrap;gap:6px">
+              <button class="btn btn-p" type="button" onclick="saveLocalPaths(this)" style="font-size:.66rem">💾 Guardar rutas</button>
+              <button class="btn btn-g" type="button" onclick="openLocalTarget('obsidian')" style="font-size:.66rem">📓 Obsidian vault</button>
+              <button class="btn btn-g" type="button" onclick="openLocalTarget('ops-note')" style="font-size:.66rem">⚡ Nota ops</button>
+              <button class="btn btn-g" type="button" onclick="openLocalTarget('editor')" style="font-size:.66rem">📂 Editor vault</button>
+              <button class="btn btn-g" type="button" onclick="openLocalTarget('worktrees')" style="font-size:.66rem">🌳 Worktrees</button>
+              <button class="btn btn-g" type="button" onclick="copyLocalPath('vault', this)" style="font-size:.66rem">📋 Copiar vault</button>
+              <button class="btn btn-g" type="button" onclick="copyLocalPath('open-cmd', this)" style="font-size:.66rem">💻 Copiar open …</button>
+            </div>
+            <div class="hint" style="margin-top:8px;line-height:1.45">
+              <span>💻</span>
+              En Terminal:
+              <code style="font-size:.55rem">open "/ruta/vault"</code>
+              (Finder) ·
+              <code style="font-size:.55rem">code "/ruta"</code>
+              ·
+              <code style="font-size:.55rem">cursor "/ruta"</code>
+              . Menú
+              <strong>☰ Más</strong>
+              también tiene atajos.
+            </div>
+          </div>
+          <div class="adm-sep"></div>
+          <div>
             <div class="sec-title" style="font-size:.74rem;">📅 URLs de Calendarios</div>
             <div id="adm-cal-urls"></div>
           </div>
@@ -709,6 +777,8 @@
         </div>
         <div class="ops-embed__actions">
           <button type="button" class="ops-embed__btn" id="ops-reload-btn" title="Recargar canvas">↻</button>
+          <button type="button" class="ops-embed__btn" onclick="openLocalTarget('ops-note')" title="Abrir nota ops en Obsidian">📓</button>
+          <button type="button" class="ops-embed__btn" onclick="openLocalTarget('editor')" title="Abrir vault en editor local">📂</button>
           <a class="ops-embed__btn ops-embed__btn--primary" href="https://vientonorte.github.io/ops/" target="_blank" rel="noopener noreferrer">Pantalla completa ↗</a>
         </div>
       </header>
@@ -920,6 +990,6 @@
       </div>
     </div>
 
-    <script src="js/app.js?v=1.7.4" defer></script>
+    <script src="js/app.js?v=1.7.5" defer></script>
   </body>
 </html>

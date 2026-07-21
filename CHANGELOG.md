@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.7.5] — 2026-07-21
+
+### Local · vault y apps
+
+- Menú **☰ Más**: Obsidian · Editor local · Copiar ruta vault
+- Admin **📂 Local**: rutas configurables + URI `obsidian://` / `vscode://` / `cursor://`
+- Ops toolbar: 📓 nota ops · 📂 editor
+- Best practice: no `file://` desde HTTPS (bloqueo browser)
+
 ## [1.7.4] — 2026-07-21
 
 ### Ops embed · atomic + responsive
