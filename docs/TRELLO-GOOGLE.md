@@ -35,11 +35,29 @@ Google Calendar (gaete.gaona@gmail.com)
 
 ### A · ICS en Google Calendar (2 min, sin token)
 
-1. Abre el board → vista Calendar / menú → copiar **iCalendar feed**  
-   (table-ro ya tiene URL por defecto en fuente `espacio-seguro`).
-2. [Google Calendar](https://calendar.google.com) → **Otros calendarios** → **Desde URL**.
-3. Pega el ICS. Nombre sugerido: `Trello · Espacio Seguro`.
-4. ✓ Vencimientos visibles en el teléfono (solo lectura, puede demorar).
+**URL del board (ya embebida en table-ro):**
+
+```
+https://trello.com/calendar/5be8d432f8dc74493aaf53e6/69c558a7d79162569df9a98a/3b84dbc14a0b216f20c2b1ca2120a49f.ics
+```
+
+**Camino rápido (recomendado):**
+
+1. Tablero → ⚙️ Admin → **＋ ICS → GCal (A)**  
+   (abre Google Calendar con `cid=` del feed Trello).
+2. Confirma **Añadir calendario**.
+3. En la lista izquierda: ⋮ → **Configuración** → renombrar a **Espacio Seguro / Camila**.
+4. Cuenta: `gaete.gaona@gmail.com`.
+
+**Camino manual:**
+
+1. Admin → **📋 Copiar ICS** (o copiar URL de arriba).
+2. [Google Calendar](https://calendar.google.com) → **Otros calendarios** (+) → **Desde URL**.
+3. Pegar → Añadir. Renombrar como arriba.
+
+Límites: solo lectura · refresh ~1h (`X-PUBLISHED-TTL: PT1H`) · no editas cards desde GCal.
+
+**Nota:** la Calendar API **no** puede suscribir un ICS arbitrario; solo la UI / deep link `cid=`.
 
 ### B · API Trello en table-ro
 

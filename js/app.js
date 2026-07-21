@@ -1,7 +1,7 @@
 /**
  * Tablero Rö — Lógica principal
  * ==============================
- * Versión: 1.7.2
+ * Versión: 1.7.3
  * Descripción: Tablero semanal personal con integración Google Calendar,
  *              Bullet Journal (BuJo), Trello API y bridge Trello→GCal.
  *
@@ -2121,6 +2121,49 @@ function clearTrelloCredentials(){
   localStorage.removeItem('trello_api_token');
   hydrateTrelloAdmin();
   announce('Credenciales Trello eliminadas');
+}
+
+/** ICS feed del board Espacio Seguro (capa A · solo lectura en GCal) */
+function getTrelloIcsUrl(){
+  const src=SOURCES.find(s=>s.id==='espacio-seguro');
+  if(!src) return '';
+  const custom=src.lsKey?localStorage.getItem(src.lsKey):null;
+  return (custom||src.icsUrl||'').trim();
+}
+
+/**
+ * Capa A: abrir Google Calendar con suscripción al feed ICS de Trello.
+ * La API de Calendar no permite "add by URL"; el deep link `cid=` es el camino oficial de UI.
+ */
+function subscribeTrelloIcsToGCal(){
+  const ics=getTrelloIcsUrl();
+  if(!ics){ alert('No hay URL ICS de Trello configurada.'); return; }
+  // Prefer webcal:// so GCal trata el feed como calendario suscrito
+  const webcal=ics.replace(/^https?:\/\//i,'webcal://');
+  const cid=encodeURIComponent(webcal);
+  const url=`https://calendar.google.com/calendar/r?cid=${cid}`;
+  window.open(url,'_blank','noopener,noreferrer');
+  announce('Abriendo Google Calendar para suscribir ICS Trello');
+  showToast('GCal: confirma suscripción · renombra a “Espacio Seguro / Camila”','info',5000);
+}
+
+function copyTrelloIcsUrl(btn){
+  const ics=getTrelloIcsUrl();
+  if(!ics){ alert('No hay URL ICS.'); return; }
+  const done=()=>{
+    if(btn){ const o=btn.textContent; btn.textContent='✓'; btn.style.color='#10B981'; setTimeout(()=>{btn.textContent=o;btn.style.color='';},1600); }
+    showToast('ICS copiado · GCal → Otros calendarios → Desde URL','ok',3500);
+    announce('URL ICS copiada al portapapeles');
+  };
+  if(navigator.clipboard?.writeText){
+    navigator.clipboard.writeText(ics).then(done).catch(()=>{
+      window.prompt('Copia la URL ICS:', ics);
+      done();
+    });
+  }else{
+    window.prompt('Copia la URL ICS:', ics);
+    done();
+  }
 }
 function renderAdmCalUrls(){
   const cont=document.getElementById('adm-cal-urls');if(!cont)return;cont.innerHTML='';

@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.7.3] — 2026-07-21
+
+### Capa A one-click
+
+- Admin: **＋ ICS → GCal (A)** (deep link `cid=` al feed Trello) y **📋 Copiar ICS**.
+- Docs: URL ICS fija + rename sugerido `Espacio Seguro / Camila`.
+
 ## [1.7.2] — 2026-07-21
 
 ### Trello ↔ Google (capas A+B+C)

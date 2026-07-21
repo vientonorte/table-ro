@@ -49,10 +49,15 @@ for (const fn of REQUIRED_GLOBALS) {
 }
 ok(`app.js define ${REQUIRED_GLOBALS.length} handlers globales`);
 
-if (!indexHtml.includes('js/app.js?v=1.7.2')) {
-  fail('index.html no referencia app.js v1.7.2 (cache bust)');
+if (!indexHtml.includes('js/app.js?v=1.7.3')) {
+  fail('index.html no referencia app.js v1.7.3 (cache bust)');
 }
-ok('Cache bust app.js v1.7.2');
+ok('Cache bust app.js v1.7.3');
+
+if (!appJs.includes('function subscribeTrelloIcsToGCal')) {
+  fail('falta subscribeTrelloIcsToGCal (capa A)');
+}
+ok('Capa A ICS→GCal one-click');
 
 // Trello hub + bridge
 if (!appJs.includes("type: 'trello'") && !appJs.includes('type:"trello"')) {
