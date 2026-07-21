@@ -49,10 +49,10 @@ for (const fn of REQUIRED_GLOBALS) {
 }
 ok(`app.js define ${REQUIRED_GLOBALS.length} handlers globales`);
 
-if (!indexHtml.includes('js/app.js?v=1.7.5')) {
-  fail('index.html no referencia app.js v1.7.5 (cache bust)');
+if (!indexHtml.includes('js/app.js?v=1.7.6')) {
+  fail('index.html no referencia app.js v1.7.6 (cache bust)');
 }
-ok('Cache bust app.js v1.7.5');
+ok('Cache bust app.js v1.7.6');
 
 if (!appJs.includes('function openLocalTarget') || !appJs.includes('obsidian://open')) {
   fail('faltan deep-links locales (openLocalTarget / obsidian URI)');
@@ -67,13 +67,16 @@ if (!appJs.includes('function subscribeTrelloIcsToGCal')) {
 }
 ok('Capa A ICS→GCal one-click');
 
-if (!indexHtml.includes('view-switch') || !indexHtml.includes('ops-embed__shell')) {
-  fail('Ops atomic UI incompleto (view-switch / ops-embed shell)');
+if (!indexHtml.includes('app-rail') || !indexHtml.includes('view-switch') || !indexHtml.includes('ops-embed__shell')) {
+  fail('Ops journey nav incompleto (app-rail / view-switch / shell)');
 }
 if (!appJs.includes('function setBoardView') || !appJs.includes('OPS_EMBED_URL')) {
   fail('setBoardView / OPS_EMBED_URL missing');
 }
-ok('Ops embed atomic view switch');
+if (!indexHtml.includes('data-view="ops"') || !indexHtml.includes('id="tab-ops"')) {
+  fail('tab Ops missing');
+}
+ok('Ops hub journey nav (Semana | Ops)');
 
 // Trello hub + bridge
 if (!appJs.includes("type: 'trello'") && !appJs.includes('type:"trello"')) {
