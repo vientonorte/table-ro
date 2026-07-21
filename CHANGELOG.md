@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.7.2] — 2026-07-21
+
+### Trello ↔ Google (capas A+B+C)
+
+- **Fuente Espacio Seguro** como `type: 'trello'` + `trelloBoardId` (API preferida; ICS fallback).
+- **Admin**: status Key/Token/Bridge/OAuth, Sync Trello sin re-pegar secretos, toggle bridge, borrar token.
+- **Bridge C**: upsert due → `gaete.gaona@gmail.com` con mapa local + `extendedProperties.private.tableRoTrelloId`.
+- **Docs**: `docs/TRELLO-GOOGLE.md` (checklist best practices).
+- Cache bust **v1.7.2**.
+
 ## [1.6.0] — 2026-06-19
 
 ### 🎨 Lectura crómática Clave A — BuJo (Sprint A)
