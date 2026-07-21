@@ -1,7 +1,7 @@
 /**
  * Tablero Rö — Lógica principal
  * ==============================
- * Versión: 1.7.0
+ * Versión: 1.7.1
  * Descripción: Tablero semanal personal con integración Google Calendar,
  *              Bullet Journal (BuJo) y sync bidireccional.
  *
@@ -324,8 +324,9 @@ const SOURCES = [{
     {
         id: 'espacio-seguro',
         name: 'Espacio Seguro · Romila',
-        desc: 'Trello ICS · Tareas RO',
-        cal: 'espacio-seguro',
+        desc: 'Trello ICS · Tareas RO → categoría Camila (filtro 💚)',
+        // Producto: doméstico/Romila se filtra con Camila (ver Admin + legend)
+        cal: 'camila',
         color: '#10B981',
         icon: '🏠',
         gcalId: null,
@@ -338,6 +339,29 @@ const SOURCES = [{
         domain: 'personal'
     },
 ];
+
+/** Alias legacy → categoría canónica de filtro (Camila) */
+const CAL_ALIASES = {
+    'espacio-seguro': 'camila',
+};
+
+/**
+ * Normaliza categoría para filtro/render.
+ * - espacio-seguro → camila (misma visión de filtro 💚)
+ * - títulos con Camila en calendarios personales → camila
+ */
+function normalizeCal(cal, title) {
+    let key = CAL_ALIASES[cal] || cal || 'bujo';
+    // No reetiquetar laboral/finanzas: son dominios distintos
+    if (key === 'trabajo' || key === 'fin') return key;
+    if (key === 'camila') return 'camila';
+    const t = String(title || '');
+    // Evento "con Camila" (nombre, mail o ritual) → categoría filtrable Camila
+    if (/\bcamila\b/i.test(t) || /c\.camilapalma/i.test(t) || /juntos\s*chill/i.test(t)) {
+        return 'camila';
+    }
+    return key;
+}
 
 const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 const MONTHS = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
@@ -581,12 +605,13 @@ function setupDrop(zone) {
 function updateDayCount(wday) { if (!wday) return; const n = wday.querySelectorAll('.card').length; const el = wday.querySelector('.day-count'); if (el) el.textContent = n + ' evento' + (n !== 1 ? 's' : ''); }
 
 function makeCard(ev) {
-    const ci = CAL[ev.cal] || CAL.bujo;
+    const calKey = normalizeCal(ev.cal, ev.title);
+    const ci = CAL[calKey] || CAL.bujo;
     const el = document.createElement('div');
     el.className = 'card';
     el.style.setProperty('--cc', ci.c);
     el.draggable = true;
-    el.dataset.cal = ev.cal || 'bujo';
+    el.dataset.cal = calKey;
     const src = ev.source || (ev.fromCal ? 'gcal' : 'manual');
     const kind = normalizeKind(ev.kind, ev.title || '');
     el.dataset.source = src;
@@ -695,8 +720,9 @@ function renderWeek(){
     if(!evs.length){body.innerHTML='<div class="day-empty">Sin eventos</div>';return;}
     evs.forEach(ev=>{
       if(ev.allDay){
-        const pill=document.createElement('div');pill.className='aday-pill';pill.dataset.cal=ev.cal||'bujo';
-        const ci=CAL[ev.cal];pill.style.setProperty('--cc',ci.c);pill.style.setProperty('--ccbg',ci.bg);pill.textContent=ev.title;body.appendChild(pill);
+        const calKey=normalizeCal(ev.cal,ev.title);
+        const pill=document.createElement('div');pill.className='aday-pill';pill.dataset.cal=calKey;
+        const ci=CAL[calKey]||CAL.bujo;pill.style.setProperty('--cc',ci.c);pill.style.setProperty('--ccbg',ci.bg);pill.textContent=ev.title;body.appendChild(pill);
       }else{body.appendChild(makeCard(ev));}
     });
     applyFilter();
@@ -1366,7 +1392,8 @@ function addToBoard(){
 function clearBJ(){ bjList.innerHTML=''; document.getElementById('paste-area').value=''; ths.innerHTML=''; bjImages=[]; document.getElementById('ai-analyze-btn').disabled=true; document.getElementById('ai-result-preview').style.display='none'; showBJItems(); updateAIStatus(); setBujoStep(1); announce('Captura BuJo limpiada'); }
 
 const HIDDEN=new Set();
-const CAT_MAP={'personal':['personal'],'vinculos':['vinculos'],'camila':['camila'],'trabajo':['trabajo','fin']};
+// Legend Camila también oculta alias legacy espacio-seguro (datos en caché)
+const CAT_MAP={'personal':['personal'],'vinculos':['vinculos'],'camila':['camila','espacio-seguro'],'trabajo':['trabajo','fin']};
 /** Domains for Personal vs Laboral focus (inputs personales / laborales) */
 const DOMAIN_CATS = {
   personal: ['personal', 'vinculos', 'camila', 'fin', 'espacio-seguro'],
@@ -1377,13 +1404,15 @@ let activeDomain = 'all'; // all | personal | laboral
 function toggleCat(keys,el){ const cats=typeof keys==='string'?[keys]:keys; const wasOff=el.classList.contains('off'); if(wasOff){cats.forEach(k=>HIDDEN.delete(k));el.classList.remove('off');el.setAttribute('aria-pressed','true');} else{cats.forEach(k=>HIDDEN.add(k));el.classList.add('off');el.setAttribute('aria-pressed','false');} applyFilter(); }
 function applyFilter(){
   document.querySelectorAll('.card').forEach(c=>{
-    const cal = c.dataset.cal;
+    const cal = normalizeCal(c.dataset.cal, c.querySelector('.ct')?.textContent);
+    if (c.dataset.cal !== cal) c.dataset.cal = cal;
     const hideCat = HIDDEN.has(cal);
     const hideDomain = activeDomain !== 'all' && !(DOMAIN_CATS[activeDomain] || []).includes(cal);
     c.style.display = (hideCat || hideDomain) ? 'none' : '';
   });
   document.querySelectorAll('.aday-pill').forEach(p=>{
-    const cal = p.dataset.cal;
+    const cal = normalizeCal(p.dataset.cal, p.textContent);
+    if (p.dataset.cal !== cal) p.dataset.cal = cal;
     const hideCat = HIDDEN.has(cal);
     const hideDomain = activeDomain !== 'all' && !(DOMAIN_CATS[activeDomain] || []).includes(cal);
     p.style.display = (hideCat || hideDomain) ? 'none' : '';
@@ -1477,6 +1506,7 @@ function changeCat(e,tag){
       const ctime=card.querySelector('.ctime');
       if(ctime)ctime.style.color=val.c;
       picker.remove();
+      applyFilter();
       announce(`Categoría cambiada a ${val.l}`);autoSave();
     });
     picker.appendChild(opt);
@@ -1539,7 +1569,8 @@ function parseICS(text,calKey,srcId){
     }else if(/^\d{8}$/.test(dt)){iso=`${dt.slice(0,4)}-${dt.slice(4,6)}-${dt.slice(6,8)}`;allDay=true;}
     if(!iso)return;
     const evDate=new Date(iso);if(evDate<from||evDate>to)return;
-    evs.push({iso,title:summary,cal:calKey,time,allDay,uid,fromCal:true,source:'ics',srcId:srcId||'',kind:'event',readonly:true});
+    const resolvedCal=normalizeCal(calKey,summary);
+    evs.push({iso,title:summary,cal:resolvedCal,time,allDay,uid,fromCal:true,source:'ics',srcId:srcId||'',kind:'event',readonly:true});
   });
   return evs;
 }
@@ -1560,7 +1591,8 @@ async function fetchTrelloCards(boardId,calKey,srcId){
     const iso=dp;const time=tp.replace(/^24:/,'00:').slice(0,5);
     const allDay=d.getUTCHours()===12&&d.getUTCMinutes()===0&&d.getUTCSeconds()===0;
     const evDate=new Date(iso);if(evDate<from||evDate>to)return null;
-    return{iso,title:(card.name||'(sin título)').slice(0,80),cal:calKey,time:allDay?undefined:time,allDay,uid:'trello-'+card.id,fromCal:true,source:'trello',srcId:srcId||'',kind:'task',readonly:true,trelloUrl:card.url||''};
+    const title=(card.name||'(sin título)').slice(0,80);
+    return{iso,title,cal:normalizeCal(calKey,title),time:allDay?undefined:time,allDay,uid:'trello-'+card.id,fromCal:true,source:'trello',srcId:srcId||'',kind:'task',readonly:true,trelloUrl:card.url||''};
   }).filter(Boolean);
 }
 async function syncSource(srcId,btn){
@@ -1734,7 +1766,8 @@ async function fetchGCalEvents(calId,calKey,readonly=true,srcId=''){
     if(start.date){iso=start.date;allDay=true;}
     else if(start.dateTime){ const d=new Date(start.dateTime); const fmt=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Santiago',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(d); const[dp,tp]=(fmt+', 00:00').split(', ');iso=dp;time=tp.replace(/^24:/,'00:').slice(0,5); }
     if(!iso)return null;
-    return{iso,title:(item.summary||'(sin título)').slice(0,80),cal:calKey,time,allDay,uid:item.id,fromCal:true,readonly,source:'gcal',srcId:srcId||'',kind:'event'};
+    const title=(item.summary||'(sin título)').slice(0,80);
+    return{iso,title,cal:normalizeCal(calKey,title),time,allDay,uid:item.id,fromCal:true,readonly,source:'gcal',srcId:srcId||'',kind:'event'};
   }).filter(Boolean);
 }
 function getGCalIdForCal(calKey){
