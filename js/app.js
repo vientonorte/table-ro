@@ -1,7 +1,7 @@
 /**
  * Tablero Rö — Lógica principal
  * ==============================
- * Versión: 1.6.1
+ * Versión: 1.6.3
  * Descripción: Tablero semanal personal con integración Google Calendar,
  *              Bullet Journal (BuJo) y sync bidireccional.
  *
@@ -89,7 +89,7 @@ const CAL = {
     personal: { c: '#EC4899', bg: 'rgba(236,72,153,.16)', l: 'Personal' },
     vinculos: { c: '#7C3AED', bg: 'rgba(124,58,237,.16)', l: 'Vínculos' },
     camila: { c: '#10B981', bg: 'rgba(16,185,129,.16)', l: 'Camila' },
-    trabajo: { c: '#F97316', bg: 'rgba(249,115,22,.16)', l: 'Sura' },
+    trabajo: { c: '#F97316', bg: 'rgba(249,115,22,.16)', l: 'Trabajo' },
     fin: { c: '#FB923C', bg: 'rgba(251,146,60,.16)', l: 'Finanzas' },
     'espacio-seguro': { c: '#10B981', bg: 'rgba(16,185,129,.16)', l: 'Espacio Seguro' },
     bujo: { c: '#C084FC', bg: 'rgba(192,132,252,.16)', l: '📓 BuJo' },
@@ -195,6 +195,7 @@ function acceptConsent() {
 
 /* ── Recurring event templates: day 0=Mon … 6=Sun ── */
 const RECURRING_WEEKLY = [
+    /* ── Personal ── */
     { day: 0, title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
     { day: 1, title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
     { day: 2, title: 'DESCONEXIÓN SENSORIAL 🌿', cal: 'personal', time: '07:15' },
@@ -207,6 +208,10 @@ const RECURRING_WEEKLY = [
     { day: 5, title: 'Juntos Chill 💚', cal: 'camila', time: '17:00' },
     { day: 6, title: 'Psicoterapia · Rodrigo', cal: 'personal', time: '12:00' },
     { day: 6, title: 'Compra Frutas y Verduras 🛒', cal: 'personal', time: '17:45' },
+    /* ── Laboral (Viento Norte / trabajo) ── */
+    { day: 0, title: 'Planning laboral · AHORA canvas', cal: 'trabajo', time: '09:30' },
+    { day: 2, title: 'Deep work · producto / landing', cal: 'trabajo', time: '10:00' },
+    { day: 4, title: 'Review laboral · ship / blockers', cal: 'trabajo', time: '16:00' },
 ];
 
 function generateSeedEvents() {
@@ -250,15 +255,16 @@ const BUJO_INIT = [
 const PERMS_DEFAULT = {
     personal: { perm: 'rw', enabled: true, adminRequired: false },
     finanzas: { perm: 'ro', enabled: true, adminRequired: false },
-    trabajo: { perm: 'admin', enabled: false, adminRequired: true },
+    // Laboral: tasks locales siempre on; sync GCal Sura/Outlook opcional (config en ⚙️)
+    trabajo: { perm: 'rw', enabled: true, adminRequired: false },
     camila: { perm: 'query', enabled: true, adminRequired: false },
     'espacio-seguro': { perm: 'ro', enabled: true, adminRequired: false },
 };
 
 const SOURCES = [{
         id: 'personal',
-        name: 'Personal · Vínculos · Laboral',
-        desc: 'gaete.gaona@gmail.com',
+        name: 'Personal',
+        desc: 'gaete.gaona@gmail.com · inputs personales',
         cal: 'personal',
         color: '#EC4899',
         icon: '👤',
@@ -267,7 +273,8 @@ const SOURCES = [{
         icsUrl: 'https://calendar.google.com/calendar/ical/gaete.gaona%40gmail.com/public/basic.ics',
         embedUrl: 'https://calendar.google.com/calendar/embed?src=gaete.gaona%40gmail.com&ctz=America%2FSantiago',
         lsKey: 'ics_personal',
-        permKey: 'personal'
+        permKey: 'personal',
+        domain: 'personal'
     },
     {
         id: 'finanzas',
@@ -281,21 +288,23 @@ const SOURCES = [{
         icsUrl: 'https://calendar.google.com/calendar/ical/9616f51a807e24559b4df624c70d7fe1d81de62f9aa8baf44c1190db5887b12f%40group.calendar.google.com/public/basic.ics',
         embedUrl: 'https://calendar.google.com/calendar/embed?src=9616f51a807e24559b4df624c70d7fe1d81de62f9aa8baf44c1190db5887b12f%40group.calendar.google.com&ctz=America%2FSantiago',
         lsKey: 'ics_finanzas',
-        permKey: 'finanzas'
+        permKey: 'finanzas',
+        domain: 'personal'
     },
     {
         id: 'trabajo',
-        name: 'Sura Investments',
-        desc: 'Outlook Office 365 · Solo Lectura Admin',
+        name: 'Trabajo · laboral',
+        desc: 'Viento Norte / clientes / Sura · tasks locales + GCal opcional (gaete.gaona)',
         cal: 'trabajo',
         color: '#F97316',
-        icon: '🏢',
+        icon: '💼',
         gcalId: null,
-        readonly: true,
+        readonly: false,
         icsUrl: '',
         embedUrl: null,
         lsKey: 'ics_trabajo',
-        permKey: 'trabajo'
+        permKey: 'trabajo',
+        domain: 'laboral'
     },
     {
         id: 'camila',
@@ -309,7 +318,8 @@ const SOURCES = [{
         icsUrl: 'https://calendar.google.com/calendar/ical/c.camilapalma%40gmail.com/public/basic.ics',
         embedUrl: 'https://calendar.google.com/calendar/embed?src=c.camilapalma%40gmail.com&ctz=America%2FSantiago',
         lsKey: 'ics_camila',
-        permKey: 'camila'
+        permKey: 'camila',
+        domain: 'personal'
     },
     {
         id: 'espacio-seguro',
@@ -324,7 +334,8 @@ const SOURCES = [{
         embedUrl: 'https://trello.com/b/69c558a7d79162569df9a98a/diseno-de-espacio-seguro-romila',
         lsKey: 'ics_espacio_seguro',
         permKey: 'espacio-seguro',
-        filterRe: /\bRO\b|Rö/i
+        filterRe: /\bRO\b|Rö/i,
+        domain: 'personal'
     },
 ];
 
@@ -1356,12 +1367,50 @@ function clearBJ(){ bjList.innerHTML=''; document.getElementById('paste-area').v
 
 const HIDDEN=new Set();
 const CAT_MAP={'personal':['personal'],'vinculos':['vinculos'],'camila':['camila'],'trabajo':['trabajo','fin']};
+/** Domains for Personal vs Laboral focus (inputs personales / laborales) */
+const DOMAIN_CATS = {
+  personal: ['personal', 'vinculos', 'camila', 'fin', 'espacio-seguro'],
+  laboral: ['trabajo'],
+};
+let activeDomain = 'all'; // all | personal | laboral
+
 function toggleCat(keys,el){ const cats=typeof keys==='string'?[keys]:keys; const wasOff=el.classList.contains('off'); if(wasOff){cats.forEach(k=>HIDDEN.delete(k));el.classList.remove('off');el.setAttribute('aria-pressed','true');} else{cats.forEach(k=>HIDDEN.add(k));el.classList.add('off');el.setAttribute('aria-pressed','false');} applyFilter(); }
-function applyFilter(){ document.querySelectorAll('.card').forEach(c=>{c.style.display=HIDDEN.has(c.dataset.cal)?'none':'';}); document.querySelectorAll('.aday-pill').forEach(p=>{p.style.display=HIDDEN.has(p.dataset.cal)?'none':'';}); }
+function applyFilter(){
+  document.querySelectorAll('.card').forEach(c=>{
+    const cal = c.dataset.cal;
+    const hideCat = HIDDEN.has(cal);
+    const hideDomain = activeDomain !== 'all' && !(DOMAIN_CATS[activeDomain] || []).includes(cal);
+    c.style.display = (hideCat || hideDomain) ? 'none' : '';
+  });
+  document.querySelectorAll('.aday-pill').forEach(p=>{
+    const cal = p.dataset.cal;
+    const hideCat = HIDDEN.has(cal);
+    const hideDomain = activeDomain !== 'all' && !(DOMAIN_CATS[activeDomain] || []).includes(cal);
+    p.style.display = (hideCat || hideDomain) ? 'none' : '';
+  });
+}
+function setDomain(domain, btn){
+  activeDomain = domain || 'all';
+  document.querySelectorAll('.domain-pill').forEach(el=>{
+    const on = el.dataset.domain === activeDomain;
+    el.classList.toggle('is-active', on);
+    el.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  try { localStorage.setItem('tablero_domain_ro', activeDomain); } catch(_){}
+  applyFilter();
+  announce(activeDomain === 'all' ? 'Mostrando todas las categorías' : (activeDomain === 'personal' ? 'Foco: inputs personales' : 'Foco: inputs laborales'));
+}
 document.addEventListener('DOMContentLoaded',()=>{
   document.querySelectorAll('#legend-panel .leg').forEach(btn=>{
     btn.addEventListener('click',()=>toggleCat(CAT_MAP[btn.dataset.cat]||[btn.dataset.cat],btn));
   });
+  document.querySelectorAll('.domain-pill').forEach(btn=>{
+    btn.addEventListener('click',()=>setDomain(btn.dataset.domain, btn));
+  });
+  try {
+    const saved = localStorage.getItem('tablero_domain_ro');
+    if (saved && ['all','personal','laboral'].includes(saved)) setDomain(saved);
+  } catch(_){}
 });
 
 function changeCat(e,tag){
