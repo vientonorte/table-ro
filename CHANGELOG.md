@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.7.7] — 2026-07-21
+
+### OAuth
+
+- Remove dead GCAL_CLIENT_ID default (GeneralOAuthFlow / invalid_client).
+- Purge stale localStorage client; require paste of new Web client ID.
+
 ## [1.7.6] — 2026-07-21
 
 ### Journey · una app, no dos destinos

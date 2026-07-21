@@ -1,16 +1,21 @@
-# Google OAuth — table-ro (fix `invalid_client`)
+# Google OAuth — table-ro (fix `invalid_client` / `GeneralOAuthFlow`)
 
-## Error
+## Error (lo que ves en Google)
 
 ```
 Acceso bloqueado: Error de autorización
 The OAuth client was not found.
 Error 401: invalid_client
+
+Detalles de la solicitud: flowName=GeneralOAuthFlow
 ```
 
-**Causa:** el Client ID embebido  
+`flowName=GeneralOAuthFlow` **no es un bug de table-ro** — es la pantalla genérica de Google cuando el **OAuth Client ID es inválido o no existe**.
+
+**Causa:** el Client ID viejo  
 `5033046467-kgd7gl4tekb4fkt90jq32rob4evmgnmn.apps.googleusercontent.com`  
-**ya no existe** (borrado, proyecto deshabilitado, o no visible para `gaete.gaona@gmail.com`).
+**ya no existe** (borrado, proyecto deshabilitado, o no visible para `gaete.gaona@gmail.com`).  
+Desde v1.7.7 el default muerto se purga; hay que pegar un **Client ID nuevo**.
 
 ## Qué sigue funcionando sin OAuth
 
