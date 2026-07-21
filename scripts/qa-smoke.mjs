@@ -49,10 +49,18 @@ for (const fn of REQUIRED_GLOBALS) {
 }
 ok(`app.js define ${REQUIRED_GLOBALS.length} handlers globales`);
 
-if (!indexHtml.includes('js/app.js?v=1.7.4')) {
-  fail('index.html no referencia app.js v1.7.4 (cache bust)');
+if (!indexHtml.includes('js/app.js?v=1.7.5')) {
+  fail('index.html no referencia app.js v1.7.5 (cache bust)');
 }
-ok('Cache bust app.js v1.7.4');
+ok('Cache bust app.js v1.7.5');
+
+if (!appJs.includes('function openLocalTarget') || !appJs.includes('obsidian://open')) {
+  fail('faltan deep-links locales (openLocalTarget / obsidian URI)');
+}
+if (!indexHtml.includes('adm-local-vault-path') || !indexHtml.includes('Local · vault')) {
+  fail('Admin Local incompleto');
+}
+ok('Local vault/app open links');
 
 if (!appJs.includes('function subscribeTrelloIcsToGCal')) {
   fail('falta subscribeTrelloIcsToGCal (capa A)');

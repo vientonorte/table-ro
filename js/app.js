@@ -1,9 +1,9 @@
 /**
  * Tablero Rö — Lógica principal
  * ==============================
- * Versión: 1.7.4
+ * Versión: 1.7.5
  * Descripción: Tablero semanal personal con integración Google Calendar,
- *              Bullet Journal (BuJo), Trello API, bridge Trello→GCal y Ops embed.
+ *              Bullet Journal (BuJo), Trello, Ops embed y deep-links locales.
  *
  * Arquitectura (Design Thinking — mapeo de funcionalidades):
  *
@@ -2066,7 +2066,162 @@ function submitAdd(){
   closeAddModal();
   if(OB_WAITING_TASK){OB_WAITING_TASK=false;OB_STATE.firstTask=true;obEarnXP('task');document.getElementById('ob-modal').classList.add('open');obApplyStep(4);}
 }
-function openAdminModal(){ renderAdmCalUrls(); renderResIcal(); renderCredentials(); renderPermList(); hydrateAIAdmin(); hydrateTrelloAdmin(); document.getElementById('admin-modal').classList.add('open'); activateModalFocusTrap('admin-modal'); announce('Panel de administración abierto'); }
+function openAdminModal(){ renderAdmCalUrls(); renderResIcal(); renderCredentials(); renderPermList(); hydrateAIAdmin(); hydrateTrelloAdmin(); hydrateLocalPaths(); document.getElementById('admin-modal').classList.add('open'); activateModalFocusTrap('admin-modal'); announce('Panel de administración abierto'); }
+
+/* ── Local vault / apps (URI schemes — browser cannot open file:// from https) ── */
+const LOCAL_PATHS_KEY = 'tablero_local_paths_ro';
+const LOCAL_PATHS_DEFAULT = {
+  vaultName: 'Vientonorte',
+  vaultPath: '/Users/ro/Developer/viento-norte/Vientonorte',
+  worktreesPath: '/Users/ro/Developer/viento-norte/worktrees',
+  opsFile: '40-ops/canvas-operativo',
+  editor: 'vscode', // vscode | cursor | none
+};
+
+function getLocalPaths(){
+  try{
+    const raw = JSON.parse(localStorage.getItem(LOCAL_PATHS_KEY) || '{}');
+    return { ...LOCAL_PATHS_DEFAULT, ...raw };
+  }catch(_){
+    return { ...LOCAL_PATHS_DEFAULT };
+  }
+}
+function saveLocalPaths(btn){
+  const cfg = {
+    vaultName: (document.getElementById('adm-local-vault-name')?.value || '').trim() || LOCAL_PATHS_DEFAULT.vaultName,
+    vaultPath: (document.getElementById('adm-local-vault-path')?.value || '').trim() || LOCAL_PATHS_DEFAULT.vaultPath,
+    worktreesPath: (document.getElementById('adm-local-worktrees')?.value || '').trim() || LOCAL_PATHS_DEFAULT.worktreesPath,
+    opsFile: (document.getElementById('adm-local-ops-file')?.value || '').trim() || LOCAL_PATHS_DEFAULT.opsFile,
+    editor: document.getElementById('adm-local-editor')?.value || 'vscode',
+  };
+  try{ localStorage.setItem(LOCAL_PATHS_KEY, JSON.stringify(cfg)); }catch(e){ alert('No se pudo guardar rutas: '+e.message); return; }
+  if(btn){ const o=btn.textContent; btn.textContent='✓'; btn.style.color='#10B981'; setTimeout(()=>{btn.textContent=o;btn.style.color='';},1600); }
+  updateLocalPathsStatus();
+  announce('Rutas locales guardadas');
+  showToast('Rutas locales guardadas','ok',2200);
+}
+function hydrateLocalPaths(){
+  const cfg = getLocalPaths();
+  const set = (id, val)=>{ const el=document.getElementById(id); if(el) el.value=val; };
+  set('adm-local-vault-name', cfg.vaultName);
+  set('adm-local-vault-path', cfg.vaultPath);
+  set('adm-local-worktrees', cfg.worktreesPath);
+  set('adm-local-ops-file', cfg.opsFile);
+  set('adm-local-editor', cfg.editor);
+  updateLocalPathsStatus();
+}
+function updateLocalPathsStatus(){
+  const el = document.getElementById('adm-local-status');
+  if(!el) return;
+  const cfg = getLocalPaths();
+  el.innerHTML = [
+    `<span style="color:#d2a8ff">Vault:</span> ${escapeHtml(cfg.vaultName)}`,
+    `<span style="color:var(--mut)">${escapeHtml(cfg.vaultPath)}</span>`,
+    `<span style="color:#79c0ff">Editor:</span> ${escapeHtml(cfg.editor)}`,
+  ].join(' · ');
+}
+
+/**
+ * Open local app via registered URI scheme.
+ * @param {'obsidian'|'ops-note'|'editor'|'worktrees'} target
+ */
+function openLocalTarget(target){
+  const cfg = getLocalPaths();
+  const vaultPath = (cfg.vaultPath || '').replace(/\/+$/, '');
+  const worktrees = (cfg.worktreesPath || '').replace(/\/+$/, '');
+  let url = '';
+  let label = '';
+
+  if(target === 'obsidian'){
+    // https://help.obsidian.md/Extending+Obsidian/Obsidian+URI
+    url = `obsidian://open?vault=${encodeURIComponent(cfg.vaultName || 'Vientonorte')}`;
+    label = 'Obsidian vault';
+  }else if(target === 'ops-note'){
+    const file = (cfg.opsFile || '40-ops/canvas-operativo').replace(/\.md$/i, '');
+    url = `obsidian://open?vault=${encodeURIComponent(cfg.vaultName || 'Vientonorte')}&file=${encodeURIComponent(file)}`;
+    label = 'Obsidian · nota ops';
+  }else if(target === 'editor' || target === 'worktrees'){
+    const folder = target === 'worktrees' ? worktrees : vaultPath;
+    if(!folder){
+      alert('Configura la ruta en ⚙️ Admin → Local.');
+      return;
+    }
+    if(cfg.editor === 'none'){
+      copyTextPlain(folder);
+      showToast('Ruta copiada · pega en Terminal: open "…"','info',4000);
+      announce('Ruta copiada (sin editor URI)');
+      return;
+    }
+    // VS Code / Cursor: vscode://file/absolute/path  (trailing slash = folder)
+    const scheme = cfg.editor === 'cursor' ? 'cursor' : 'vscode';
+    const abs = folder.startsWith('/') ? folder : `/${folder}`;
+    url = `${scheme}://file${abs}`;
+    label = target === 'worktrees' ? `${scheme} worktrees` : `${scheme} vault`;
+  }else{
+    alert('Destino local desconocido: '+target);
+    return;
+  }
+
+  try{
+    // Prefer location for custom protocols (better than window.open on some browsers)
+    const a = document.createElement('a');
+    a.href = url;
+    a.rel = 'noopener';
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }catch(err){
+    console.warn('openLocalTarget', err);
+    window.location.href = url;
+  }
+  announce(`Abriendo ${label}`);
+  showToast(`↗ ${label} (si no abre: instala la app o copia ruta en Admin)`,'info',3800);
+  // close tools menu if open
+  try{
+    const menu = document.getElementById('tool-menu');
+    const btn = document.getElementById('tools-btn');
+    if(menu) menu.classList.remove('open');
+    if(btn) btn.setAttribute('aria-expanded','false');
+  }catch(_){}
+}
+
+/**
+ * @param {'vault'|'worktrees'|'ops-file'|'open-cmd'} which
+ */
+function copyLocalPath(which, btn){
+  const cfg = getLocalPaths();
+  let text = '';
+  if(which === 'vault') text = cfg.vaultPath || '';
+  else if(which === 'worktrees') text = cfg.worktreesPath || '';
+  else if(which === 'ops-file') text = `${(cfg.vaultPath||'').replace(/\/+$/,'')}/${(cfg.opsFile||'').replace(/^\//,'')}`;
+  else if(which === 'open-cmd') text = `open "${cfg.vaultPath || ''}"`;
+  else text = cfg.vaultPath || '';
+  if(!text){ alert('Sin ruta configurada.'); return; }
+  copyTextPlain(text, btn);
+  showToast('Copiado al portapapeles','ok',2000);
+  announce('Ruta copiada');
+}
+
+function copyTextPlain(text, btn){
+  const done = ()=>{
+    if(btn && btn.textContent !== undefined){
+      const o = btn.textContent;
+      btn.textContent = '✓';
+      btn.style.color = '#10B981';
+      setTimeout(()=>{ btn.textContent = o; btn.style.color = ''; }, 1400);
+    }
+  };
+  if(navigator.clipboard?.writeText){
+    navigator.clipboard.writeText(text).then(done).catch(()=>{
+      window.prompt('Copia:', text);
+      done();
+    });
+  }else{
+    window.prompt('Copia:', text);
+    done();
+  }
+}
 function closeAdminModal(){document.getElementById('admin-modal').classList.remove('open'); deactivateModalFocusTrap();}
 function switchTab(id,btn){ document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active')); btn.classList.add('active');document.getElementById('tab-'+id).classList.add('active'); if(id==='permisos')renderPermList(); }
 function toggleFaq(q){const a=q.nextElementSibling;const isOpen=q.classList.contains('open');document.querySelectorAll('.faq-q.open').forEach(x=>{x.classList.remove('open');x.nextElementSibling.classList.remove('open');});if(!isOpen){q.classList.add('open');a.classList.add('open');}}
