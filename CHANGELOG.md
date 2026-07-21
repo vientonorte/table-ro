@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.7.6] — 2026-07-21
+
+### Journey · una app, no dos destinos
+
+- **app-rail** full-width: tabs **Semana | Ops** (imposibles de perder)
+- Hint: Ops embebido = mismo canvas que `/ops` (no otro producto)
+- Chip de capa clickeable para alternar vistas
+- `/ops` standalone = fullscreen opcional del mismo board
+
 ## [1.7.5] — 2026-07-21
 
 ### Local · vault y apps
