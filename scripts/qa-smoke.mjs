@@ -49,10 +49,25 @@ for (const fn of REQUIRED_GLOBALS) {
 }
 ok(`app.js define ${REQUIRED_GLOBALS.length} handlers globales`);
 
-if (!indexHtml.includes('js/app.js?v=1.7.1')) {
-  fail('index.html no referencia app.js v1.7.1 (cache bust)');
+if (!indexHtml.includes('js/app.js?v=1.7.2')) {
+  fail('index.html no referencia app.js v1.7.2 (cache bust)');
 }
-ok('Cache bust app.js v1.7.1');
+ok('Cache bust app.js v1.7.2');
+
+// Trello hub + bridge
+if (!appJs.includes("type: 'trello'") && !appJs.includes('type:"trello"')) {
+  fail('fuente espacio-seguro sin type trello');
+}
+if (!appJs.includes('function bridgeTrelloEventsToGCal')) {
+  fail('falta bridgeTrelloEventsToGCal');
+}
+if (!appJs.includes('function syncTrelloFromAdmin')) {
+  fail('falta syncTrelloFromAdmin');
+}
+if (!indexHtml.includes('adm-trello-bridge') || !indexHtml.includes('adm-trello-status')) {
+  fail('Admin Trello incompleto (bridge/status)');
+}
+ok('Trello API + bridge GCal + Admin status');
 
 // ── Functional: Playwright opcional ──
 let playwright;

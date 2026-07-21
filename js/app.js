@@ -1,9 +1,9 @@
 /**
  * Tablero Rö — Lógica principal
  * ==============================
- * Versión: 1.7.1
+ * Versión: 1.7.2
  * Descripción: Tablero semanal personal con integración Google Calendar,
- *              Bullet Journal (BuJo) y sync bidireccional.
+ *              Bullet Journal (BuJo), Trello API y bridge Trello→GCal.
  *
  * Arquitectura (Design Thinking — mapeo de funcionalidades):
  *
@@ -78,6 +78,9 @@
  *   tablero_states_ro  — estados de cards (done, detail)
  *   tablero_extra_ro   — eventos agregados manualmente
  *   tablero_synced_ro  — caché de eventos sincronizados (ICS/GCal/Trello)
+ *   trello_api_key / trello_api_token — credenciales Trello (browser local)
+ *   trello_gcal_bridge — '1'|'0' push Trello due → GCal personal
+ *   trello_gcal_map_ro — mapa cardId Trello → eventId GCal (idempotencia)
  *   tablero_perms_ro   — permisos de fuentes
  *   tablero_ai_cfg_ro  — configuración de IA
  *   gcal_client_id     — OAuth Client ID (sobrescribe default)
@@ -324,12 +327,16 @@ const SOURCES = [{
     {
         id: 'espacio-seguro',
         name: 'Espacio Seguro · Romila',
-        desc: 'Trello ICS · Tareas RO → categoría Camila (filtro 💚)',
+        desc: 'Trello API · due RO/Rö → Camila · bridge GCal personal',
         // Producto: doméstico/Romila se filtra con Camila (ver Admin + legend)
+        type: 'trello',
+        trelloBoardId: '69c558a7d79162569df9a98a',
         cal: 'camila',
         color: '#10B981',
         icon: '🏠',
         gcalId: null,
+        /** Calendario destino del bridge C (solo si OAuth + toggle) */
+        gcalPushId: 'gaete.gaona@gmail.com',
         readonly: true,
         icsUrl: 'https://trello.com/calendar/5be8d432f8dc74493aaf53e6/69c558a7d79162569df9a98a/3b84dbc14a0b216f20c2b1ca2120a49f.ics',
         embedUrl: 'https://trello.com/b/69c558a7d79162569df9a98a/diseno-de-espacio-seguro-romila',
@@ -1574,13 +1581,45 @@ function parseICS(text,calKey,srcId){
   });
   return evs;
 }
+function getTrelloCreds(){
+  return {
+    key: (localStorage.getItem('trello_api_key')||'').trim(),
+    token: (localStorage.getItem('trello_api_token')||'').trim(),
+  };
+}
+function hasTrelloCreds(){
+  const {key,token}=getTrelloCreds();
+  return !!(key&&token);
+}
+function isTrelloGcalBridgeOn(){
+  const v=localStorage.getItem('trello_gcal_bridge');
+  if(v===null||v===undefined||v==='') return true; // default ON
+  return v==='1'||v==='true';
+}
+function setTrelloGcalBridge(on){
+  localStorage.setItem('trello_gcal_bridge', on?'1':'0');
+}
+function loadTrelloGcalMap(){
+  try{ return JSON.parse(localStorage.getItem('trello_gcal_map_ro')||'{}')||{}; }
+  catch(_){ return {}; }
+}
+function saveTrelloGcalMap(map){
+  try{ localStorage.setItem('trello_gcal_map_ro', JSON.stringify(map)); }
+  catch(e){ console.warn('trello_gcal_map_ro:', e); }
+}
+function trelloCardIdFromEv(ev){
+  if(ev.trelloCardId) return String(ev.trelloCardId);
+  const uid=String(ev.uid||'');
+  if(uid.startsWith('trello-')) return uid.slice(7);
+  return '';
+}
+
 async function fetchTrelloCards(boardId,calKey,srcId){
-  const apiKey=localStorage.getItem('trello_api_key')||'';
-  const apiToken=localStorage.getItem('trello_api_token')||'';
-  if(!apiKey||!apiToken)throw new Error('Configura API Key y Token de Trello en ⚙️ Admin.');
+  const {key:apiKey,token:apiToken}=getTrelloCreds();
+  if(!apiKey||!apiToken)throw new Error('Configura API Key y Token de Trello en ⚙️ Admin (una vez).');
   const url=`https://api.trello.com/1/boards/${encodeURIComponent(boardId)}/cards?key=${encodeURIComponent(apiKey)}&token=${encodeURIComponent(apiToken)}&fields=name,due,desc,labels,url,idList&filter=open`;
   const resp=await fetch(url);
-  if(resp.status===401||resp.status===403)throw new Error('Trello: credenciales inválidas o sin acceso al tablero.');
+  if(resp.status===401||resp.status===403)throw new Error('Trello: credenciales inválidas o sin acceso al tablero. Revisa Admin.');
   if(!resp.ok)throw new Error(`Trello API ${resp.status}`);
   const cards=await resp.json();
   const now=new Date();const from=new Date(now);from.setMonth(from.getMonth()-1);const to=new Date(now);to.setMonth(to.getMonth()+4);
@@ -1592,8 +1631,105 @@ async function fetchTrelloCards(boardId,calKey,srcId){
     const allDay=d.getUTCHours()===12&&d.getUTCMinutes()===0&&d.getUTCSeconds()===0;
     const evDate=new Date(iso);if(evDate<from||evDate>to)return null;
     const title=(card.name||'(sin título)').slice(0,80);
-    return{iso,title,cal:normalizeCal(calKey,title),time:allDay?undefined:time,allDay,uid:'trello-'+card.id,fromCal:true,source:'trello',srcId:srcId||'',kind:'task',readonly:true,trelloUrl:card.url||''};
+    const detail=(card.desc||'').slice(0,800);
+    return{
+      iso,title,detail,cal:normalizeCal(calKey,title),
+      time:allDay?undefined:time,allDay,
+      uid:'trello-'+card.id,trelloCardId:card.id,
+      fromCal:true,source:'trello',srcId:srcId||'',kind:'task',
+      readonly:true,trelloUrl:card.url||''
+    };
   }).filter(Boolean);
+}
+
+/**
+ * Bridge C: upsert Trello due → GCal personal (idempotente por cardId).
+ * No falla el sync del tablero si GCal no está conectado.
+ */
+async function bridgeTrelloEventsToGCal(evs, src){
+  if(!isTrelloGcalBridgeOn()) return {pushed:0,updated:0,skipped:evs.length,reason:'bridge-off'};
+  if(!gToken) return {pushed:0,updated:0,skipped:evs.length,reason:'no-oauth'};
+  const calId = src.gcalPushId || 'gaete.gaona@gmail.com';
+  const map = loadTrelloGcalMap();
+  let pushed=0, updated=0, failed=0;
+  for(const ev of evs){
+    const cardId = trelloCardIdFromEv(ev);
+    if(!cardId){ failed++; continue; }
+    try{
+      const body = buildGCalBodyFromEv(ev, {
+        description: [
+          ev.detail || '',
+          ev.trelloUrl ? `Trello: ${ev.trelloUrl}` : '',
+          'Origen: table-ro · Espacio Seguro (solo lectura en tablero)',
+        ].filter(Boolean).join('\n\n'),
+        extendedProperties: {
+          private: {
+            tableRoTrelloId: cardId,
+            tableRoSrc: src.id || 'espacio-seguro',
+          },
+        },
+        source: ev.trelloUrl ? { title: 'Trello · Espacio Seguro', url: ev.trelloUrl } : undefined,
+      });
+      const existingId = map[cardId];
+      if(existingId){
+        const r = await fetch(`${GCAL_API}/calendars/${encodeURIComponent(calId)}/events/${encodeURIComponent(existingId)}`,{
+          method:'PATCH',
+          headers:{'Authorization':`Bearer ${gToken}`,'Content-Type':'application/json'},
+          body:JSON.stringify(body),
+        });
+        if(r.status===404){
+          delete map[cardId];
+          const created = await createGCalEvent(calId, body);
+          map[cardId] = created.id;
+          pushed++;
+        }else if(!r.ok){
+          throw new Error(`GCal PATCH ${r.status}`);
+        }else{
+          const data = await r.json();
+          map[cardId] = data.id || existingId;
+          updated++;
+        }
+      }else{
+        const created = await createGCalEvent(calId, body);
+        map[cardId] = created.id;
+        pushed++;
+      }
+    }catch(err){
+      console.warn('bridgeTrello→GCal', cardId, err);
+      failed++;
+    }
+  }
+  saveTrelloGcalMap(map);
+  return {pushed,updated,failed,skipped:0};
+}
+function buildGCalBodyFromEv(ev, extra={}){
+  let start,end;
+  if(ev.allDay||!ev.time){
+    const nd=new Date(ev.iso);nd.setDate(nd.getDate()+1);
+    start={date:ev.iso};end={date:isoOf(nd)};
+  }else{
+    const[h,mi]=String(ev.time).split(':');
+    const endH=String(parseInt(h,10)+1).padStart(2,'0');
+    start={dateTime:`${ev.iso}T${String(h).padStart(2,'0')}:${mi||'00'}:00`,timeZone:'America/Santiago'};
+    end={dateTime:`${ev.iso}T${endH}:${mi||'00'}:00`,timeZone:'America/Santiago'};
+  }
+  const body={
+    summary:ev.title,
+    start,end,
+    description: extra.description !== undefined ? extra.description : (ev.detail||''),
+  };
+  if(extra.extendedProperties) body.extendedProperties = extra.extendedProperties;
+  if(extra.source) body.source = extra.source;
+  return body;
+}
+async function createGCalEvent(calId, body){
+  const resp=await fetch(`${GCAL_API}/calendars/${encodeURIComponent(calId)}/events`,{
+    method:'POST',
+    headers:{'Authorization':`Bearer ${gToken}`,'Content-Type':'application/json'},
+    body:JSON.stringify(body),
+  });
+  if(!resp.ok)throw new Error(`GCal POST ${resp.status}`);
+  return await resp.json();
 }
 async function syncSource(srcId,btn){
   if(SYNC_IN_FLIGHT.has(srcId)){
@@ -1606,18 +1742,40 @@ async function syncSource(srcId,btn){
   setSyncBtnState(btn,'loading');
   updateSyncTopBtn('syncing');setSourceStatus(srcId,'loading');
   try{
-    let newEvs;let syncVia='ICS';
+    let newEvs;let syncVia='ICS';let bridgeInfo=null;
+    // Trello: prefer REST API if credentials saved; else ICS fallback (capa A)
     if(src.type==='trello'){
-      newEvs=await fetchTrelloCards(src.trelloBoardId,src.cal,srcId);syncVia='Trello';
+      if(hasTrelloCreds()&&src.trelloBoardId){
+        newEvs=await fetchTrelloCards(src.trelloBoardId,src.cal,srcId);syncVia='Trello·API';
+      }else if(src.icsUrl||(src.lsKey&&localStorage.getItem(src.lsKey))){
+        // fall through to ICS block below via synthetic path
+        const customUrl=src.lsKey?localStorage.getItem(src.lsKey):null;
+        const url=customUrl||src.icsUrl;
+        let icsText=null;
+        try{const r=await fetch(url,{mode:'cors',cache:'no-cache'});if(!r.ok)throw new Error(`HTTP ${r.status}`);icsText=await r.text();}
+        catch(corsErr){
+          const proxyUrls=[];const proxy=getProxyUrl();
+          if(proxy) proxyUrls.push(proxy+'/api/ics?url='+encodeURIComponent(url));
+          proxyUrls.push('https://corsproxy.io/?url='+encodeURIComponent(url));
+          proxyUrls.push('https://api.allorigins.win/raw?url='+encodeURIComponent(url));
+          for(const proxyUrl of proxyUrls){
+            try{const r2=await fetch(proxyUrl,{cache:'no-cache'});if(!r2.ok)continue;icsText=await r2.text();syncVia='Trello·ICS·proxy';break;}
+            catch(e){continue;}
+          }
+          if(!icsText)throw new Error('Sin token Trello y ICS bloqueado. Guarda API Key+Token en ⚙️ Admin.');
+        }
+        if(!icsText||!icsText.includes('BEGIN:VCALENDAR'))throw new Error('ICS Trello inválido. Usa API Key+Token en Admin.');
+        newEvs=parseICS(icsText,src.cal,srcId); if(syncVia==='ICS') syncVia='Trello·ICS';
+      }else{
+        throw new Error('Configura API Key y Token de Trello en ⚙️ Admin (una vez).');
+      }
     } else if(gToken&&src.gcalId){ newEvs=await fetchGCalEvents(src.gcalId,src.cal,src.readonly,srcId); if(!newEvs)throw new Error('Token expirado — vuelve a conectar');syncVia='API'; }
     else{
       const customUrl=src.lsKey?localStorage.getItem(src.lsKey):null;
       const url=customUrl||src.icsUrl;if(!url)throw new Error('Sin URL configurada');
       let icsText=null;
-      // Try direct fetch first
       try{const r=await fetch(url,{mode:'cors',cache:'no-cache'});if(!r.ok)throw new Error(`HTTP ${r.status}`);icsText=await r.text();}
       catch(corsErr){
-        // Try worker proxy if configured
         const proxyUrls=[];
         const proxy=getProxyUrl();
         if(proxy) proxyUrls.push(proxy+'/api/ics?url='+encodeURIComponent(url));
@@ -1633,20 +1791,46 @@ async function syncSource(srcId,btn){
       newEvs=parseICS(icsText,src.cal,srcId);
     }
     if(src.filterRe)newEvs=newEvs.filter(e=>src.filterRe.test(e.title));
+    // Quitar solo eventos de ESTA fuente (no borrar otras con misma cal, p.ej. camila)
     for(let i=EVENTS.length-1;i>=0;i--){
       const ev=EVENTS[i];
       if(!ev.fromCal)continue;
-      if(ev.srcId===srcId||(!ev.srcId&&ev.cal===src.cal))EVENTS.splice(i,1);
+      if(ev.srcId===srcId){ EVENTS.splice(i,1); continue; }
+      // Legacy sin srcId: solo si misma cal y fuente no-trello (compat)
+      if(!ev.srcId&&ev.cal===src.cal&&src.type!=='trello') EVENTS.splice(i,1);
     }
     EVENTS.push(...newEvs);
     dedupeSyncedEvents();
-    SYNC_STATUS[srcId]={ok:true,count:newEvs.length,time:new Date(),via:syncVia};
+    // Bridge C: Trello API events → GCal personal (best-effort)
+    if(src.type==='trello'&&syncVia.startsWith('Trello·API')&&newEvs.length){
+      bridgeInfo=await bridgeTrelloEventsToGCal(newEvs,src);
+      if(bridgeInfo.pushed||bridgeInfo.updated){
+        syncVia+=` · GCal +${bridgeInfo.pushed}/~${bridgeInfo.updated}`;
+      }else if(bridgeInfo.reason==='no-oauth'){
+        syncVia+=' · GCal off';
+      }else if(bridgeInfo.reason==='bridge-off'){
+        syncVia+=' · bridge off';
+      }
+    }
+    SYNC_STATUS[srcId]={ok:true,count:newEvs.length,time:new Date(),via:syncVia,bridge:bridgeInfo};
     setSourceStatus(srcId,'ok',newEvs.length);
     cacheSyncedEvents();
     setSyncBtnState(btn,'ok'); renderWeek(); updateSyncTopBtn('synced');
+    updateTrelloAdminStatus(bridgeInfo);
+    if(src.type==='trello'){
+      const b=bridgeInfo;
+      const bridgeMsg=b
+        ? (b.reason==='no-oauth'?' · GCal: conecta OAuth para bridge'
+          : b.reason==='bridge-off'?' · bridge off'
+          : ` · GCal ${b.pushed} nuevos / ${b.updated} act.`)
+        : '';
+      announce(`Trello: ${newEvs.length} en tablero${bridgeMsg}`);
+      showToast(`🏠 Trello: ${newEvs.length} cards${bridgeMsg}`,'ok',3500);
+    }
   }catch(err){
     SYNC_STATUS[srcId]={ok:false,error:err.message,time:new Date()}; setSourceStatus(srcId,'error',0,err.message);
     setSyncBtnState(btn,'error'); updateSyncTopBtn('error');
+    updateTrelloAdminStatus(null,err.message);
   }
   })();
   SYNC_IN_FLIGHT.set(srcId,run);
@@ -1678,7 +1862,7 @@ function renderCalSources(){
     card.innerHTML=`<div class="src-icon">${src.icon}</div>
     <div class="src-info">
       <div class="src-name" style="display:flex;align-items:center;gap:6px;">${src.name} <span class="perm-badge ${permClass[perm]||'perm-ro'}">${permLabels[perm]||perm}</span></div>
-      <div class="src-desc">${src.desc}${src.type==='trello'?' · <span style="font-size:.56rem;background:rgba(16,185,129,.18);color:#10B981;padding:1px 4px;border-radius:3px">Trello</span>':''}${customUrl?' · <span style="color:#a78bfa;font-size:.56rem">URL privada ✓</span>':''}</div>
+      <div class="src-desc">${src.desc}${src.type==='trello'?` · <span style="font-size:.56rem;background:rgba(16,185,129,.18);color:#10B981;padding:1px 4px;border-radius:3px">Trello</span>${hasTrelloCreds()?' · <span style="font-size:.56rem;color:#10B981">API ✓</span>':' · <span style="font-size:.56rem;color:#FB923C">API pendiente</span>'}${isTrelloGcalBridgeOn()?' · <span style="font-size:.56rem;color:#a78bfa">bridge</span>':''}`:''}${customUrl?' · <span style="color:#a78bfa;font-size:.56rem">URL privada ✓</span>':''}</div>
       <div class="src-status">${statusHtml}</div>
     </div>
     <div class="src-actions">
@@ -1741,7 +1925,7 @@ function gSignIn(){
   tokenClient.requestAccessToken({prompt:'consent'});
 }
 function gSignOut(){ if(gToken&&window.google?.accounts?.oauth2)google.accounts.oauth2.revoke(gToken,()=>{}); gToken=null; initGAuthUI(); renderCalSources(); }
-function updateAuthConnected(){ const zone=document.getElementById('gcal-auth-zone');if(!zone)return; zone.className='oauth-box'; zone.innerHTML=`<div class="oauth-connected"><div class="oauth-dot"></div><span style="font-size:.71rem;color:#10B981;font-weight:700;flex:1">Google Calendar conectado ✓</span><button class="btn btn-g" style="padding:3px 8px;font-size:.58rem" onclick="listCals()">🔍 Detectar</button><button class="btn btn-g" style="padding:3px 8px;font-size:.58rem;margin-left:3px" onclick="gSignOut()">Salir</button></div><div style="font-size:.58rem;color:var(--mut);margin-top:4px;">Sync bidireccional activo · Personal R/W · Finanzas/Camila solo lectura · Sura requiere admin</div>`; renderCalSources(); }
+function updateAuthConnected(){ const zone=document.getElementById('gcal-auth-zone');if(!zone)return; zone.className='oauth-box'; zone.innerHTML=`<div class="oauth-connected"><div class="oauth-dot"></div><span style="font-size:.71rem;color:#10B981;font-weight:700;flex:1">Google Calendar conectado ✓</span><button class="btn btn-g" style="padding:3px 8px;font-size:.58rem" onclick="listCals()">🔍 Detectar</button><button class="btn btn-g" style="padding:3px 8px;font-size:.58rem;margin-left:3px" onclick="gSignOut()">Salir</button></div><div style="font-size:.58rem;color:var(--mut);margin-top:4px;">Sync bidireccional activo · Personal R/W · Finanzas/Camila solo lectura · Bridge Trello→GCal listo si Admin ON</div>`; renderCalSources(); updateTrelloAdminStatus(); }
 async function listCals(){
   if(!gToken){alert('Conecta Google Calendar primero');return;}
   try{
@@ -1806,13 +1990,8 @@ async function syncAllToGCal(){
 }
 async function pushEventToGCalAPI(ev,calId='gaete.gaona@gmail.com'){
   if(!gToken)return false;
-  let start,end;
-  if(ev.allDay||!ev.time){const nd=new Date(ev.iso);nd.setDate(nd.getDate()+1);start={date:ev.iso};end={date:isoOf(nd)};}
-  else{const[h,mi]=ev.time.split(':');const endH=String(parseInt(h)+1).padStart(2,'0');start={dateTime:`${ev.iso}T${h.padStart(2,'0')}:${mi||'00'}:00`,timeZone:'America/Santiago'};end={dateTime:`${ev.iso}T${endH}:${mi||'00'}:00`,timeZone:'America/Santiago'};}
-  const body={summary:ev.title,start,end,description:ev.detail||''};
-  const resp=await fetch(`${GCAL_API}/calendars/${encodeURIComponent(calId)}/events`,{method:'POST',headers:{'Authorization':`Bearer ${gToken}`,'Content-Type':'application/json'},body:JSON.stringify(body)});
-  if(!resp.ok)throw new Error(`Push ${resp.status}`);
-  return await resp.json();
+  const body=buildGCalBodyFromEv(ev);
+  return createGCalEvent(calId, body);
 }
 
 /* ── Sync-back helpers ── */
@@ -1864,8 +2043,85 @@ function closeAdminModal(){document.getElementById('admin-modal').classList.remo
 function switchTab(id,btn){ document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active')); btn.classList.add('active');document.getElementById('tab-'+id).classList.add('active'); if(id==='permisos')renderPermList(); }
 function toggleFaq(q){const a=q.nextElementSibling;const isOpen=q.classList.contains('open');document.querySelectorAll('.faq-q.open').forEach(x=>{x.classList.remove('open');x.nextElementSibling.classList.remove('open');});if(!isOpen){q.classList.add('open');a.classList.add('open');}}
 function saveClientId(){const val=document.getElementById('adm-client-id')?.value?.trim();if(!val)return;localStorage.setItem('gcal_client_id',val);const btn=event.target;btn.textContent='✓';btn.style.color='#10B981';setTimeout(()=>{btn.textContent='💾';btn.style.color='';},1800);}
-function saveTrelloCredentials(btn){const key=document.getElementById('adm-trello-key')?.value?.trim();const token=document.getElementById('adm-trello-token')?.value?.trim();if(!key||!token){alert('Ingresa API Key y Token de Trello.');return;}localStorage.setItem('trello_api_key',key);localStorage.setItem('trello_api_token',token);if(btn){btn.textContent='✓';btn.style.color='#10B981';setTimeout(()=>{btn.textContent='💾';btn.style.color='';},1800);}}
-function hydrateTrelloAdmin(){const k=document.getElementById('adm-trello-key');const t=document.getElementById('adm-trello-token');if(k)k.value=localStorage.getItem('trello_api_key')||'';if(t)t.value=localStorage.getItem('trello_api_token')||'';}
+function saveTrelloCredentials(btn){
+  const keyEl=document.getElementById('adm-trello-key');
+  const tokenEl=document.getElementById('adm-trello-token');
+  // Best practice: campos vacíos = conservar valor ya guardado (no re-pegar en cada sync)
+  const key=(keyEl?.value?.trim())||localStorage.getItem('trello_api_key')||'';
+  const token=(tokenEl?.value?.trim())||localStorage.getItem('trello_api_token')||'';
+  if(!key||!token){alert('Ingresa API Key y Token de Trello (o deja en blanco si ya estaban guardados).');return;}
+  localStorage.setItem('trello_api_key',key);
+  localStorage.setItem('trello_api_token',token);
+  if(keyEl) keyEl.value='';
+  if(tokenEl) tokenEl.value='';
+  if(keyEl) keyEl.placeholder='Guardada · pega solo para reemplazar';
+  if(tokenEl) tokenEl.placeholder='Guardado · pega solo para reemplazar';
+  const bridgeEl=document.getElementById('adm-trello-bridge');
+  if(bridgeEl) setTrelloGcalBridge(!!bridgeEl.checked);
+  if(btn){btn.textContent='✓';btn.style.color='#10B981';setTimeout(()=>{btn.textContent='💾';btn.style.color='';},1800);}
+  updateTrelloAdminStatus();
+  announce('Credenciales Trello guardadas');
+  showToast('Trello: credenciales guardadas (no se piden en cada sync)','ok',2800);
+}
+function hydrateTrelloAdmin(){
+  const k=document.getElementById('adm-trello-key');
+  const t=document.getElementById('adm-trello-token');
+  // No rellenar password fields con secretos (best practice UX + seguridad básica)
+  if(k){ k.value=''; k.placeholder=localStorage.getItem('trello_api_key')?'Guardada · pega solo para reemplazar':'API Key de Trello'; }
+  if(t){ t.value=''; t.placeholder=localStorage.getItem('trello_api_token')?'Guardado · pega solo para reemplazar':'Token de autorización'; }
+  const bridgeEl=document.getElementById('adm-trello-bridge');
+  if(bridgeEl) bridgeEl.checked=isTrelloGcalBridgeOn();
+  updateTrelloAdminStatus();
+}
+function onTrelloBridgeToggle(el){
+  setTrelloGcalBridge(!!el?.checked);
+  updateTrelloAdminStatus();
+  announce(el?.checked?'Bridge Trello→GCal activado':'Bridge Trello→GCal desactivado');
+}
+function updateTrelloAdminStatus(bridgeInfo,errMsg){
+  const el=document.getElementById('adm-trello-status');
+  if(!el) return;
+  const hasKey=!!localStorage.getItem('trello_api_key');
+  const hasToken=!!localStorage.getItem('trello_api_token');
+  const st=SYNC_STATUS['espacio-seguro'];
+  const parts=[];
+  parts.push(hasKey?'<span style="color:#10B981">Key ✓</span>':'<span style="color:#F87171">Key ✗</span>');
+  parts.push(hasToken?'<span style="color:#10B981">Token ✓</span>':'<span style="color:#F87171">Token ✗</span>');
+  parts.push(isTrelloGcalBridgeOn()
+    ? (gToken?'<span style="color:#10B981">Bridge ON · OAuth ✓</span>':'<span style="color:#FB923C">Bridge ON · OAuth pendiente</span>')
+    : '<span style="color:var(--mut)">Bridge OFF</span>');
+  if(errMsg) parts.push(`<span style="color:#F87171">${escapeHtml(String(errMsg).slice(0,60))}</span>`);
+  else if(st?.ok){
+    const t=st.time instanceof Date?st.time.toLocaleTimeString('es-CL',{hour:'2-digit',minute:'2-digit'}):'';
+    parts.push(`<span style="color:#10B981">Último sync: ${st.count} · ${t}</span>`);
+    if(st.via) parts.push(`<span style="font-size:.55rem;color:var(--mut)">${escapeHtml(st.via)}</span>`);
+  }
+  if(bridgeInfo&&!bridgeInfo.reason){
+    parts.push(`<span style="color:#a78bfa">GCal +${bridgeInfo.pushed}/~${bridgeInfo.updated}</span>`);
+  }
+  el.innerHTML=parts.join(' · ');
+}
+async function syncTrelloFromAdmin(btn){
+  if(!hasTrelloCreds()){
+    alert('Guarda API Key y Token de Trello primero (💾).');
+    return;
+  }
+  const orig=btn?.textContent;
+  if(btn){btn.disabled=true;btn.textContent='⏳ Sync…';}
+  try{
+    await syncSource('espacio-seguro',null);
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent=orig||'🔄 Sync Trello';}
+    updateTrelloAdminStatus();
+  }
+}
+function clearTrelloCredentials(){
+  if(!confirm('¿Borrar API Key y Token de Trello de este navegador?'))return;
+  localStorage.removeItem('trello_api_key');
+  localStorage.removeItem('trello_api_token');
+  hydrateTrelloAdmin();
+  announce('Credenciales Trello eliminadas');
+}
 function renderAdmCalUrls(){
   const cont=document.getElementById('adm-cal-urls');if(!cont)return;cont.innerHTML='';
   SOURCES.filter(src=>src.type!=='trello').forEach(src=>{ const custom=src.lsKey?localStorage.getItem(src.lsKey)||'':'';const url=custom||src.icsUrl||'';const div=document.createElement('div');div.className='mfield';div.style='margin-bottom:5px'; div.innerHTML=`<label style="display:flex;gap:5px;align-items:center"><span style="background:${src.color};width:6px;height:6px;border-radius:50%;display:inline-block"></span>${src.name}${src.gcalId?' <span style="font-size:.48rem;background:rgba(16,185,129,.18);color:#10B981;padding:1px 4px;border-radius:3px">API ✓</span>':''}</label><div style="display:flex;gap:5px;align-items:center"><input type="text" value="${url}" placeholder="URL iCal..." style="font-size:.59rem;flex:1" data-src="${src.id}">${src.lsKey?`<button class="res-copy" onclick="saveCalUrl('${src.id}',this)">💾</button>`:'<span style="font-size:.58rem;color:var(--mut)">no config</span>'}</div>`; cont.appendChild(div); });

@@ -4,14 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Tablero Rö — Planificador semanal personal con Google Calendar, Bullet Journal y sync bidireccional." />
-    <meta name="version" content="1.7.1" />
-    <title>TABLERO — Rö · v1.7.1</title>
+    <meta name="version" content="1.7.2" />
+    <title>TABLERO — Rö · v1.7.2</title>
     <link rel="manifest" href="manifest.json" />
     <meta name="theme-color" content="#7c3aed" />
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://accounts.google.com; script-src-attr 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://www.googleapis.com https://api.trello.com https://*.workers.dev https://corsproxy.io https://api.allorigins.win; frame-src 'self' https://accounts.google.com https://vientonorte.github.io; base-uri 'self'; form-action 'self';" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <link rel="stylesheet" href="css/styles.css?v=1.7.1" />
+    <link rel="stylesheet" href="css/styles.css?v=1.7.2" />
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <script src="js/auth-passkey.js"></script>
   </head>
@@ -480,28 +480,52 @@
           </div>
           <div class="adm-sep"></div>
           <div>
-            <div class="sec-title" style="font-size:.74rem;">🏠 Trello · Espacio Seguro</div>
+            <div class="sec-title" style="font-size:.74rem;">🏠 Trello · Espacio Seguro → Google</div>
             <div style="font-size:.62rem;color:var(--mut);margin-bottom:6px;line-height:1.5">
-              Sync del tablero
-              <strong style="color:#10B981">Diseño de Espacio Seguro Romila</strong>
-              (tareas domésticas). Las tarjetas con fecha se sincronizan como categoría Camila.
+              Board
+              <strong style="color:#10B981">Espacio Seguro Romila</strong>
+              · cards con
+              <strong>due</strong>
+              + filtro
+              <code style="font-size:.55rem">RO/Rö</code>
+              → categoría
+              <strong style="color:#10B981">Camila</strong>
+              . Guarda Key+Token
+              <strong>una vez</strong>
+              ; re-sync sin re-pegar.
+              <a href="docs/TRELLO-GOOGLE.md" target="_blank" rel="noopener" style="color:#a78bfa">Guía A+B+C ↗</a>
             </div>
+            <div id="adm-trello-status" style="font-size:.6rem;line-height:1.55;margin-bottom:8px;padding:6px 8px;border-radius:8px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);color:var(--mut)">Cargando estado…</div>
             <div class="mfield">
               <label for="adm-trello-key">Trello API Key</label>
               <div style="display:flex;gap:6px;">
-                <input type="password" id="adm-trello-key" placeholder="Tu API Key de Trello" autocomplete="off" style="font-size:.61rem;flex:1" />
-                <button class="res-copy" onclick="saveTrelloCredentials(this)">💾</button>
+                <input type="password" id="adm-trello-key" placeholder="API Key de Trello" autocomplete="off" style="font-size:.61rem;flex:1" />
+                <button class="res-copy" onclick="saveTrelloCredentials(this)" title="Guardar Key + Token + bridge">💾</button>
               </div>
             </div>
             <div class="mfield">
               <label for="adm-trello-token">Trello Token</label>
               <input type="password" id="adm-trello-token" placeholder="Token de autorización" autocomplete="off" style="font-size:.61rem" />
             </div>
-            <div class="hint" style="margin-top:5px">
+            <label style="display:flex;align-items:flex-start;gap:8px;margin:8px 0 6px;font-size:.62rem;color:var(--mut);cursor:pointer;line-height:1.4">
+              <input type="checkbox" id="adm-trello-bridge" checked onchange="onTrelloBridgeToggle(this)" style="accent-color:#10B981;margin-top:2px" />
+              <span>
+                <strong style="color:#10B981">Bridge GCal (capa C)</strong>
+                — al sync Trello, crear/actualizar eventos en
+                <code style="font-size:.55rem">gaete.gaona@gmail.com</code>
+                (idempotente; requiere OAuth Google). Sin OAuth el tablero igual se actualiza.
+              </span>
+            </label>
+            <div class="btn-row" style="margin-top:6px;flex-wrap:wrap;gap:6px">
+              <button class="btn btn-p" type="button" onclick="syncTrelloFromAdmin(this)" style="font-size:.66rem">🔄 Sync Trello</button>
+              <button class="btn btn-g" type="button" onclick="openCalModal()" style="font-size:.66rem">📅 Panel Sync</button>
+              <button class="btn" type="button" onclick="clearTrelloCredentials()" style="font-size:.62rem;background:rgba(248,113,113,.12);color:#F87171;border:1px solid rgba(248,113,113,.25)">🗑 Borrar token</button>
+            </div>
+            <div class="hint" style="margin-top:8px">
               <span>🔑</span>
-              Obtén tu API Key en
-              <a href="https://developer.atlassian.com/cloud/trello/guides/rest-api/api-introduction/#authentication-and-authorization" target="_blank" style="color:#a78bfa">developer.atlassian.com</a>
-              . Genera el token desde el enlace que aparece junto a la key.
+              API Key + Token:
+              <a href="https://trello.com/power-ups/admin" target="_blank" rel="noopener" style="color:#a78bfa">trello.com/power-ups/admin</a>
+              · ICS de respaldo en Google Calendar (capa A) documentado en la guía · secretos solo en este browser (meta: Worker).
             </div>
           </div>
           <div class="adm-sep"></div>
@@ -860,6 +884,6 @@
       </div>
     </div>
 
-    <script src="js/app.js?v=1.7.1" defer></script>
+    <script src="js/app.js?v=1.7.2" defer></script>
   </body>
 </html>
