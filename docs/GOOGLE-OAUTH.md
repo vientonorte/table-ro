@@ -1,74 +1,99 @@
-# Google OAuth — table-ro (fix `invalid_client` / `GeneralOAuthFlow`)
+# Google OAuth — table-ro
 
-## Error (lo que ves en Google)
+**App:** https://vientonorte.github.io/table-ro/  
+**Brand / ownership page:** https://vientonorte.github.io/table-ro/brand.html  
+**Privacy:** https://vientonorte.github.io/table-ro/privacy.html  
+**Terms:** https://vientonorte.github.io/table-ro/terms.html  
+**Logo marca:** https://vientonorte.github.io/table-ro/icons/logo-oauth.svg  
 
-```
-Acceso bloqueado: Error de autorización
-The OAuth client was not found.
-Error 401: invalid_client
+**Client ID live (Web, público):**  
+`913158816697-q9ceacnedpeu1sgkoq73hv829dgnlocj.apps.googleusercontent.com`  
 
-Detalles de la solicitud: flowName=GeneralOAuthFlow
-```
+**Proyecto GCP:** `fluted-protocol-485115-c1`  
+**Cuenta ops:** `gaete.gaona@gmail.com`  
 
-`flowName=GeneralOAuthFlow` **no es un bug de table-ro** — es la pantalla genérica de Google cuando el **OAuth Client ID es inválido o no existe**.
+**Client secret:** solo local (`~/Downloads/client_secret_…json` o `~/.config/vientonorte/`). **Nunca** en git ni frontend.
 
-**Causa:** el Client ID viejo  
-`5033046467-kgd7gl4tekb4fkt90jq32rob4evmgnmn.apps.googleusercontent.com`  
-**ya no existe** (borrado, proyecto deshabilitado, o no visible para `gaete.gaona@gmail.com`).  
-Desde v1.7.9 el default en app es el Client ID live:
-`913158816697-q9ceacnedpeu1sgkoq73hv829dgnlocj.apps.googleusercontent.com`
-(si falla, recrea en GCP y sobrescribe en Admin). El ID muerto `5033046467…` se purga de localStorage.
+Vault reanudación: `20-sistema/oauth-verificacion-reanudar.md` (repo Vientonorte).
 
-## Qué sigue funcionando sin OAuth
+---
 
-- Tablero local (tasks)
-- Sync **ICS público** de `gaete.gaona@gmail.com` (eventos en Personal)
-- BuJo, filtros Personal/Laboral
+## Errores frecuentes
 
-OAuth solo para **Calendar API** bidireccional (push/pull API, listar calendarios privados).
+### 401 `invalid_client` / `flowName=GeneralOAuthFlow`
 
-## Fix (15 min) — cuenta `gaete.gaona@gmail.com` o Workspace con acceso
+Client ID borrado o incorrecto. Usar el ID live de arriba; purgar localStorage del ID viejo `5033046467…`.
 
-1. Entra a [Google Cloud Console](https://console.cloud.google.com/) con **gaete.gaona@gmail.com** (o el proyecto correcto).
-2. Elige o crea un proyecto (ej. `vientonorte-table-ro`).
-3. **APIs & Services → Library** → habilita **Google Calendar API**.
-4. **OAuth consent screen** → External (o Internal si Workspace) → app name `Tablero Rö` → scopes:
-   - `.../auth/calendar.readonly`
-   - `.../auth/calendar.events`
-5. **Credentials → Create credentials → OAuth client ID → Web application**
-6. **Authorized JavaScript origins:**
+### 403 `access_denied` — “no completó el proceso de verificación… solo verificadores”
+
+La app está en **Testing** y la cuenta **no está en Test users**.
+
+**Fix:** OAuth consent screen → Test users → add `gaete.gaona@gmail.com`.
+
+### Rechazo de **verificación pública** (Publish)
+
+| Mensaje Google | Acción |
+|----------------|--------|
+| Homepage no registrada a tu nombre | Verificar `https://vientonorte.github.io/` en **Search Console** con la **misma cuenta** del proyecto GCP |
+| Logo no identifica la marca | Subir PNG 120×120 desde `icons/logo-oauth.svg` (marca Viento Norte) |
+
+---
+
+## Ruta A — Uso personal (recomendado, sin Publish)
+
+1. Consent screen → **External** · status **Testing** (no “Publish app”).
+2. Test users: `gaete.gaona@gmail.com`.
+3. App name: `Tablero Rö`.
+4. Support email: `gaete.gaona@gmail.com`.
+5. Scopes: Calendar readonly + events.
+6. Links del consent (usar URLs reales del sitio):
+   - Application home page: `https://vientonorte.github.io/table-ro/brand.html`
+   - Privacy: `https://vientonorte.github.io/table-ro/privacy.html`
+   - Terms (si pide): `https://vientonorte.github.io/table-ro/terms.html`
+7. Origins del Client Web:
    ```
    https://vientonorte.github.io
    http://localhost:8080
    http://127.0.0.1:8080
    ```
-7. **Authorized redirect URIs** (por si acaso):
-   ```
-   https://vientonorte.github.io
-   https://vientonorte.github.io/table-ro
-   https://vientonorte.github.io/table-ro/
-   ```
-8. Copia el **Client ID** (`….apps.googleusercontent.com`).
-9. En table-ro prod:
-   - ⚙️ → Google OAuth → pega Client ID → Conectar  
-   - o en consola del navegador:  
-     `localStorage.setItem('gcal_client_id','TU_CLIENT_ID_NUEVO')`  
-     y recarga.
+8. Calendar API enabled en el proyecto.
+9. table-ro → 🔑 Conectar → debe funcionar **sin** verificación de Google.
 
-10. (Opcional) Actualiza el default en `js/app.js` `GCAL_CLIENT_ID` y despliega v nueva.
+---
 
-## Workspace
+## Ruta B — Publish / verificación (solo si quieres público)
 
-Si el proyecto OAuth está en **Google Workspace** de Viento Norte, el usuario de prueba y el consent screen deben permitir `gaete.gaona@gmail.com` (o usa la cuenta Workspace para crear el client y añade gmail como test user en External).
+1. **Search Console** → property `https://vientonorte.github.io/`  
+   - HTML file o meta tag en el **hub** (raiz org Pages) o dominio propio.  
+   - Misma cuenta Google que GCP.
+2. Homepage de marca verificable: `brand.html` (ownership + privacy links).
+3. Logo PNG 120×120 desde `logo-oauth.svg`.
+4. Privacy policy URL = misma en consent y en el sitio.
+5. Reenviar verification; espera review (días).
 
-## Verificación
+**Nota:** GitHub Pages a veces complica “ownership”; dominio propio (vientonorte.cl / etc.) es más limpio a largo plazo.
 
-1. https://vientonorte.github.io/table-ro/  
-2. 🔑 Conectar con Google → elige `gaete.gaona@gmail.com`  
-3. Debe aparecer “Google Calendar conectado ✓”  
-4. 🔍 Detectar lista calendarios  
+---
+
+## Setup inicial Client ID (si recreas)
+
+1. GCP → Library → Google Calendar API ON.  
+2. Credentials → OAuth client → **Web application**.  
+3. Origins + redirects como arriba.  
+4. Pegar Client ID en app / Admin o default `GCAL_CLIENT_ID` en `js/app.js`.
+
+---
+
+## Verificación funcional (no “Publish”)
+
+1. Hard refresh table-ro (v1.7.9+; SW network-first).  
+2. 🔑 Conectar con Google.  
+3. “Google Calendar conectado ✓”.  
+4. 🔍 Detectar calendarios.
+
+---
 
 ## Relacionado
 
-- DEPLOY-GITHUB-PAGES.md Paso 3  
-- Vault: `20-sistema/google-cuenta.md`
+- `DEPLOY-GITHUB-PAGES.md`  
+- Vault: `google-cuenta.md` · `oauth-verificacion-reanudar.md` · canvas-state  
