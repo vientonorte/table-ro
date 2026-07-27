@@ -11,9 +11,9 @@
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",
-    "@vientonorte/a11y": "*",
-    "@vientonorte/security": "*",
-    "@vientonorte/tokens": "*",
+    "@vientonorte/a11y": "0.1.1",
+    "@vientonorte/security": "0.1.1",
+    "@vientonorte/tokens": "0.2.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
