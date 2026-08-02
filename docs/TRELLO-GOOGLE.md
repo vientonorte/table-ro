@@ -96,6 +96,26 @@ Hoy: `localStorage` keys `trello_api_key`, `trello_api_token` (solo en tu browse
 
 ---
 
+
+---
+
+## CLI · snapshot ICS / API (agentes + offline)
+
+```bash
+node scripts/sync-trello-ics-to-tablero.mjs
+# más completo:
+TRELLO_API_KEY=… TRELLO_TOKEN=… node scripts/sync-trello-ics-to-tablero.mjs
+```
+
+Genera:
+
+| Archivo | Uso |
+|---------|-----|
+| `data/trello-sync-latest.json` | Snapshot crudo |
+| `data/tablero-import-trello-ro.json` | Admin → **Importar** (solo RO/Rö → Camila) |
+
+ICS solo trae cards **con due**. API trae open+due en ventana −1…+6 meses.
+
 ## Operación diaria
 
 | Acción | Dónde |

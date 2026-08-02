@@ -1,0 +1,60 @@
+{
+  "mode": "ics",
+  "board": "69c558a7d79162569df9a98a",
+  "boardName": "Espacio Seguro · Romila",
+  "syncedAt": "2026-08-02T05:19:51.541Z",
+  "ics": "https://trello.com/calendar/5be8d432f8dc74493aaf53e6/69c558a7d79162569df9a98a/3b84dbc14a0b216f20c2b1ca2120a49f.ics",
+  "embedUrl": "https://trello.com/b/69c558a7d79162569df9a98a",
+  "count": 3,
+  "countRo": 2,
+  "synced": [
+    {
+      "iso": "2027-04-25",
+      "title": "Una vez x semana Ro [PLANIFICAR]",
+      "detail": "- limpiar baño (completo)\n- planificación comidas\n- división tareas c/15 días\n\nCard URL: https://trello.com/c/jpM3k5Dt\nAssigned Members (1):\n   - Rodrigo Gaete (/u/rodrigogaete6)",
+      "cal": "camila",
+      "time": "23:49",
+      "allDay": false,
+      "uid": "trello-69c55d7128f469900622e8e4",
+      "trelloCardId": "69c55d7128f469900622e8e4",
+      "fromCal": true,
+      "source": "trello",
+      "srcId": "espacio-seguro",
+      "kind": "task",
+      "readonly": true,
+      "trelloUrl": "https://trello.com/c/jpM3k5Dt"
+    },
+    {
+      "iso": "2027-04-25",
+      "title": "Tareas diarias Ro [MONITOREAR]",
+      "detail": "- lavar loza\n- barer cocina y living\n- sacar basura cocina y baño\n\nCard URL: https://trello.com/c/CwLoo6NR\nAssigned Members (1):\n   - Rodrigo Gaete (/u/rodrigogaete6)",
+      "cal": "camila",
+      "time": "23:48",
+      "allDay": false,
+      "uid": "trello-69c55aa2f7e85cbc9c7b1af0",
+      "trelloCardId": "69c55aa2f7e85cbc9c7b1af0",
+      "fromCal": true,
+      "source": "trello",
+      "srcId": "espacio-seguro",
+      "kind": "task",
+      "readonly": true,
+      "trelloUrl": "https://trello.com/c/CwLoo6NR"
+    },
+    {
+      "iso": "2026-07-31",
+      "title": "Tareas MILA [MONITOREAR]",
+      "detail": "\n\nCard URL: https://trello.com/c/OX4EoBUZ\nAssigned Members (1):\n   - camila palma (/u/camilapalma10)",
+      "cal": "camila",
+      "time": "12:00",
+      "allDay": false,
+      "uid": "trello-69e0f952ba6dfa56d0b91603",
+      "trelloCardId": "69e0f952ba6dfa56d0b91603",
+      "fromCal": true,
+      "source": "trello",
+      "srcId": "espacio-seguro",
+      "kind": "task",
+      "readonly": true,
+      "trelloUrl": "https://trello.com/c/OX4EoBUZ"
+    }
+  ]
+}
