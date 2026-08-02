@@ -1,5 +1,11 @@
 # Changelog — Tablero Rö
 
+## Unreleased · 2026-08-02
+
+- Ops embed: `https://vientonorte.io/ops/?embed=1` (canon .io; state TB45/TB60 MICRO1 calendar day + DS-08-03).
+- table-ro Ops view picks up canvas-state via iframe — hard refresh if SW stale.
+
+
 All notable changes to this project will be documented in this file.
 
 ---

@@ -1465,7 +1465,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
 });
 
-const OPS_EMBED_URL = 'https://vientonorte.github.io/ops/?embed=1';
+const OPS_EMBED_URL = 'https://vientonorte.io/ops/?embed=1';
 
 /**
  * Journey: table-ro is the only home.
