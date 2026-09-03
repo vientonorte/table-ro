@@ -1,7 +1,7 @@
 /**
  * Tablero Rö — Lógica principal
  * ==============================
- * Versión: 1.7.9
+ * Versión: 1.8.0
  * Descripción: Tablero semanal · hub único Semana|Ops (journey sin duplicar /ops).
  *
  * Arquitectura (Design Thinking — mapeo de funcionalidades):
@@ -38,6 +38,7 @@
  *      · callGemini()  — Google Gemini API (multimodal)
  *      · buildBujoPrompt()      — genera prompt de extracción BuJo
  *      · parseExtractionJson()  — parsea respuesta JSON de la IA
+ *      · normalizeClaveAItem()  — post-proceso Clave A (color > símbolo)
  *      · resolveProvider()      — selecciona proveedor activo según config
  *
  *   6. CALENDAR SYNC
@@ -988,7 +989,7 @@ function isChromaticReadingEnabled(hasImages){
   return hasImages && AI_CFG.flags.chromaticReading !== false;
 }
 function buildClaveAPromptBlock(){
-  return `\n\nCLAVE A — BULLET RO (solo imágenes del cuaderno dot grid)\nDetecta resaltado con marcador. El matiz importa, no la intensidad de saturación.\n- Rosa/fucsia → type: personal\n- Gris → type: vinculos\n- Verde turquesa → type: camila\n- Naranja → type: trabajo\n- Amarillo → kind: note, type: personal (referencia; no crear categoría nueva)\nSimbología Bullet Ro: ● personal · ○ bienestar · ◆ vínculos · > camila · * trabajo · — nota\nSi color y símbolo discrepan${AI_CFG.flags.prioritizeColor !== false ? ', prioriza color y registra warning en summary.warnings' : ', registra warning pero conserva type del símbolo'}.\nCampo color_trace obligatorio por ítem con imagen:\n- detected: true|false\n- clave_a: rosa|gris|verde turquesa|naranja|amarillo|\"\"\n- hex_approx: aproximación hex del marcador\n- source: color|symbol|text|default\nsource_type del ítem: bullet_ro (imagen) o texto (solo pegado).\nAnonimiza en details (no en text): empleador → [INSTITUCIÓN].\nNO aplicar Clave B (libros académicos) a páginas Bullet Ro.`;
+  return `\n\nCLAVE A — LECTURA CROMÁTICA (Bullet Ro, solo si hay imágenes)\nDetecta resaltado con marcador. Tolerancia de saturación: el matiz importa, no la intensidad.\n- Rosa/fucsia → type: personal\n- Gris → type: vinculos\n- Verde turquesa → type: camila\n- Naranja → type: trabajo\n- Amarillo → kind: note, type: personal (referencia; no crear categoría nueva)\nSimbología Bullet Ro: ● personal · ○ bienestar · ◆ vínculos · > camila · * trabajo · — nota\nSi color y símbolo discrepan${AI_CFG.flags.prioritizeColor !== false ? ', prioriza color y registra warning en summary.warnings' : ', registra warning pero conserva type del símbolo'}.\nCampo color_trace obligatorio por ítem con imagen:\n- detected: true|false\n- clave_a: rosa|gris|verde turquesa|naranja|amarillo|\"\"\n- hex_approx: aproximación hex del marcador\n- source: color|symbol|text|default\nsource_type del ítem: bullet_ro (imagen) o texto (solo pegado).\nAnonimiza en details (no en text): empleador → [INSTITUCIÓN].\nNO aplicar Clave B (libros académicos) a páginas Bullet Ro.`;
 }
 function normalizeClaveAItem(item, ctx){
   const out={...item};
@@ -1276,7 +1277,7 @@ function makeBJItem(obj){
   el.style.setProperty('--cc',ci.c);
   const meta=[obj.kind ? obj.kind.toUpperCase() : '', obj.timeText || '', obj.dateText || ''].filter(Boolean).join(' · ');
   let chipHtml='';
-  if(trace.detected){
+  if(trace.detected || trace.clave_a || trace.hex_approx){
     const src=COLOR_SOURCE_LABELS[trace.source]||trace.source||'color';
     const aria=`Categoría por ${src}${trace.clave_a ? ', Clave A '+trace.clave_a : ''}`;
     chipHtml=`<span class="bj-color-chip" style="--chip-color:${trace.hex_approx||ci.c}" role="img" aria-label="${escapeHtml(aria)}" title="${escapeHtml(aria)}"></span>`;
