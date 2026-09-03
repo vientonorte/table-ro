@@ -6,8 +6,10 @@
 import { readFileSync } from 'node:fs';
 import { spawn } from 'node:child_process';
 import { setTimeout as sleep } from 'node:timers/promises';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 
-const ROOT = new URL('..', import.meta.url).pathname;
+const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const PORT = 3457;
 const BASE = `http://127.0.0.1:${PORT}/index.html`;
 
@@ -49,10 +51,18 @@ for (const fn of REQUIRED_GLOBALS) {
 }
 ok(`app.js define ${REQUIRED_GLOBALS.length} handlers globales`);
 
-if (!indexHtml.includes('js/app.js?v=1.7.9')) {
-  fail('index.html no referencia app.js v1.7.9 (cache bust)');
+const versionMatch = indexHtml.match(/<meta\s+name="version"\s+content="([^"]+)"/i);
+const appVersion = versionMatch?.[1];
+if (!appVersion) {
+  fail('index.html sin meta name="version"');
 }
-ok('Cache bust app.js v1.7.9');
+if (!indexHtml.includes(`js/app.js?v=${appVersion}`)) {
+  fail(`index.html no referencia app.js?v=${appVersion} (cache bust)`);
+}
+if (!indexHtml.includes(`css/styles.css?v=${appVersion}`)) {
+  fail(`index.html no referencia styles.css?v=${appVersion} (cache bust)`);
+}
+ok(`Cache bust assets v${appVersion}`);
 
 if (!appJs.includes('function openLocalTarget') || !appJs.includes('obsidian://open')) {
   fail('faltan deep-links locales (openLocalTarget / obsidian URI)');
