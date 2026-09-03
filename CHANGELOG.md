@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 
 ---
 
+## [1.8.0] — 2026-09-03
+
+### 🎨 Lectura crómática Clave A — BuJo (Sprint A + B1/B2)
+
+- **`buildBujoPrompt()`**: bloque `CLAVE A — LECTURA CROMÁTICA` cuando hay imágenes.
+- **Schema JSON**: `color_trace` + `source_type` por ítem.
+- **`AI_CFG.flags.chromaticReading`**: default true si hay imágenes (`isChromaticReadingEnabled`).
+- **Anonimización**: `[INSTITUCIÓN]` en `details`, no en `text`.
+- **Post-proceso** `normalizeClaveAItem` tras `parseExtractionJson`: color gana sobre símbolo + warnings.
+- **UI**: chip de color + `aria-label` de fuente en ítems BuJo (`makeBJItem`).
+- **PWA**: service worker `table-ro-v1.8.0`.
+
 ## [1.7.9+] — 2026-07-21 (noche)
 
 ### OAuth brand / verify prep
