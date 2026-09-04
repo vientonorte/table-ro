@@ -1,8 +1,8 @@
-# QA Manual — table-ro v1.6.1
+# QA Manual — table-ro v1.8.0
 
-Checklist para validar prod después del Worker deploy y antes de Sprint Clave A (v1.6).
+Checklist post-ship BuJo·IA Clave A (v1.8.0). Smoke E (foto+Worker) sigue obligatorio antes de cerrar sprint C.
 
-**Base URL:** https://vientonorte.github.io/table-ro/
+**Base URL:** https://vientonorte.io/table-ro/
 
 ---
 
@@ -10,11 +10,11 @@ Checklist para validar prod después del Worker deploy y antes de Sprint Clave A
 
 | Área | URL |
 |------|-----|
-| App principal | https://vientonorte.github.io/table-ro/ |
-| Privacidad | https://vientonorte.github.io/table-ro/privacy.html |
-| Términos | https://vientonorte.github.io/table-ro/terms.html |
-| Manifest PWA | https://vientonorte.github.io/table-ro/manifest.json |
-| Service Worker | https://vientonorte.github.io/table-ro/sw.js |
+| App principal | https://vientonorte.io/table-ro/ |
+| Privacidad | https://vientonorte.io/table-ro/privacy.html |
+| Términos | https://vientonorte.io/table-ro/terms.html |
+| Manifest PWA | https://vientonorte.io/table-ro/manifest.json |
+| Service Worker | https://vientonorte.io/table-ro/sw.js |
 | Repo GitHub | https://github.com/vientonorte/table-ro |
 | CI Actions | https://github.com/vientonorte/table-ro/actions |
 | Tag v1.5.0 | https://github.com/vientonorte/table-ro/releases/tag/v1.5.0 |
@@ -26,7 +26,7 @@ Checklist para validar prod después del Worker deploy y antes de Sprint Clave A
 
 ## A · Smoke (5 min)
 
-- [ ] **A1** Título muestra `v1.6.1` en pestaña del navegador
+- [ ] **A1** Título muestra `v1.8.0` en pestaña del navegador
 - [ ] **A1b** DevTools Console: sin `Refused to execute inline event handler` (CSP `script-src-attr`)
 - [ ] **A2** Banner consentimiento aparece (primera visita / incógnito) → "Entendido" lo cierra
 - [ ] **A3** Tablero 7 columnas visible; día actual resaltado
@@ -74,6 +74,10 @@ Prerequisito: Proxy Worker configurado (ver `WORKER-DEPLOY.md`).
 - [ ] **E5** Seleccionar ítems → ＋ Agregar al tablero → cards en semana
 - [ ] **E6** Modo texto manual (sin foto): pegar `● Tarea QA` → parsea sin IA
 - [ ] **E7** DevTools Network: POST a `*.workers.dev/api/` (no API directa en prod)
+
+- [ ] **E8** Con foto coloreada: ítems traen chip / `color_trace` (Hallazgos cromáticos)
+- [ ] **E9** Conflicto color naranja + símbolo `*` → categoría `trabajo` + warning
+- [ ] **E10** Foto solo lápiz → fallback símbolo, sin crash
 
 ---
 
