@@ -64,6 +64,25 @@ if (!indexHtml.includes(`css/styles.css?v=${appVersion}`)) {
 }
 ok(`Cache bust assets v${appVersion}`);
 
+const swJs = readFileSync(`${ROOT}/sw.js`, 'utf8');
+if (!swJs.includes(`table-ro-v${appVersion}`)) {
+  fail(`sw.js CACHE_NAME no es table-ro-v${appVersion}`);
+}
+ok(`SW CACHE_NAME table-ro-v${appVersion}`);
+
+const prodHostIdx = appJs.indexOf('const IS_PROD_HOST');
+if (prodHostIdx < 0) {
+  fail('js/app.js sin const IS_PROD_HOST');
+}
+const prodHostBlock = appJs.slice(prodHostIdx, prodHostIdx + 420);
+if (!prodHostBlock.includes('vientonorte.github.io')) {
+  fail('IS_PROD_HOST no incluye vientonorte.github.io');
+}
+if (!prodHostBlock.includes('vientonorte.io')) {
+  fail('IS_PROD_HOST no incluye vientonorte.io (host canónico post-301)');
+}
+ok('IS_PROD_HOST cubre github.io y vientonorte.io');
+
 if (!appJs.includes('function openLocalTarget') || !appJs.includes('obsidian://open')) {
   fail('faltan deep-links locales (openLocalTarget / obsidian URI)');
 }

@@ -1,6 +1,6 @@
-# QA Manual — table-ro v1.8.0
+# QA Manual — table-ro v1.8.1
 
-Checklist post-ship BuJo·IA Clave A (v1.8.0). Smoke E (foto+Worker) sigue obligatorio antes de cerrar sprint C.
+Checklist post-ship BuJo·IA Clave A + host prod `.io` (v1.8.1). Smoke E (foto+Worker) sigue obligatorio; Worker secrets siguen fuera de este ship.
 
 **Base URL:** https://vientonorte.io/table-ro/
 
@@ -26,7 +26,8 @@ Checklist post-ship BuJo·IA Clave A (v1.8.0). Smoke E (foto+Worker) sigue oblig
 
 ## A · Smoke (5 min)
 
-- [ ] **A1** Título muestra `v1.8.0` en pestaña del navegador
+- [ ] **A1** Título muestra `v1.8.1` en pestaña del navegador
+- [ ] **A1c** En `vientonorte.io/table-ro/` (no localhost): Admin oculta keys de browser (`.ai-dev-only`); proxy default `table-ro-ai-proxy.vientonorte.workers.dev` sin pegar URL a mano
 - [ ] **A1b** DevTools Console: sin `Refused to execute inline event handler` (CSP `script-src-attr`)
 - [ ] **A2** Banner consentimiento aparece (primera visita / incógnito) → "Entendido" lo cierra
 - [ ] **A3** Tablero 7 columnas visible; día actual resaltado

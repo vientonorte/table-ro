@@ -1,7 +1,7 @@
 /**
  * Tablero Rö — Lógica principal
  * ==============================
- * Versión: 1.8.0
+ * Versión: 1.8.1
  * Descripción: Tablero semanal · hub único Semana|Ops (journey sin duplicar /ops).
  *
  * Arquitectura (Design Thinking — mapeo de funcionalidades):
@@ -98,7 +98,10 @@ const CAL = {
     bujo: { c: '#C084FC', bg: 'rgba(192,132,252,.16)', l: '📓 BuJo' },
 };
 
-const IS_PROD_HOST = location.hostname === 'vientonorte.github.io';
+const IS_PROD_HOST =
+    location.hostname === 'vientonorte.github.io' ||
+    location.hostname === 'vientonorte.io' ||
+    location.hostname === 'www.vientonorte.io';
 const CONSENT_KEY = 'tablero_consent_ro';
 const AI_PROXY_DEFAULT = IS_PROD_HOST
     ? 'https://table-ro-ai-proxy.vientonorte.workers.dev'

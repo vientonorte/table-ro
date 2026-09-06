@@ -1,5 +1,13 @@
 # Changelog — Tablero Rö
 
+## [1.8.1] — 2026-09-06
+
+### Host prod canónico
+
+- **`IS_PROD_HOST`**: además de `vientonorte.github.io`, incluye `vientonorte.io` y `www.vientonorte.io` (el 301 de github.io deja el hostname canónico en `.io`, y el proxy default no aplicaba).
+- PWA: service worker `table-ro-v1.8.1`.
+- No toca secrets del Worker. Chromatic LLM sigue dependiendo del proxy + keys CF.
+
 ## Unreleased · 2026-08-02
 
 - Ops embed: `https://vientonorte.io/ops/?embed=1` (canon .io; state TB45/TB60 MICRO1 calendar day + DS-08-03).
