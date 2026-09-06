@@ -5,7 +5,7 @@
  * Bump CACHE_NAME on every release that must reach users.
  */
 
-const CACHE_NAME = 'table-ro-v1.8.0';
+const CACHE_NAME = 'table-ro-v1.8.1';
 
 const PRECACHE = [
   '/table-ro/manifest.json',
