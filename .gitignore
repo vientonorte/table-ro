@@ -2,3 +2,9 @@
 .DS_Store
 Chillax_Complete
 node_modules/
+.dev.vars
+worker/.dev.vars
+worker/.dev.vars.*
+!worker/.dev.vars.example
+secrets.json
+worker/secrets.json

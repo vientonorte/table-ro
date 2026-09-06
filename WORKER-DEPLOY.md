@@ -43,20 +43,15 @@ npx wrangler whoami
 
 ## Paso 3 — Configurar secrets (API keys)
 
-Ejecutar **una vez por key** (el valor no se muestra al escribir):
+Automatizado (no pegar keys en chat):
 
 ```bash
-npx wrangler secret put CLAUDE_API_KEY
-# pegar sk-ant-...
-
-npx wrangler secret put OPENAI_API_KEY
-# pegar sk-...
-
-npx wrangler secret put GEMINI_API_KEY
-# pegar AIza...
+cp worker/.dev.vars.example worker/.dev.vars
+# editar worker/.dev.vars en local (gitignored)
+scripts/sync-ai-secrets.sh --smoke
 ```
 
-Mínimo **una** key para que BuJo funcione con ese proveedor.
+Equivale a `wrangler secret put` × las keys presentes. Mínimo **una**. Smoke POST Origin `.io`: FAIL si el body dice `*_API_KEY not configured`.
 
 ---
 
@@ -66,7 +61,7 @@ En `worker/wrangler.toml` ya está:
 
 ```toml
 [vars]
-ALLOWED_ORIGIN = "https://vientonorte.github.io"
+ALLOWED_ORIGIN = "https://vientonorte.github.io,https://vientonorte.io,https://www.vientonorte.io"
 ```
 
 Para probar en local, añadir temporalmente:
