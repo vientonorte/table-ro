@@ -15,6 +15,15 @@
 - PWA: service worker `table-ro-v1.8.1`.
 - No toca secrets del Worker. Chromatic LLM sigue dependiendo del proxy + keys CF.
 
+### 📅 BuJo semana → Google Calendar
+
+- **`syncBujoWeekToGCal()`**: un clic empuja ítems `source=bujo` de la semana visible (+ selección del drawer) al calendario personal Rö.
+- Omite ya sincronizados (`bujo_gcal_map_ro` / sin botón 📅).
+- Notas/hábitos sin hora → all-day **FREE** (`transparency: transparent`); con hora → evento timed.
+- `colorId` por categoría (`GCAL_COLOR_BY_CAL`); **nunca escribe** en el calendario de Camila.
+- UI: ☰ Más → «Enviar semana BuJo a Calendar» + botón en footer del drawer BuJo.
+
+
 ## Unreleased · 2026-08-02
 
 - Ops embed: `https://vientonorte.io/ops/?embed=1` (canon .io; state TB45/TB60 MICRO1 calendar day + DS-08-03).
