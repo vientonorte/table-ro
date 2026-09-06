@@ -1,5 +1,12 @@
 # Changelog — Tablero Rö
 
+## [ops] — 2026-09-06
+
+- `scripts/sync-ai-secrets.sh`: `wrangler secret put` desde `worker/.dev.vars` (gitignored; no echo).
+- `scripts/qa-proxy.sh`: smoke POST Origin `.io`; FAIL si `*_API_KEY not configured`.
+- `worker/.dev.vars.example` + `.gitignore`.
+- `ALLOWED_ORIGIN` incluye `vientonorte.io` / `www`.
+
 ## [1.8.1] — 2026-09-06
 
 ### Host prod canónico

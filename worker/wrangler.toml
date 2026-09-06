@@ -5,7 +5,7 @@ account_id = "6e96c77c41a11e043c84a7802c6108b8"
 workers_dev = true
 
 [vars]
-ALLOWED_ORIGIN = "https://vientonorte.github.io"
+ALLOWED_ORIGIN = "https://vientonorte.github.io,https://vientonorte.io,https://www.vientonorte.io"
 
 # Secrets (set with: wrangler secret put CLAUDE_API_KEY)
 # CLAUDE_API_KEY
