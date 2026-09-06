@@ -45,6 +45,7 @@
             <button class="sec-btn save-btn" id="save-btn" onclick="saveBoard()" role="menuitem" title="Guardar estado (Ctrl+S)">💾 Guardar</button>
             <button class="sec-btn sync-topbtn" id="sync-topbtn" onclick="openCalModal()" role="menuitem">🔄 Sync</button>
             <button class="sec-btn" id="push-all-btn" onclick="syncAllToGCal()" role="menuitem">📤 Enviar a Calendarios</button>
+            <button class="sec-btn" id="push-bujo-week-btn" onclick="syncBujoWeekToGCal()" role="menuitem" title="Empuja ítems BuJo de la semana visible a Google Calendar (personal Rö)">📅 Enviar semana BuJo a Calendar</button>
             <button class="sec-btn" onclick="openLocalTarget('obsidian')" role="menuitem" title="Abrir vault en Obsidian (URI)">📓 Obsidian</button>
             <button class="sec-btn" onclick="openLocalTarget('editor')" role="menuitem" title="Abrir carpeta vault en editor (VS Code / Cursor)">📂 Editor local</button>
             <button class="sec-btn" onclick="copyLocalPath('vault')" role="menuitem" title="Copiar ruta del vault">📋 Ruta vault</button>
@@ -725,7 +726,7 @@
               ¿Los cambios se sincronizan automáticamente?
               <span class="faq-chevron">▼</span>
             </div>
-            <div class="faq-a">El sync es manual: usa 🔄 Sync para traer eventos, 💾 Guardar para persistir el estado local, y 📤 Enviar a Calendarios para empujar todas las tarjetas locales a Google Calendar según su categoría.</div>
+            <div class="faq-a">El sync es manual: usa 🔄 Sync para traer eventos, 💾 Guardar para persistir el estado local, 📤 Enviar a Calendarios para empujar tarjetas locales, y 📅 Enviar semana BuJo a Calendar para la semana BuJo visible (calendario personal Rö).</div>
           </div>
         </div>
         <div class="tab-pane" id="tab-recursos">
@@ -888,6 +889,9 @@
             </div>
             <div class="btn-row" style="margin-top:4px;">
               <button class="btn btn-g" onclick="clearBJ()" style="flex:1;justify-content:center;">🗑 Limpiar todo</button>
+            </div>
+            <div class="btn-row" style="margin-top:6px;">
+              <button class="btn btn-p" id="push-bujo-drawer-btn" onclick="syncBujoWeekToGCal()" style="flex:1;justify-content:center;" title="Envía ítems BuJo de la semana (tablero + selección del drawer) a Google Calendar">📅 Enviar semana BuJo a Calendar</button>
             </div>
           </div>
         </div>

@@ -47,6 +47,8 @@
  *      · fetchGCalEvents()  — obtiene eventos de Google Calendar API v3
  *      · parseICS()         — parsea feed ICS (Outlook, etc.)
  *      · syncToGCal()       — empuja evento al Google Calendar
+ *      · syncAllToGCal()    — empuja todas las tarjetas con 📅
+ *      · syncBujoWeekToGCal() — empuja semana BuJo visible (bulk)
  *      · pushEventToGCalAPI() — API call PATCH/POST a GCal
  *
  *   7. GOOGLE OAUTH
@@ -81,6 +83,7 @@
  *   trello_api_key / trello_api_token — credenciales Trello (browser local)
  *   trello_gcal_bridge — '1'|'0' push Trello due → GCal personal
  *   trello_gcal_map_ro — mapa cardId Trello → eventId GCal (idempotencia)
+ *   bujo_gcal_map_ro   — mapa fingerprint BuJo → eventId GCal (idempotencia semana)
  *   tablero_perms_ro   — permisos de fuentes
  *   tablero_ai_cfg_ro  — configuración de IA
  *   gcal_client_id     — OAuth Client ID (sobrescribe default)
@@ -97,6 +100,19 @@ const CAL = {
     'espacio-seguro': { c: '#10B981', bg: 'rgba(16,185,129,.16)', l: 'Espacio Seguro' },
     bujo: { c: '#C084FC', bg: 'rgba(192,132,252,.16)', l: '📓 BuJo' },
 };
+
+/** Google Calendar event colorId by category (visual only; never writes Camila cal). */
+const GCAL_COLOR_BY_CAL = {
+    personal: '4',   // Flamingo
+    vinculos: '3',   // Grape
+    camila: '10',    // Basil — color only; destino = calendario personal Rö
+    trabajo: '6',    // Tangerine
+    fin: '5',        // Banana
+    bujo: '9',       // Blueberry
+    'espacio-seguro': '10',
+};
+const BUJO_GCAL_MAP_KEY = 'bujo_gcal_map_ro';
+const BUJO_PUSH_CAL_ID = 'gaete.gaona@gmail.com';
 
 const IS_PROD_HOST =
     location.hostname === 'vientonorte.github.io' ||
@@ -1759,11 +1775,14 @@ async function bridgeTrelloEventsToGCal(evs, src){
 }
 function buildGCalBodyFromEv(ev, extra={}){
   let start,end;
-  if(ev.allDay||!ev.time){
+  const timeStr = (ev.time && ev.time !== 'Todo el día') ? String(ev.time).trim() : '';
+  const kind = normalizeKind(ev.kind, ev.title || '');
+  const asAllDay = !!(ev.allDay || !timeStr);
+  if(asAllDay){
     const nd=new Date(ev.iso);nd.setDate(nd.getDate()+1);
     start={date:ev.iso};end={date:isoOf(nd)};
   }else{
-    const[h,mi]=String(ev.time).split(':');
+    const[h,mi]=timeStr.split(':');
     const endH=String(parseInt(h,10)+1).padStart(2,'0');
     start={dateTime:`${ev.iso}T${String(h).padStart(2,'0')}:${mi||'00'}:00`,timeZone:'America/Santiago'};
     end={dateTime:`${ev.iso}T${endH}:${mi||'00'}:00`,timeZone:'America/Santiago'};
@@ -1773,6 +1792,12 @@ function buildGCalBodyFromEv(ev, extra={}){
     start,end,
     description: extra.description !== undefined ? extra.description : (ev.detail||''),
   };
+  // Notas / hábitos sin hora → all-day FREE (transparent)
+  if(asAllDay && (kind==='note' || kind==='habit' || extra.free)){
+    body.transparency = 'transparent';
+  }
+  const colorId = extra.colorId || GCAL_COLOR_BY_CAL[normalizeCal(ev.cal, ev.title)] || GCAL_COLOR_BY_CAL[ev.cal];
+  if(colorId) body.colorId = String(colorId);
   if(extra.extendedProperties) body.extendedProperties = extra.extendedProperties;
   if(extra.source) body.source = extra.source;
   return body;
@@ -2052,13 +2077,16 @@ async function fetchGCalEvents(calId,calKey,readonly=true,srcId=''){
   }).filter(Boolean);
 }
 function getGCalIdForCal(calKey){
+  /* Destino de escritura: nunca Camila ni calendarios readonly. */
   const src=SOURCES.find(s=>s.cal===calKey);
-  return (src&&src.gcalId)?src.gcalId:'gaete.gaona@gmail.com';
+  if(!src || !src.gcalId || src.readonly) return BUJO_PUSH_CAL_ID;
+  if(src.id==='camila' || calKey==='camila' || calKey==='espacio-seguro') return BUJO_PUSH_CAL_ID;
+  return src.gcalId;
 }
 async function syncToGCal(e,btn){
   e.stopPropagation();
   const card=btn.closest('.card'); const title=card.querySelector('.ct').textContent; const detail=card.querySelector('.det-area')?.value||''; const timeStr=(card.querySelector('.ctime')?.textContent||'').replace('⏰ ','').trim(); const parentId=card.closest('[id^="wb-"]')?.id||''; const iso=parentId.replace('wb-','')||isoOf(new Date());
-  if(gToken){ btn.textContent='⏳';btn.disabled=true; try{ const targetCalId=getGCalIdForCal(card.dataset.cal); await pushEventToGCalAPI({title,iso,time:timeStr,detail,cal:card.dataset.cal},targetCalId); btn.textContent='✓';btn.style.color='#10B981'; setTimeout(()=>btn.remove(),1600); }catch(err){ btn.textContent='⚠️';btn.disabled=false;setTimeout(()=>{btn.textContent='📅';btn.style.color='';},2000);} }
+  if(gToken){ btn.textContent='⏳';btn.disabled=true; try{ const targetCalId=getGCalIdForCal(card.dataset.cal); const kind=card.dataset.kind||'task'; const t=(timeStr==='Todo el día')?'':timeStr; await pushEventToGCalAPI({title,iso,time:t,detail,cal:card.dataset.cal,kind},targetCalId); btn.textContent='✓';btn.style.color='#10B981'; setTimeout(()=>btn.remove(),1600); }catch(err){ btn.textContent='⚠️';btn.disabled=false;setTimeout(()=>{btn.textContent='📅';btn.style.color='';},2000);} }
   else{ showToast('Abriendo Google Calendar...','info',2000); const url='https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent(title)+(detail?'&details='+encodeURIComponent(detail):''); window.open(url,'_blank'); }
 }
 
@@ -2075,8 +2103,10 @@ async function syncAllToGCal(){
     const parentId=card.closest('[id^="wb-"]')?.id||'';
     const iso=parentId.replace('wb-','')||isoOf(new Date());
     const calId=getGCalIdForCal(card.dataset.cal);
+    const kind=card.dataset.kind||'task';
+    const t=(timeStr==='Todo el día')?'':timeStr;
     try{
-      await pushEventToGCalAPI({title,iso,time:timeStr,detail,cal:card.dataset.cal},calId);
+      await pushEventToGCalAPI({title,iso,time:t,detail,cal:card.dataset.cal,kind},calId);
       const btn=card.querySelector('.sync-btn');
       if(btn){btn.textContent='✓';btn.style.color='#10B981';setTimeout(()=>btn.remove(),1600);}
       ok++;
@@ -2085,6 +2115,127 @@ async function syncAllToGCal(){
   announce(`Sincronización: ${ok} exitosas${fail?`, ${fail} errores`:''}`);
   showToast(`✓ ${ok} sincronizadas${fail?` · ${fail} errores`:''}`,fail?'error':'ok',4000);
 }
+
+function loadBujoGcalMap(){
+  try{ return JSON.parse(localStorage.getItem(BUJO_GCAL_MAP_KEY)||'{}')||{}; }
+  catch(_){ return {}; }
+}
+function saveBujoGcalMap(map){
+  try{ localStorage.setItem(BUJO_GCAL_MAP_KEY, JSON.stringify(map)); }
+  catch(e){ console.warn(BUJO_GCAL_MAP_KEY+':', e); }
+}
+function bujoGcalFingerprint(iso, title, cal){
+  return `${iso}|${String(title||'').trim().toLowerCase()}|${normalizeCal(cal, title)||''}`;
+}
+function markCardGcalSynced(card, eventId){
+  if(!card) return;
+  card.dataset.gcalSynced = '1';
+  if(eventId) card.dataset.uid = eventId;
+  const btn = card.querySelector('.sync-btn');
+  if(btn){ btn.textContent='✓'; btn.style.color='#10B981'; setTimeout(()=>btn.remove(),1200); }
+}
+
+/**
+ * Bulk: semana BuJo visible → Google Calendar (calendario personal Rö).
+ * - Cards del tablero con source=bujo en la semana actual
+ * - Ítems marcados aún en el drawer BuJo
+ * - Omite ya sincronizados (mapa local / sin 📅 / data-gcal-synced)
+ * - Nunca escribe en el calendario de Camila
+ */
+async function syncBujoWeekToGCal(){
+  if(!gToken){
+    alert('Conecta Google Calendar primero (🔑 en Sync → OAuth).');
+    openCalModal?.();
+    return;
+  }
+  const weekIsos = new Set(Array.from({length:7},(_,i)=>isoOf(addDays(weekStart,i))));
+  const map = loadBujoGcalMap();
+  const payloads = [];
+  const seen = new Set();
+
+  document.querySelectorAll('.card[data-source="bujo"]').forEach(card=>{
+    const parentId = card.closest('[id^="wb-"]')?.id || '';
+    const iso = parentId.replace('wb-','');
+    if(!weekIsos.has(iso)) return;
+    const title = (card.querySelector('.ct')?.textContent || '').trim();
+    if(!title) return;
+    const cal = card.dataset.cal || 'personal';
+    const fp = bujoGcalFingerprint(iso, title, cal);
+    if(seen.has(fp)) return;
+    if(map[fp] || card.dataset.gcalSynced==='1' || !card.querySelector('.sync-btn')) return;
+    seen.add(fp);
+    const detail = card.querySelector('.det-area')?.value || '';
+    let timeStr = (card.querySelector('.ctime')?.textContent || '').replace('⏰ ','').trim();
+    if(timeStr === 'Todo el día') timeStr = '';
+    const kind = card.dataset.kind || 'task';
+    payloads.push({
+      fp, card, from:'board',
+      ev:{ title, iso, time:timeStr, detail, cal, kind, allDay:!timeStr && (kind==='event'||kind==='note'||kind==='habit') }
+    });
+  });
+
+  document.querySelectorAll('#bj-list .bj-item').forEach(el=>{
+    if(!el.querySelector('input')?.checked) return;
+    const title = (el.querySelector('.bj-item-text')?.textContent || '').trim();
+    if(!title) return;
+    const cal = el.dataset.type || 'personal';
+    const kind = el.dataset.kind || 'task';
+    const time = normalizeHHMM(el.dataset.time);
+    const iso = deriveBujoIso(el.dataset.date) || isoOf(weekStart);
+    if(!weekIsos.has(iso) && el.dataset.date){
+      // fecha fuera de semana visible: igual incluir si derive dio iso válido
+    }
+    const fp = bujoGcalFingerprint(iso, title, cal);
+    if(seen.has(fp) || map[fp]) return;
+    seen.add(fp);
+    const detail = [el.dataset.detail, el.dataset.date ? `Fecha detectada: ${el.dataset.date}` : ''].filter(Boolean).join('\n');
+    payloads.push({
+      fp, el, from:'drawer',
+      ev:{ title, iso, time, detail, cal, kind, allDay:!time && (kind==='event'||kind==='note'||kind==='habit') }
+    });
+  });
+
+  if(!payloads.length){
+    showToast('No hay ítems BuJo pendientes en esta semana (o ya fueron enviados).','info',3500);
+    announce('Sin ítems BuJo pendientes para Calendar');
+    return;
+  }
+  if(!confirm(`¿Enviar ${payloads.length} ítem(s) BuJo de la semana a Google Calendar?\n\nDestino: calendario personal Rö\n(No se escribe en el calendario de Camila)`)) return;
+
+  let ok=0, fail=0, skipped=0;
+  const calId = BUJO_PUSH_CAL_ID;
+  for(const item of payloads){
+    try{
+      if(map[item.fp]){ skipped++; continue; }
+      const extra = {
+        description: [
+          item.ev.detail || '',
+          'Origen: table-ro · BuJo semana',
+        ].filter(Boolean).join('\n\n'),
+        extendedProperties: {
+          private: {
+            tableRoBujoFp: item.fp,
+            tableRoSrc: 'bujo',
+          },
+        },
+        colorId: GCAL_COLOR_BY_CAL[normalizeCal(item.ev.cal, item.ev.title)] || GCAL_COLOR_BY_CAL.bujo,
+        free: item.ev.kind==='note' || item.ev.kind==='habit',
+      };
+      const created = await createGCalEvent(calId, buildGCalBodyFromEv(item.ev, extra));
+      map[item.fp] = created.id;
+      if(item.card) markCardGcalSynced(item.card, created.id);
+      if(item.el){ item.el.dataset.gcalSynced = '1'; item.el.style.opacity = '0.55'; }
+      ok++;
+    }catch(err){
+      fail++;
+      console.warn('BuJo→GCal fail:', item.ev?.title, err);
+    }
+  }
+  saveBujoGcalMap(map);
+  announce(`BuJo→Calendar: ${ok} enviados${fail?`, ${fail} errores`:''}${skipped?`, ${skipped} omitidos`:''}`);
+  showToast(`✓ ${ok} BuJo → Calendar${fail?` · ${fail} errores`:''}`, fail?'error':'ok', 4200);
+}
+
 async function pushEventToGCalAPI(ev,calId='gaete.gaona@gmail.com'){
   if(!gToken)return false;
   const body=buildGCalBodyFromEv(ev);
