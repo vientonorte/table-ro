@@ -1,7 +1,7 @@
 /**
  * Tablero Rö — Lógica principal
  * ==============================
- * Versión: 1.8.1
+ * Versión: 1.8.2
  * Descripción: Tablero semanal · hub único Semana|Ops (journey sin duplicar /ops).
  *
  * Arquitectura (Design Thinking — mapeo de funcionalidades):
@@ -138,7 +138,7 @@ function getProxyUrl() {
 
 function sanitizeAICfgForStorage(cfg) {
     const out = structuredClone(cfg);
-    ['claude', 'openai', 'gemini'].forEach((p) => {
+    ['grok', 'claude', 'openai', 'gemini'].forEach((p) => {
         if (out.providers?.[p]) out.providers[p].key = '';
     });
     return out;
@@ -786,6 +786,7 @@ const AI_DEFAULTS = {
     prioritizeColor: true
   },
   providers: {
+    grok: { key: '', model: 'grok-4.6' },
     claude: { key: '', model: 'claude-sonnet-4-6' },
     openai: { key: '', model: 'gpt-5.4' },
     gemini: { key: '', model: 'gemini-3.1-pro-preview' }
@@ -809,7 +810,7 @@ function loadAICfg(){
   try{
     const raw = JSON.parse(localStorage.getItem(AI_CFG_KEY) || '{}');
     let migrated = false;
-    ['claude','openai','gemini'].forEach((p) => {
+    ['grok','claude','openai','gemini'].forEach((p) => {
       if (raw.providers?.[p]?.key) { raw.providers[p].key = ''; migrated = true; }
     });
     const cfg = deepMerge(AI_DEFAULTS, raw);
@@ -828,6 +829,7 @@ function saveAIForm(){
 }
 function saveAIAdmin(){
   AI_CFG.provider = document.getElementById('adm-ai-provider')?.value || AI_CFG.provider;
+  AI_CFG.providers.grok.model = (document.getElementById('adm-grok-model')?.value || 'grok-4.6').trim();
   AI_CFG.providers.claude.model = (document.getElementById('adm-claude-model')?.value || 'claude-sonnet-4-6').trim();
   AI_CFG.providers.openai.model = (document.getElementById('adm-openai-model')?.value || 'gpt-5.4').trim();
   AI_CFG.providers.gemini.model = (document.getElementById('adm-gemini-model')?.value || 'gemini-3.1-pro-preview').trim();
@@ -848,7 +850,7 @@ let _aiAutoSaveTimer=null;
 function autoSaveAIAdmin(){ clearTimeout(_aiAutoSaveTimer); _aiAutoSaveTimer=setTimeout(()=>{ saveAIAdmin(); showToast('✓ Config IA guardada','ok'); },400); }
 function toggleKeyVis(btn){ const inp=btn.previousElementSibling; if(!inp) return; inp.type=inp.type==='password'?'text':'password'; btn.textContent=inp.type==='password'?'👁':'🙈'; }
 function updateProviderCardStates(){
-  ['claude','openai','gemini'].forEach(p=>{
+  ['grok','claude','openai','gemini'].forEach(p=>{
     const card=document.getElementById('ai-card-'+p);
     const dot=document.getElementById('ai-dot-'+p);
     const hasKey=!!getActiveKey(p) || !!getProxyUrl();
@@ -891,7 +893,7 @@ function hydrateAIAdmin(){
     });
   }
   // For model selects: set value or add custom option if not in list
-  ['claude','openai','gemini'].forEach(p=>{
+  ['grok','claude','openai','gemini'].forEach(p=>{
     const sel=document.getElementById('adm-'+p+'-model');
     const model=AI_CFG.providers[p]?.model||'';
     if(!sel||!model) return;
@@ -924,18 +926,16 @@ function hydrateAIForm(){
   });
 }
 function toggleAIFlag(flag, btn){ AI_CFG.flags[flag] = !AI_CFG.flags[flag]; btn.classList.toggle('saved', AI_CFG.flags[flag]); saveAICfg(); }
-function providerLabel(p){ return p === 'claude' ? 'Claude' : p === 'openai' ? 'GPT' : p === 'gemini' ? 'Gemini' : 'Auto'; }
+function providerLabel(p){ return p === 'grok' ? 'Grok' : p === 'claude' ? 'Claude' : p === 'openai' ? 'GPT' : p === 'gemini' ? 'Gemini' : 'Auto'; }
 function resolveProvider(){
   if(AI_CFG.provider !== 'auto') return AI_CFG.provider;
-  if (AI_CFG.jsonMode === 'strict' && AI_CFG.profile === 'quality') return 'openai';
-  if (bjImages.length >= 3 || AI_CFG.profile === 'speed') return 'gemini';
-  return 'claude';
+  return 'grok';
 }
 function getActiveKey(provider){ if (IS_PROD_HOST) return ''; return AI_CFG.providers?.[provider]?.key || ''; }
 function getActiveModel(provider){ return AI_CFG.providers?.[provider]?.model || ''; }
 function getAvailableAIProviders(){
-  if (getProxyUrl()) return ['claude','openai','gemini'];
-  if (!IS_PROD_HOST) return ['claude', 'openai', 'gemini'].filter(p => !!getActiveKey(p));
+  if (getProxyUrl()) return ['grok','claude','openai','gemini'];
+  if (!IS_PROD_HOST) return ['grok','claude','openai','gemini'].filter(p => !!getActiveKey(p));
   return [];
 }
 function getProviderCandidates(){
@@ -1156,6 +1156,24 @@ function continueWithoutAI(){
   showAIFallbackNote('Has continuado en modo manual. Vuelve al Paso 1 y usa texto manual.');
   announce('Continuaste en modo manual sin análisis IA');
 }
+async function callGrok(prompt){
+  const model=getActiveModel('grok') || 'grok-4.6';
+  const proxy=getProxyUrl();
+  const content=[...bjImages.map(img=>({type:'input_image',image_url:`data:${img.mimeType};base64,${img.base64}`,detail:AI_CFG.profile==='quality'?'high':'auto'})),{type:'input_text',text:prompt}];
+  const payload={model,input:[{role:'user',content}]};
+  if(proxy){
+    const res=await fetch(proxy+'/api/grok',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(!res.ok){ const err=await res.json().catch(()=>({})); throw new Error(err?.error?.message || `Grok proxy ${res.status}`); }
+    return getOpenAIText(await res.json());
+  }
+  const apiKey=getActiveKey('grok'); if(!apiKey) throw new Error('Falta XAI_API_KEY');
+  const res=await fetch('https://api.x.ai/v1/responses',{
+    method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},
+    body:JSON.stringify(payload)
+  });
+  if(!res.ok){ const err=await res.json().catch(()=>({})); throw new Error(err?.error?.message || `Grok HTTP ${res.status}`); }
+  return getOpenAIText(await res.json());
+}
 async function callClaude(prompt){
   const model=getActiveModel('claude');
   const content=[...bjImages.map(img=>({type:'image',source:{type:'base64',media_type:img.mimeType,data:img.base64}})),{type:'text',text:prompt}];
@@ -1235,7 +1253,8 @@ async function analyzeBujo(){
     for(let i=0;i<candidates.length;i++){
       const provider=candidates[i];
       try{
-        if(provider==='claude') raw=await callClaude(prompt);
+        if(provider==='grok') raw=await callGrok(prompt);
+        else if(provider==='claude') raw=await callClaude(prompt);
         else if(provider==='openai') raw=await callOpenAI(prompt);
         else if(provider==='gemini') raw=await callGemini(prompt);
         else throw new Error('Proveedor no soportado');

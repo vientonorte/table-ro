@@ -11,7 +11,7 @@ ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 WORKER="$ROOT/worker"
 DEVVARS="${DEVVARS:-$WORKER/.dev.vars}"
 NAME="table-ro-ai-proxy"
-KEYS=(CLAUDE_API_KEY OPENAI_API_KEY GEMINI_API_KEY)
+KEYS=(XAI_API_KEY CLAUDE_API_KEY OPENAI_API_KEY GEMINI_API_KEY)
 DRY=0
 SMOKE=0
 for a in "$@"; do

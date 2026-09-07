@@ -43,12 +43,12 @@ npx wrangler whoami
 
 ## Paso 3 — Configurar secrets (API keys)
 
-Automatizado (no pegar keys en chat):
+Automatizado (Grok / Clave A primero; no pegar keys en chat):
 
 ```bash
-cp worker/.dev.vars.example worker/.dev.vars
-# editar worker/.dev.vars en local (gitignored)
-scripts/sync-ai-secrets.sh --smoke
+export XAI_API_KEY=xai-...   # console.x.ai · no copiar ~/.grok/auth.json
+vn-cromatico seed            # escribe worker/.dev.vars gitignored
+vn-cromatico secrets         # wrangler secret put + smoke
 ```
 
 Equivale a `wrangler secret put` × las keys presentes. Mínimo **una**. Smoke POST Origin `.io`: FAIL si el body dice `*_API_KEY not configured`.
