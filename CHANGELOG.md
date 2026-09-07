@@ -5,7 +5,8 @@
 ### Grok / Clave A
 
 - Proxy `POST /api/grok` → `api.x.ai/v1/responses` (secret `XAI_API_KEY`). Auto elige Grok para lectura cromática.
-- `scripts/seed-devvars.sh` crea `worker/.dev.vars` desde env (gitignored). No copia `~/.grok/auth.json` (OIDC ≠ API key).
+- `scripts/seed-devvars.sh` crea `worker/.dev.vars` (gitignored, 0600) desde env, dotenv y Keychain. No copia `~/.grok/auth.json` (OIDC TUI ≠ API key). Si no hay key usable → exit 2; `vn-cromatico secrets` no hace wrangler put.
+- Live 2026-09-06: `secret list []` · `POST /api/grok` 500 `XAI_API_KEY not configured`.
 - `vn-cromatico seed` · `vn-cromatico secrets`.
 
 ## [ops] — 2026-09-06
