@@ -7,7 +7,8 @@ workers_dev = true
 [vars]
 ALLOWED_ORIGIN = "https://vientonorte.github.io,https://vientonorte.io,https://www.vientonorte.io"
 
-# Secrets (set with: wrangler secret put CLAUDE_API_KEY)
+# Secrets: scripts/seed-devvars.sh && scripts/sync-ai-secrets.sh
+# XAI_API_KEY (Grok / Clave A)
 # CLAUDE_API_KEY
 # OPENAI_API_KEY
 # GEMINI_API_KEY

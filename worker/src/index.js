@@ -1,7 +1,7 @@
 /**
  * table-ro AI & ICS Proxy — Cloudflare Worker
  * Routes: POST /api/claude, POST /api/openai, POST /api/gemini, GET /api/ics
- * Secrets: CLAUDE_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY
+ * Secrets: XAI_API_KEY (Grok / Clave A), CLAUDE_API_KEY, OPENAI_API_KEY, GEMINI_API_KEY
  */
 
 const CORS_HEADERS = origin => ({
@@ -73,7 +73,19 @@ export default {
             let body = await request.json();
             let upstream;
 
-            if (path === '/api/claude') {
+            if (path === '/api/grok') {
+                if (!env.XAI_API_KEY) return jsonError('XAI_API_KEY not configured', 500, cors);
+                const grokBody = { ...body };
+                if (!grokBody.model) grokBody.model = 'grok-4.6';
+                upstream = await fetch('https://api.x.ai/v1/responses', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${env.XAI_API_KEY}`,
+                    },
+                    body: JSON.stringify(grokBody),
+                });
+            } else if (path === '/api/claude') {
                 if (!env.CLAUDE_API_KEY) return jsonError('CLAUDE_API_KEY not configured', 500, cors);
                 upstream = await fetch('https://api.anthropic.com/v1/messages', {
                     method: 'POST',

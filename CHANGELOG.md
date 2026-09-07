@@ -1,5 +1,13 @@
 # Changelog — Tablero Rö
 
+## [1.8.2] — 2026-09-06
+
+### Grok / Clave A
+
+- Proxy `POST /api/grok` → `api.x.ai/v1/responses` (secret `XAI_API_KEY`). Auto elige Grok para lectura cromática.
+- `scripts/seed-devvars.sh` crea `worker/.dev.vars` desde env (gitignored). No copia `~/.grok/auth.json` (OIDC ≠ API key).
+- `vn-cromatico seed` · `vn-cromatico secrets`.
+
 ## [ops] — 2026-09-06
 
 - `scripts/sync-ai-secrets.sh`: `wrangler secret put` desde `worker/.dev.vars` (gitignored; no echo).
